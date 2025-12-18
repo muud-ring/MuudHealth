@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
+import '../services/social_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _identifier = TextEditingController();
   final _password = TextEditingController();
+
+  final _socialAuth = SocialAuthService();
 
   bool _loading = false;
   String? _error;
@@ -196,12 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   _SocialIconButton(
                     assetPath: 'assets/icons/google.png',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Google login: coming soon'),
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        await _socialAuth.startGoogle();
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
                   const SizedBox(width: 18),
