@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../services/social_auth_service.dart';
+import '../services/cognito_oauth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -194,6 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 18),
 
               // Social buttons row (UI only for now)
+              // Social buttons row
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -201,7 +203,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     assetPath: 'assets/icons/google.png',
                     onTap: () async {
                       try {
-                        await _socialAuth.startGoogle();
+                        final result = await CognitoOAuthService.instance
+                            .signInWithGoogle();
+
+                        await TokenStorage.saveTokens(
+                          idToken: result.idToken!,
+                          accessToken: result.accessToken!,
+                          refreshToken: result.refreshToken,
+                        );
+
+                        if (!mounted) return;
+                        Navigator.pushReplacementNamed(context, '/home');
                       } catch (e) {
                         ScaffoldMessenger.of(
                           context,
@@ -212,23 +224,47 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/apple.png',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Apple login: coming soon'),
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        final result = await CognitoOAuthService.instance
+                            .signInWithApple();
+
+                        await TokenStorage.saveTokens(
+                          idToken: result.idToken!,
+                          accessToken: result.accessToken!,
+                          refreshToken: result.refreshToken,
+                        );
+
+                        if (!mounted) return;
+                        Navigator.pushReplacementNamed(context, '/home');
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/facebook.png',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Facebook login: coming soon'),
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        final result = await CognitoOAuthService.instance
+                            .signInWithFacebook();
+
+                        await TokenStorage.saveTokens(
+                          idToken: result.idToken!,
+                          accessToken: result.accessToken!,
+                          refreshToken: result.refreshToken,
+                        );
+
+                        if (!mounted) return;
+                        Navigator.pushReplacementNamed(context, '/home');
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
                 ],

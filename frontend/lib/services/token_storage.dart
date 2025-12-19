@@ -10,14 +10,28 @@ class TokenStorage {
   static Future<void> saveTokens({
     required String idToken,
     required String accessToken,
-    required String refreshToken,
+    String? refreshToken, // ✅ nullable
   }) async {
     await _storage.write(key: _kId, value: idToken);
     await _storage.write(key: _kAccess, value: accessToken);
-    await _storage.write(key: _kRefresh, value: refreshToken);
+
+    // ✅ only save if present
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await _storage.write(key: _kRefresh, value: refreshToken);
+    }
   }
 
-  static Future<String?> getIdToken() => _storage.read(key: _kId);
+  static Future<String?> getIdToken() {
+    return _storage.read(key: _kId);
+  }
+
+  static Future<String?> getAccessToken() {
+    return _storage.read(key: _kAccess);
+  }
+
+  static Future<String?> getRefreshToken() {
+    return _storage.read(key: _kRefresh);
+  }
 
   static Future<void> clear() async {
     await _storage.delete(key: _kId);
