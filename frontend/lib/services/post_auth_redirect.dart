@@ -8,7 +8,7 @@ class PostAuthRedirect {
       if (!context.mounted) return;
 
       Navigator.of(context).pushNamedAndRemoveUntil(
-        completed ? '/home' : '/onboarding',
+        completed ? '/home' : '/onboarding/01',
         (_) => false,
       );
     } catch (_) {

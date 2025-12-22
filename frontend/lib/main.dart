@@ -12,8 +12,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/home_screen.dart';
 
-import 'screens/onboarding/onboarding_flow_screen.dart';
-import 'screens/onboarding/welcome_screen.dart';
+import 'screens/onboarding/onboarding_page_01.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,10 +81,10 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
         '/home': (_) => const HomeScreen(),
+        '/onboarding-01': (_) => const OnboardingPage01(),
 
         // Onboarding
-        '/welcome': (_) => const WelcomeScreen(),
-        '/onboarding': (_) => const OnboardingFlowScreen(),
+        '/onboarding/01': (_) => const OnboardingPage01(),
       },
 
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
@@ -124,7 +123,7 @@ class _BootState extends State<Boot> {
 
       Navigator.of(
         context,
-      ).pushReplacementNamed(completed ? '/home' : '/onboarding');
+      ).pushReplacementNamed(completed ? '/home' : '/onboarding/01');
     } catch (_) {
       // token bad/expired → logout
       await TokenStorage.clearTokens();
