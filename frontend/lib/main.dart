@@ -21,6 +21,11 @@ import 'screens/onboarding/onboarding_page_06.dart';
 import 'screens/onboarding/onboarding_page_07.dart';
 import 'screens/onboarding/onboarding_page_08.dart';
 
+// import 'screens/top_nav/settings_screen.dart';
+// import 'screens/top_nav/vault_screen.dart';
+// import 'screens/top_nav/messages_screen.dart';
+// import 'screens/top_nav/notifications_screen.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MuudApp());
@@ -98,6 +103,12 @@ class _MuudAppState extends State<MuudApp> {
         '/onboarding/06': (_) => const OnboardingPage06(),
         '/onboarding/07': (_) => const OnboardingPage07(),
         '/onboarding/08': (_) => const OnboardingPage08(),
+
+        // Top Nav
+        // '/settings': (_) => const SettingsScreen(),
+        // '/vault': (_) => const VaultScreen(),
+        // '/messages': (_) => const MessagesScreen(),
+        // '/notifications': (_) => const NotificationsScreen(),
       },
 
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
