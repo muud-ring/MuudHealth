@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 
 import 'services/token_storage.dart';
+import 'services/onboarding_api.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/home_screen.dart';
+
+import 'screens/onboarding/onboarding_flow_screen.dart';
+import 'screens/onboarding/welcome_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,8 +31,6 @@ class _MuudAppState extends State<MuudApp> {
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;
 
-  String _lastLink = '';
-
   @override
   void initState() {
     super.initState();
@@ -35,37 +38,25 @@ class _MuudAppState extends State<MuudApp> {
   }
 
   Future<void> _initLinks() async {
-    // Initial link (cold start)
     try {
       final initialUri = await _appLinks.getInitialLink();
-      if (initialUri != null) {
-        _handleUri(initialUri);
-      }
+      if (initialUri != null) _handleUri(initialUri);
     } catch (e) {
       debugPrint("❌ getInitialLink error: $e");
     }
 
-    // Stream (while app running)
     _sub = _appLinks.uriLinkStream.listen(
-      (Uri uri) {
-        _handleUri(uri);
-      },
-      onError: (err) {
-        debugPrint("❌ link stream error: $err");
-      },
+      (Uri uri) => _handleUri(uri),
+      onError: (err) => debugPrint("❌ link stream error: $err"),
     );
   }
 
   void _handleUri(Uri uri) {
     debugPrint("🔗 Deep link received: $uri");
-    setState(() {
-      _lastLink = uri.toString();
-    });
-
     if (uri.host == 'auth' && uri.path == '/callback') {
       final code = uri.queryParameters['code'];
       debugPrint("✅ OAuth code: $code");
-      // NEXT STEP: exchange code -> tokens
+      // (Your Cognito OAuth exchange can stay in your service)
     }
   }
 
@@ -82,12 +73,7 @@ class _MuudAppState extends State<MuudApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
 
-      home: Stack(
-        children: [
-          const Boot(),
-          // (your banner widget here)
-        ],
-      ),
+      home: const Boot(),
 
       routes: {
         '/login': (_) => const LoginScreen(),
@@ -96,9 +82,12 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
         '/home': (_) => const HomeScreen(),
+
+        // Onboarding
+        '/welcome': (_) => const WelcomeScreen(),
+        '/onboarding': (_) => const OnboardingFlowScreen(),
       },
 
-      // ✅ ADD THIS (prevents: Failed to handle route information...)
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
     );
   }
@@ -119,12 +108,29 @@ class _BootState extends State<Boot> {
   }
 
   Future<void> _go() async {
-    final token = await TokenStorage.getIdToken();
+    final accessToken = await TokenStorage.getAccessToken();
     if (!mounted) return;
 
-    Navigator.of(
-      context,
-    ).pushReplacementNamed(token == null ? '/login' : '/home');
+    // 1) No token → login
+    if (accessToken == null || accessToken.isEmpty) {
+      Navigator.of(context).pushReplacementNamed('/login');
+      return;
+    }
+
+    // 2) Token exists → check onboarding status
+    try {
+      final completed = await OnboardingApi.isCompleted();
+      if (!mounted) return;
+
+      Navigator.of(
+        context,
+      ).pushReplacementNamed(completed ? '/home' : '/onboarding');
+    } catch (_) {
+      // token bad/expired → logout
+      await TokenStorage.clearTokens();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
+import '../services/post_auth_redirect.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
@@ -84,7 +85,7 @@ class _OtpScreenState extends State<OtpScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      await PostAuthRedirect.go(context);
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {

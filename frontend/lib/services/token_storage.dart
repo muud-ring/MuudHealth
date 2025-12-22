@@ -38,4 +38,10 @@ class TokenStorage {
     await _storage.delete(key: _kAccess);
     await _storage.delete(key: _kRefresh);
   }
+
+  static Future<void> clearTokens() async {
+    await _storage.delete(key: _kId);
+    await _storage.delete(key: _kAccess);
+    await _storage.delete(key: _kRefresh);
+  }
 }

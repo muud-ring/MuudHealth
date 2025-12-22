@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../services/social_auth_service.dart';
 import '../services/cognito_oauth.dart';
+import '../services/post_auth_redirect.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      await PostAuthRedirect.go(context);
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -213,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
 
                         if (!mounted) return;
-                        Navigator.pushReplacementNamed(context, '/home');
+                        await PostAuthRedirect.go(context);
                       } catch (e) {
                         ScaffoldMessenger.of(
                           context,
@@ -236,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
 
                         if (!mounted) return;
-                        Navigator.pushReplacementNamed(context, '/home');
+                        await PostAuthRedirect.go(context);
                       } catch (e) {
                         ScaffoldMessenger.of(
                           context,
@@ -259,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
 
                         if (!mounted) return;
-                        Navigator.pushReplacementNamed(context, '/home');
+                        await PostAuthRedirect.go(context);
                       } catch (e) {
                         ScaffoldMessenger.of(
                           context,
