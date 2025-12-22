@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/onboarding_state.dart';
 
 class OnboardingPage01 extends StatelessWidget {
   const OnboardingPage01({super.key});
@@ -15,16 +16,13 @@ class OnboardingPage01 extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // back
               IconButton(
                 padding: EdgeInsets.zero,
                 alignment: Alignment.centerLeft,
                 icon: const Icon(Icons.arrow_back, color: kPurple),
                 onPressed: () => Navigator.pop(context),
               ),
-
               const SizedBox(height: 18),
-
               const Text(
                 "MUUD Health",
                 style: TextStyle(
@@ -44,10 +42,8 @@ class OnboardingPage01 extends StatelessWidget {
                   height: 1.2,
                 ),
               ),
-
               const SizedBox(height: 24),
 
-              // Placeholder for the illustration
               Expanded(
                 child: Center(
                   child: Container(
@@ -78,7 +74,8 @@ class OnboardingPage01 extends StatelessWidget {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    // Next onboarding page will be /onboarding/02
+                    // ✅ reset answers each time onboarding starts
+                    OnboardingState.reset();
                     Navigator.pushNamed(context, '/onboarding/02');
                   },
                   child: const Text(

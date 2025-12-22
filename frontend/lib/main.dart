@@ -13,6 +13,13 @@ import 'screens/reset_password_screen.dart';
 import 'screens/home_screen.dart';
 
 import 'screens/onboarding/onboarding_page_01.dart';
+import 'screens/onboarding/onboarding_page_02.dart';
+import 'screens/onboarding/onboarding_page_03.dart';
+import 'screens/onboarding/onboarding_page_04.dart';
+import 'screens/onboarding/onboarding_page_05.dart';
+import 'screens/onboarding/onboarding_page_06.dart';
+import 'screens/onboarding/onboarding_page_07.dart';
+import 'screens/onboarding/onboarding_page_08.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,10 +88,16 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
         '/home': (_) => const HomeScreen(),
-        '/onboarding-01': (_) => const OnboardingPage01(),
 
         // Onboarding
         '/onboarding/01': (_) => const OnboardingPage01(),
+        '/onboarding/02': (_) => const OnboardingPage02(),
+        '/onboarding/03': (_) => const OnboardingPage03(),
+        '/onboarding/04': (_) => const OnboardingPage04(),
+        '/onboarding/05': (_) => const OnboardingPage05(),
+        '/onboarding/06': (_) => const OnboardingPage06(),
+        '/onboarding/07': (_) => const OnboardingPage07(),
+        '/onboarding/08': (_) => const OnboardingPage08(),
       },
 
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),

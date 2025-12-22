@@ -85,7 +85,11 @@ class _OtpScreenState extends State<OtpScreen> {
       );
 
       if (!mounted) return;
-      await PostAuthRedirect.go(context);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/onboarding/01',
+        (_) => false,
+      );
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
