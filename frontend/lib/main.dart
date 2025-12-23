@@ -10,8 +10,6 @@ import 'screens/signup_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
-import 'screens/home_screen.dart';
-
 import 'screens/edit_profile_screen.dart';
 
 import 'screens/onboarding/onboarding_page_01.dart';
@@ -23,12 +21,8 @@ import 'screens/onboarding/onboarding_page_06.dart';
 import 'screens/onboarding/onboarding_page_07.dart';
 import 'screens/onboarding/onboarding_page_08.dart';
 
-import 'screens/edit_profile_screen.dart';
-
-// import 'screens/top_nav/settings_screen.dart';
-// import 'screens/top_nav/vault_screen.dart';
-// import 'screens/top_nav/messages_screen.dart';
-// import 'screens/top_nav/notifications_screen.dart';
+// ✅ NEW: app shell (fixed top bar + bottom nav)
+import 'shell/app_shell.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,7 +65,7 @@ class _MuudAppState extends State<MuudApp> {
     if (uri.host == 'auth' && uri.path == '/callback') {
       final code = uri.queryParameters['code'];
       debugPrint("✅ OAuth code: $code");
-      // (Your Cognito OAuth exchange can stay in your service)
+      // Keep your Cognito OAuth exchange in your service layer
     }
   }
 
@@ -96,7 +90,9 @@ class _MuudAppState extends State<MuudApp> {
         '/otp': (_) => const OtpScreen(),
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
-        '/home': (_) => const HomeScreen(),
+
+        // ✅ CHANGED: Home now loads AppShell (not HomeScreen)
+        '/home': (_) => const AppShell(),
 
         '/edit-profile': (_) => const EditProfileScreen(),
 
@@ -110,7 +106,7 @@ class _MuudAppState extends State<MuudApp> {
         '/onboarding/07': (_) => const OnboardingPage07(),
         '/onboarding/08': (_) => const OnboardingPage08(),
 
-        // Top Nav
+        // Top Nav (future)
         // '/settings': (_) => const SettingsScreen(),
         // '/vault': (_) => const VaultScreen(),
         // '/messages': (_) => const MessagesScreen(),
