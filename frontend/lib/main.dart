@@ -12,6 +12,8 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/home_screen.dart';
 
+import 'screens/edit_profile_screen.dart';
+
 import 'screens/onboarding/onboarding_page_01.dart';
 import 'screens/onboarding/onboarding_page_02.dart';
 import 'screens/onboarding/onboarding_page_03.dart';
@@ -20,6 +22,8 @@ import 'screens/onboarding/onboarding_page_05.dart';
 import 'screens/onboarding/onboarding_page_06.dart';
 import 'screens/onboarding/onboarding_page_07.dart';
 import 'screens/onboarding/onboarding_page_08.dart';
+
+import 'screens/edit_profile_screen.dart';
 
 // import 'screens/top_nav/settings_screen.dart';
 // import 'screens/top_nav/vault_screen.dart';
@@ -93,6 +97,8 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
         '/home': (_) => const HomeScreen(),
+
+        '/edit-profile': (_) => const EditProfileScreen(),
 
         // Onboarding
         '/onboarding/01': (_) => const OnboardingPage01(),

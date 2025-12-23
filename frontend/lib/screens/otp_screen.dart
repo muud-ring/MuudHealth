@@ -84,6 +84,14 @@ class _OtpScreenState extends State<OtpScreen> {
         refreshToken: tokens['refreshToken'],
       );
 
+      final access = await TokenStorage.getAccessToken() ?? "";
+      print("ACCESS_TOKEN_CHUNKS_START len=${access.length}");
+      for (var i = 0; i < access.length; i += 500) {
+        final end = (i + 500 < access.length) ? i + 500 : access.length;
+        print(access.substring(i, end));
+      }
+      print("ACCESS_TOKEN_CHUNKS_END");
+
       if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
