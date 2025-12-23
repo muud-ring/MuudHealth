@@ -178,25 +178,6 @@ exports.getRequests = async (req, res) => {
   }
 };
 
-/**
- * TEMP (DEMO ONLY): GET /people/requests/:sub
- */
-exports.getRequestsForSub = async (req, res) => {
-  try {
-    const targetSub = req.params.sub;
-
-    const incoming = await FriendRequest.find({
-      toSub: targetSub,
-      status: "pending",
-    }).lean();
-
-    return res.status(200).json({ requests: incoming, targetSub });
-  } catch (err) {
-    console.error("getRequestsForSub error:", err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
 /* -------------------------------------------------------------------------- */
 /*                                   Actions                                  */
 /* -------------------------------------------------------------------------- */
@@ -243,12 +224,23 @@ exports.sendRequest = async (req, res) => {
 
 /**
  * POST /people/request/:requestId/accept
+ * Only receiver can accept. Creates/ensures connection.
  */
 exports.acceptRequest = async (req, res) => {
   try {
+    const mySub = req.user?.sub;
+    if (!mySub) return res.status(401).json({ message: "Missing user sub" });
+
     const request = await FriendRequest.findById(req.params.requestId);
-    if (!request || request.status !== "pending") {
-      return res.status(400).json({ message: "Invalid request" });
+    if (!request) return res.status(404).json({ message: "Request not found" });
+
+    if (request.status !== "pending") {
+      return res.status(400).json({ message: "Request already handled" });
+    }
+
+    // ✅ Security: only the receiver can accept
+    if (request.toSub !== mySub) {
+      return res.status(403).json({ message: "Only the receiver can accept this request" });
     }
 
     const [fromUser, toUser] = await Promise.all([
@@ -275,6 +267,36 @@ exports.acceptRequest = async (req, res) => {
     return res.status(200).json({ message: "Request accepted" });
   } catch (err) {
     console.error("acceptRequest error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * POST /people/request/:requestId/decline
+ * Only receiver can decline.
+ */
+exports.declineRequest = async (req, res) => {
+  try {
+    const mySub = req.user?.sub;
+    if (!mySub) return res.status(401).json({ message: "Missing user sub" });
+
+    const request = await FriendRequest.findById(req.params.requestId);
+    if (!request) return res.status(404).json({ message: "Request not found" });
+
+    if (request.status !== "pending") {
+      return res.status(400).json({ message: "Request already handled" });
+    }
+
+    if (request.toSub !== mySub) {
+      return res.status(403).json({ message: "Only the receiver can decline this request" });
+    }
+
+    request.status = "declined";
+    await request.save();
+
+    return res.status(200).json({ message: "Request declined" });
+  } catch (err) {
+    console.error("declineRequest error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -311,6 +333,42 @@ exports.updateTier = async (req, res) => {
     return res.status(200).json({ message: "Tier updated", tier: updated.tier });
   } catch (err) {
     console.error("updateTier error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * DELETE /people/:sub
+ * Remove connection between me and target user.
+ */
+exports.removeConnection = async (req, res) => {
+  try {
+    const mySub = req.user?.sub;
+    const targetSub = req.params.sub;
+
+    if (!mySub) return res.status(401).json({ message: "Missing user sub" });
+    if (!targetSub) return res.status(400).json({ message: "Missing target sub" });
+
+    const [me, target] = await Promise.all([
+      UserProfile.findOne({ sub: mySub }, { _id: 1 }).lean(),
+      UserProfile.findOne({ sub: targetSub }, { _id: 1 }).lean(),
+    ]);
+
+    if (!me || !target) {
+      return res.status(404).json({ message: "UserProfile not found" });
+    }
+
+    const a = String(me._id) < String(target._id) ? me._id : target._id;
+    const b = a === me._id ? target._id : me._id;
+
+    const result = await Connection.deleteOne({ userA: a, userB: b });
+
+    return res.status(200).json({
+      message: "Connection removed",
+      deletedCount: result.deletedCount || 0,
+    });
+  } catch (err) {
+    console.error("removeConnection error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };

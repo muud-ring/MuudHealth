@@ -16,10 +16,12 @@ router.get("/inner-circle", peopleController.getInnerCircle);
 
 // Requests
 router.get("/requests", peopleController.getRequests);
-router.get("/requests/:sub", peopleController.getRequestsForSub); // TEMP (demo only)
 
 router.post("/request/:sub", peopleController.sendRequest);
 router.post("/request/:requestId/accept", peopleController.acceptRequest);
+
+router.post("/request/:requestId/decline", peopleController.declineRequest);
+router.delete("/:sub", peopleController.removeConnection);
 
 // Tier
 router.post("/:sub/tier", peopleController.updateTier);
