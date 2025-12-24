@@ -5,6 +5,6 @@ class JournalTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.shrink();
+    return const Center(child: Text("Journal"));
   }
 }

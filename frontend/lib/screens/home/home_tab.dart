@@ -12,7 +12,7 @@ class _HomeTabState extends State<HomeTab> {
   static const Color kPurple = Color(0xFF5B288E);
   static const Color kGreyText = Color(0xFF898384);
 
-  final String firstName = "Alex";
+  final String firstName = "Sunny";
   final String location = "Los Angeles, CA";
 
   String? _avatarUrl;

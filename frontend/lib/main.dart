@@ -21,7 +21,13 @@ import 'screens/onboarding/onboarding_page_06.dart';
 import 'screens/onboarding/onboarding_page_07.dart';
 import 'screens/onboarding/onboarding_page_08.dart';
 
-// ✅ NEW: app shell (fixed top bar + bottom nav)
+import 'screens/people/pages/inner_circle_page.dart';
+import 'screens/people/pages/connections_page.dart';
+import 'screens/people/pages/suggestions_page.dart';
+import 'screens/people/pages/profile_page.dart';
+import 'screens/people/pages/chat_page.dart';
+
+// ✅ App shell (fixed top bar + bottom nav)
 import 'shell/app_shell.dart';
 
 void main() {
@@ -81,9 +87,7 @@ class _MuudAppState extends State<MuudApp> {
       title: 'MUUD',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
-
       home: const Boot(),
-
       routes: {
         '/login': (_) => const LoginScreen(),
         '/signup': (_) => const SignupScreen(),
@@ -91,7 +95,7 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
 
-        // ✅ CHANGED: Home now loads AppShell (not HomeScreen)
+        // ✅ Home loads AppShell which contains bottom nav tabs
         '/home': (_) => const AppShell(),
 
         '/edit-profile': (_) => const EditProfileScreen(),
@@ -106,13 +110,13 @@ class _MuudAppState extends State<MuudApp> {
         '/onboarding/07': (_) => const OnboardingPage07(),
         '/onboarding/08': (_) => const OnboardingPage08(),
 
-        // Top Nav (future)
-        // '/settings': (_) => const SettingsScreen(),
-        // '/vault': (_) => const VaultScreen(),
-        // '/messages': (_) => const MessagesScreen(),
-        // '/notifications': (_) => const NotificationsScreen(),
+        // People
+        '/people/inner-circle': (_) => const InnerCirclePage(),
+        '/people/connections': (_) => const ConnectionsPage(),
+        '/people/suggestions': (_) => const SuggestionsPage(),
+        '/people/profile': (_) => const ProfilePage(),
+        '/people/chat': (_) => const ChatPage(),
       },
-
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/token_storage.dart';
 
+// ✅ People sheets
+import '../screens/people/sheets/requests_sheet.dart';
+
 // Screens (content-only)
 import '../screens/home/home_tab.dart';
 import '../screens/trends/trends_tab.dart';
@@ -27,12 +30,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _onNavTap(int index) {
-    // Center "+" (index 2) behavior
-    if (index == 2) {
-      // TODO: open journal/create flow
-      // Navigator.pushNamed(context, '/journal-create');
-      return;
-    }
+    // ✅ "+" goes to Journal (index 2)
     setState(() => _selectedIndex = index);
   }
 
@@ -42,6 +40,8 @@ class _AppShellState extends State<AppShell> {
         return "Home";
       case 1:
         return "Trends";
+      case 2:
+        return "Journal";
       case 3:
         return "People";
       case 4:
@@ -51,45 +51,73 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  List<Widget> _rightActionsForIndex() {
+    // People: chat + bell (bell opens requests sheet)
+    if (_selectedIndex == 3) {
+      return [
+        IconButton(
+          onPressed: () {
+            // TODO: messages route later
+          },
+          icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
+        ),
+        IconButton(
+          onPressed: () {
+            RequestsSheet.open(context);
+          },
+          icon: const Icon(Icons.notifications_none, color: kPurple),
+        ),
+      ];
+    }
+
+    // Default: chat + logout
+    return [
+      IconButton(
+        onPressed: () {
+          // TODO: messages route later
+        },
+        icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
+      ),
+      IconButton(
+        onPressed: _logout,
+        icon: const Icon(Icons.logout, color: kPurple),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // Fixed Top Bar for ALL tabs
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: SafeArea(
           bottom: false,
           child: _TopBar(
             title: _titleForIndex(_selectedIndex),
+            rightActions: _rightActionsForIndex(),
             onTapLeft1: () {
               // TODO: settings
             },
             onTapLeft2: () {
               // TODO: vault/lock
             },
-            onTapRight1: () {
-              // TODO: messages
-            },
-            onTapRight2: _logout,
           ),
         ),
       ),
 
-      // Tab bodies
       body: IndexedStack(
         index: _selectedIndex,
         children: const [
           HomeTab(),
           TrendsTab(),
-          SizedBox.shrink(), // placeholder for index=2, not used (we intercept)
+          JournalTab(),
           PeopleTab(),
           ExploreTab(),
         ],
       ),
 
-      // Fixed Bottom Nav for ALL tabs
       bottomNavigationBar: _BottomNav(
         selectedIndex: _selectedIndex,
         onTap: _onNavTap,
@@ -102,15 +130,13 @@ class _TopBar extends StatelessWidget {
   final String title;
   final VoidCallback onTapLeft1;
   final VoidCallback onTapLeft2;
-  final VoidCallback onTapRight1;
-  final VoidCallback onTapRight2;
+  final List<Widget> rightActions;
 
   const _TopBar({
     required this.title,
     required this.onTapLeft1,
     required this.onTapLeft2,
-    required this.onTapRight1,
-    required this.onTapRight2,
+    required this.rightActions,
   });
 
   static const Color kPurple = Color(0xFF5B288E);
@@ -143,18 +169,7 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Row(
-            children: [
-              IconButton(
-                onPressed: onTapRight1,
-                icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
-              ),
-              IconButton(
-                onPressed: onTapRight2,
-                icon: const Icon(Icons.logout, color: kPurple),
-              ),
-            ],
-          ),
+          Row(children: rightActions),
         ],
       ),
     );
