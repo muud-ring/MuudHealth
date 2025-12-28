@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/token_storage.dart';
 
-// ✅ People sheets
-import '../screens/people/sheets/requests_sheet.dart';
-
 // Screens (content-only)
 import '../screens/home/home_tab.dart';
 import '../screens/trends/trends_tab.dart';
 import '../screens/journal/journal_tab.dart';
 import '../screens/people/people_tab.dart';
 import '../screens/explore/explore_tab.dart';
+import '../screens/people/sheets/connection_requests_sheet.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -23,6 +21,9 @@ class _AppShellState extends State<AppShell> {
 
   int _selectedIndex = 0;
 
+  // ✅ forces PeopleTab to rebuild when user taps People
+  int _peopleReloadTick = 0;
+
   Future<void> _logout() async {
     await TokenStorage.clearTokens();
     if (!mounted) return;
@@ -30,8 +31,13 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _onNavTap(int index) {
-    // ✅ "+" goes to Journal (index 2)
-    setState(() => _selectedIndex = index);
+    // "+" goes to Journal (index 2) — allowed
+    setState(() {
+      _selectedIndex = index;
+
+      // ✅ if user taps People, rebuild PeopleTab
+      if (index == 3) _peopleReloadTick++;
+    });
   }
 
   String _titleForIndex(int index) {
@@ -52,7 +58,6 @@ class _AppShellState extends State<AppShell> {
   }
 
   List<Widget> _rightActionsForIndex() {
-    // People: chat + bell (bell opens requests sheet)
     if (_selectedIndex == 3) {
       return [
         IconButton(
@@ -63,14 +68,13 @@ class _AppShellState extends State<AppShell> {
         ),
         IconButton(
           onPressed: () {
-            RequestsSheet.open(context);
+            ConnectionRequestsSheet.open(context);
           },
           icon: const Icon(Icons.notifications_none, color: kPurple),
         ),
       ];
     }
 
-    // Default: chat + logout
     return [
       IconButton(
         onPressed: () {
@@ -109,12 +113,15 @@ class _AppShellState extends State<AppShell> {
 
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          HomeTab(),
-          TrendsTab(),
-          JournalTab(),
-          PeopleTab(),
-          ExploreTab(),
+        children: [
+          const HomeTab(),
+          const TrendsTab(),
+          const JournalTab(),
+
+          // ✅ key changes each time you tap People → rebuild + re-fetch with latest token
+          PeopleTab(key: ValueKey("people_$_peopleReloadTick")),
+
+          const ExploreTab(),
         ],
       ),
 

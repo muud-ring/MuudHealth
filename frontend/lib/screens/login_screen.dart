@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      print("✅ _login() started");
       final res = await _api.login(
         identifier: _identifier.text.trim(),
         password: _password.text,
@@ -46,9 +47,19 @@ class _LoginScreenState extends State<LoginScreen> {
         refreshToken: tokens['refreshToken'],
       );
 
+      // ✅ TEMP DEBUG: confirm token saved
+      final saved = await TokenStorage.getAccessToken();
+      print("✅ AccessToken saved? ${saved != null && saved.isNotEmpty}");
+      if (saved != null && saved.length > 20) {
+        print("✅ AccessToken head: ${saved.substring(0, 20)}...");
+      } else {
+        print("⚠️ AccessToken value: $saved");
+      }
+
       if (!mounted) return;
       await PostAuthRedirect.go(context);
     } catch (e) {
+      print("❌ Login error: $e");
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);

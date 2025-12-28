@@ -1,5 +1,7 @@
 // backend/src/controllers/peopleController.js
 
+const mongoose = require("mongoose");
+
 const Connection = require("../models/Connection");
 const FriendRequest = require("../models/FriendRequest");
 const UserProfile = require("../models/UserProfile");
@@ -11,8 +13,36 @@ const UserProfile = require("../models/UserProfile");
 async function getMyProfile(req) {
   const mySub = req.user?.sub;
   if (!mySub) return null;
-  return UserProfile.findOne({ sub: mySub }, { _id: 1, sub: 1 }).lean();
+
+  // ✅ Create profile on-demand if missing (demo-safe)
+  let me = await UserProfile.findOne({ sub: mySub }, { _id: 1, sub: 1 }).lean();
+
+  if (!me) {
+    // Optional: try to pull name/username from token claims if available
+    const name =
+      req.user?.name ||
+      req.user?.given_name ||
+      req.user?.preferred_username ||
+      "";
+
+    const username = req.user?.preferred_username || "";
+
+    const created = await UserProfile.create({
+      sub: mySub,
+      name,
+      username,
+      bio: "",
+      location: "",
+      phone: "",
+      avatarKey: "",
+    });
+
+    me = { _id: created._id, sub: created.sub };
+  }
+
+  return me;
 }
+
 
 function getOtherUserId(connection, myId) {
   return String(connection.userA) === String(myId)
@@ -97,9 +127,11 @@ exports.getSuggestions = async (req, res) => {
       $or: [{ userA: me._id }, { userB: me._id }],
     }).lean();
 
-    const connectedIds = connections.map((c) =>
-      getOtherUserId(c, me._id)
-    );
+    const connectedIds = connections
+  .map((c) => getOtherUserId(c, me._id))
+  .filter((id) => mongoose.Types.ObjectId.isValid(id))
+  .map((id) => new mongoose.Types.ObjectId(id));
+
 
     const pending = await FriendRequest.find({
       status: "pending",

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../data/people_dummy_data.dart';
+import '../../../services/people_api.dart';
+import '../data/people_models.dart';
 import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
 import '../sheets/manage_person_sheet.dart';
@@ -13,11 +14,96 @@ class ConnectionsPage extends StatefulWidget {
 }
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
+  static const Color kPurple = Color(0xFF5B288E);
+  static const Color kGreyText = Color(0xFF898384);
+
   String q = "";
+  bool loading = true;
+  String? error;
+
+  List<Person> all = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  String _tintForId(String id) {
+    const options = ["purple", "orange", "green", "blue", "pink", "yellow"];
+    final code = id.codeUnits.fold<int>(0, (a, b) => a + b);
+    return options[code % options.length];
+  }
+
+  Person _personFromJson(dynamic raw) {
+    if (raw is Map<String, dynamic>) {
+      final id = (raw['id'] ?? raw['_id'] ?? '').toString();
+      final name =
+          (raw['name'] ??
+                  raw['fullName'] ??
+                  raw['displayName'] ??
+                  raw['username'] ??
+                  'Unknown')
+              .toString();
+      final handle = (raw['handle'] ?? raw['username'] ?? '').toString();
+      final avatarUrl =
+          (raw['avatarUrl'] ?? raw['avatar'] ?? raw['photoUrl'] ?? '')
+              .toString();
+      final location = (raw['location'] ?? raw['city'] ?? '').toString();
+      final lastActive = (raw['lastActive'] ?? raw['lastSeen'] ?? '')
+          .toString();
+      final mood = (raw['mood'] ?? raw['moodChip'] ?? '').toString();
+
+      return Person(
+        id: id.isEmpty ? name : id,
+        name: name,
+        handle: handle.isEmpty
+            ? ""
+            : (handle.startsWith('@') ? handle : '@$handle'),
+        avatarUrl: avatarUrl,
+        location: location,
+        lastActive: lastActive,
+        moodChip: mood,
+        tint: _tintForId(id.isEmpty ? name : id),
+      );
+    }
+
+    return const Person(
+      id: "unknown",
+      name: "Unknown",
+      handle: "",
+      avatarUrl: "",
+      location: "",
+      lastActive: "",
+      moodChip: "",
+      tint: "grey",
+    );
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
+    try {
+      final res = await PeopleApi.fetchConnections();
+      all = res.map(_personFromJson).toList();
+      setState(() => loading = false);
+    } catch (e) {
+      final msg = e.toString();
+      setState(() {
+        loading = false;
+        error = msg.contains('401') || msg.contains('Unauthorized')
+            ? "Session expired. Please log in again."
+            : msg;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final list = PeopleDummyData.connections
+    final filtered = all
         .where((p) => p.name.toLowerCase().contains(q.toLowerCase()))
         .toList();
 
@@ -28,10 +114,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         elevation: 0,
         title: const Text(
           "Connections",
-          style: TextStyle(
-            color: Color(0xFF5B288E),
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
         ),
       ),
       body: Padding(
@@ -43,20 +126,62 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               onChanged: (v) => setState(() => q = v),
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (context, i) {
-                  final p = list[i];
-                  return PersonTile(
-                    person: p,
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/people/profile'),
-                    onTapMenu: () => ManagePersonSheet.open(context, person: p),
-                  );
-                },
+
+            if (loading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else if (error != null)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 44, color: kPurple),
+                      const SizedBox(height: 8),
+                      Text(
+                        error!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: kGreyText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPurple,
+                          elevation: 0,
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: _load,
+                        child: const Text(
+                          "Retry",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) {
+                      final p = filtered[i];
+                      return PersonTile(
+                        person: p,
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/people/profile'),
+                        onTapMenu: () =>
+                            ManagePersonSheet.open(context, person: p),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),
