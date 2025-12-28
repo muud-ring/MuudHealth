@@ -217,6 +217,12 @@ exports.getRequests = async (req, res) => {
 /**
  * POST /people/request/:sub
  */
+/**
+ * POST /people/request/:sub
+ */
+/**
+ * POST /people/request/:sub
+ */
 exports.sendRequest = async (req, res) => {
   try {
     const mySub = req.user?.sub;
@@ -229,30 +235,36 @@ exports.sendRequest = async (req, res) => {
       return res.status(400).json({ message: "Cannot request yourself" });
     }
 
-    const exists = await FriendRequest.findOne({
+    // ✅ Block if reverse pending exists too
+    const reverse = await FriendRequest.findOne({
+      fromSub: targetSub,
+      toSub: mySub,
       status: "pending",
-      $or: [
-        { fromSub: mySub, toSub: targetSub },
-        { fromSub: targetSub, toSub: mySub },
-      ],
-    });
+    }).lean();
 
-    if (exists) {
-      return res.status(400).json({ message: "Request already exists" });
+    if (reverse) {
+      return res.status(400).json({ message: "They already requested you. Check requests." });
     }
 
-    const request = await FriendRequest.create({
-      fromSub: mySub,
-      toSub: targetSub,
-      status: "pending",
-    });
+    // ✅ Atomic upsert prevents double-create race
+    const result = await FriendRequest.findOneAndUpdate(
+      { fromSub: mySub, toSub: targetSub, status: "pending" },
+      { $setOnInsert: { fromSub: mySub, toSub: targetSub, status: "pending" } },
+      { upsert: true, new: true }
+    ).lean();
 
-    return res.status(201).json({ request });
+    return res.status(201).json({ request: result });
   } catch (err) {
+    // ✅ Duplicate key means request already exists
+    if (err?.code === 11000) {
+      return res.status(400).json({ message: "Request already exists" });
+    }
     console.error("sendRequest error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 /**
  * POST /people/request/:requestId/accept

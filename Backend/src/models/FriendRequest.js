@@ -15,10 +15,13 @@ const FriendRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent duplicate "pending" requests for the same pair
+// ✅ Only one PENDING request allowed for a given fromSub -> toSub pair
 FriendRequestSchema.index(
   { fromSub: 1, toSub: 1, status: 1 },
-  { unique: true }
+  {
+    unique: true,
+    partialFilterExpression: { status: "pending" },
+  }
 );
 
 module.exports = mongoose.model("FriendRequest", FriendRequestSchema);
