@@ -180,6 +180,12 @@ class _PeopleTabState extends State<PeopleTab> {
             onTapAddFriends: () {
               Navigator.pushNamed(context, '/people/suggestions');
             },
+            onTapPerson: (p) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProfilePage(person: p)),
+              );
+            },
           ),
 
           const SizedBox(height: 18),

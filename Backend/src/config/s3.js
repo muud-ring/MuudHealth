@@ -2,9 +2,16 @@
 const { S3Client } = require("@aws-sdk/client-s3");
 
 const region = process.env.AWS_REGION || "us-west-2";
+const S3_BUCKET = process.env.S3_BUCKET; // ✅ REQUIRED
 
 if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-  console.warn("⚠️ Missing AWS keys in env (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY)");
+  console.warn(
+    "⚠️ Missing AWS keys in env (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY)"
+  );
+}
+
+if (!S3_BUCKET) {
+  console.warn("⚠️ Missing S3_BUCKET in env");
 }
 
 const s3 = new S3Client({
@@ -15,4 +22,4 @@ const s3 = new S3Client({
   },
 });
 
-module.exports = { s3, region };
+module.exports = { s3, region, S3_BUCKET };

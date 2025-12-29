@@ -6,6 +6,7 @@ import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
 import '../sheets/manage_person_sheet.dart';
 import '../pages/profile_page.dart';
+import '../state/people_events.dart';
 
 class ConnectionsPage extends StatefulWidget {
   const ConnectionsPage({super.key});
@@ -27,7 +28,22 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   @override
   void initState() {
     super.initState();
+
+    // ✅ IMPORTANT: reload this page when actions happen (move tier / remove / etc.)
+    PeopleEvents.reload.addListener(_onExternalReload);
+
     _load();
+  }
+
+  void _onExternalReload() {
+    // ✅ triggers after "Move to Inner Circle" or "Move to Connections"
+    _load();
+  }
+
+  @override
+  void dispose() {
+    PeopleEvents.reload.removeListener(_onExternalReload);
+    super.dispose();
   }
 
   String _tintForId(String id) {
@@ -47,7 +63,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         id: sub, // ✅ store sub here
         name: name.isNotEmpty ? name : username,
         handle: username.isEmpty ? "" : '@$username',
-        avatarUrl: "",
+        avatarUrl: (raw['avatarUrl'] ?? '').toString(), // safe
         location: location,
         lastActive: "",
         moodChip: "",
@@ -68,6 +84,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
+
     setState(() {
       loading = true;
       error = null;
@@ -75,15 +93,25 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
     try {
       final res = await PeopleApi.fetchConnections();
-      all = res.map(_personFromJson).toList();
-      setState(() => loading = false);
+      final list = res
+          .map(_personFromJson)
+          .where((p) => p.id.isNotEmpty)
+          .toList();
+
+      if (!mounted) return;
+      setState(() {
+        all = list;
+        loading = false;
+      });
     } catch (e) {
       final msg = e.toString();
+      if (!mounted) return;
+
       setState(() {
         loading = false;
         error = msg.contains('401') || msg.contains('Unauthorized')
             ? "Session expired. Please log in again."
-            : msg;
+            : msg.replaceFirst('Exception: ', '');
       });
     }
   }
@@ -168,7 +196,6 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                             ),
                           );
                         },
-
                         onTapMenu: () =>
                             ManagePersonSheet.open(context, person: p),
                       );

@@ -34,9 +34,13 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
   bool working = false;
 
   Future<void> _setTier(String tier) async {
+    if (working) return;
     setState(() => working = true);
+
     try {
       await PeopleApi.updateTier(sub: widget.person.id, tier: tier);
+
+      // ✅ Tell ALL People screens to reload (PeopleTab, ConnectionsPage, InnerCirclePage)
       PeopleEvents.notifyReload();
 
       if (!mounted) return;
@@ -63,9 +67,12 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
   }
 
   Future<void> _remove() async {
+    if (working) return;
     setState(() => working = true);
+
     try {
       await PeopleApi.removeConnection(sub: widget.person.id);
+
       PeopleEvents.notifyReload();
 
       if (!mounted) return;
@@ -157,18 +164,20 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                 "Message",
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ChatPage(
-                      otherSub: p.id,
-                      title: p.handle.isNotEmpty ? p.handle : p.name,
-                    ),
-                  ),
-                );
-              },
+              onTap: working
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatPage(
+                            otherSub: p.id,
+                            title: p.handle.isNotEmpty ? p.handle : p.name,
+                          ),
+                        ),
+                      );
+                    },
             ),
 
             ListTile(
@@ -178,7 +187,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                 "Move to Connections",
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              onTap: () => _setTier("connection"),
+              onTap: working ? null : () => _setTier("connection"),
             ),
 
             ListTile(
@@ -188,7 +197,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                 "Move to Inner Circle",
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              onTap: () => _setTier("inner_circle"),
+              onTap: working ? null : () => _setTier("inner_circle"),
             ),
 
             ListTile(
@@ -201,7 +210,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                   color: Colors.red,
                 ),
               ),
-              onTap: _remove,
+              onTap: working ? null : _remove,
             ),
 
             const SizedBox(height: 10),

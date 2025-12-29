@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const Connection = require("../models/Connection");
 const FriendRequest = require("../models/FriendRequest");
 const UserProfile = require("../models/UserProfile");
+const { attachAvatarUrls } = require("../utils/s3_avatar_url");
 
 /* -------------------------------------------------------------------------- */
 /*                               Helper Utils                                 */
@@ -71,12 +72,15 @@ exports.getConnections = async (req, res) => {
       getOtherUserId(c, me._id)
     );
 
-    const profiles = await UserProfile.find(
+    let profiles = await UserProfile.find(
       { _id: { $in: otherUserIds } },
       { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
     ).lean();
-
+    
+    profiles = await attachAvatarUrls(profiles);
+    
     return res.status(200).json({ connections: profiles });
+    
   } catch (err) {
     console.error("getConnections error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -100,12 +104,15 @@ exports.getInnerCircle = async (req, res) => {
       getOtherUserId(c, me._id)
     );
 
-    const profiles = await UserProfile.find(
+    let profiles = await UserProfile.find(
       { _id: { $in: otherUserIds } },
       { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
     ).lean();
-
+    
+    profiles = await attachAvatarUrls(profiles);
+    
     return res.status(200).json({ innerCircle: profiles });
+    
   } catch (err) {
     console.error("getInnerCircle error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -156,14 +163,17 @@ exports.getSuggestions = async (req, res) => {
       ];
     }
 
-    const suggestions = await UserProfile.find(
+    let suggestions = await UserProfile.find(
       query,
       { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
     )
       .limit(limit)
       .lean();
-
+    
+    suggestions = await attachAvatarUrls(suggestions);
+    
     return res.status(200).json({ suggestions });
+    
   } catch (err) {
     console.error("getSuggestions error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -191,12 +201,15 @@ exports.getRequests = async (req, res) => {
 
     const fromSubs = incoming.map((r) => r.fromSub);
 
-    const profiles = await UserProfile.find(
+    let profiles = await UserProfile.find(
       { sub: { $in: fromSubs } },
       { sub: 1, name: 1, username: 1, avatarKey: 1 }
     ).lean();
-
+    
+    profiles = await attachAvatarUrls(profiles);
+    
     const map = new Map(profiles.map((p) => [p.sub, p]));
+    
 
     const requests = incoming.map((r) => ({
       ...r,

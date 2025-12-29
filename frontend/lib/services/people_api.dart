@@ -94,7 +94,6 @@ class PeopleApi {
   static Future<List<dynamic>> fetchInnerCircle() => _getList(_innerCircle);
   static Future<List<dynamic>> fetchRequests() => _getList(_requests);
 
-  // ✅ Suggestions with search
   static Future<List<dynamic>> fetchSuggestions({
     String q = "",
     int limit = 20,
@@ -105,12 +104,10 @@ class PeopleApi {
     );
   }
 
-  // ✅ Send request (backend: POST /people/request/:sub)
   static Future<void> sendRequest({required String sub}) async {
     await _post('/people/request/$sub');
   }
 
-  // ✅ Accept/Decline (backend routes)
   static Future<void> acceptRequest({required String requestId}) async {
     await _post('/people/request/$requestId/accept');
   }
@@ -119,7 +116,7 @@ class PeopleApi {
     await _post('/people/request/$requestId/decline');
   }
 
-  // ✅ Update tier (backend: POST /people/:sub/tier)
+  /// ✅ this is what we will use for move to inner circle / move back to connections
   static Future<void> updateTier({
     required String sub,
     required String tier, // "connection" | "inner_circle"
@@ -127,7 +124,6 @@ class PeopleApi {
     await _post('/people/$sub/tier', body: {'tier': tier});
   }
 
-  // ✅ Remove connection (backend: DELETE /people/:sub)
   static Future<void> removeConnection({required String sub}) async {
     final res = await http.delete(
       _uri('/people/$sub'),

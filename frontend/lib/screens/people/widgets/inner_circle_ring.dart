@@ -6,11 +6,15 @@ class InnerCircleRing extends StatelessWidget {
   final List<Person> people;
   final VoidCallback? onTapAddFriends;
 
+  // ✅ NEW: allow tapping a person (open profile)
+  final void Function(Person person)? onTapPerson;
+
   const InnerCircleRing({
     super.key,
     required this.isEmpty,
     required this.people,
     this.onTapAddFriends,
+    this.onTapPerson,
   });
 
   static const Color kPurple = Color(0xFF5B288E);
@@ -135,8 +139,6 @@ class InnerCircleRing extends StatelessWidget {
   }
 
   List<Widget> _buildRingAvatars() {
-    // positions roughly match a ring layout
-    // we just take up to 6 people for the ring preview
     final items = people.take(6).toList();
 
     final positions = <Offset>[
@@ -154,7 +156,10 @@ class InnerCircleRing extends StatelessWidget {
 
       return Align(
         alignment: Alignment(pos.dx, pos.dy),
-        child: _RingAvatar(avatarUrl: p.avatarUrl),
+        child: GestureDetector(
+          onTap: onTapPerson == null ? null : () => onTapPerson!(p),
+          child: _RingAvatar(avatarUrl: p.avatarUrl, label: p.name),
+        ),
       );
     });
   }
@@ -162,39 +167,49 @@ class InnerCircleRing extends StatelessWidget {
 
 class _RingAvatar extends StatelessWidget {
   final String avatarUrl;
-  const _RingAvatar({required this.avatarUrl});
+  final String label;
+
+  const _RingAvatar({required this.avatarUrl, required this.label});
+
+  static const Color kPurple = Color(0xFF5B288E);
 
   @override
   Widget build(BuildContext context) {
-    if (avatarUrl.isNotEmpty) {
-      return Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(shape: BoxShape.circle),
-        child: ClipOval(
-          child: Image.network(
-            avatarUrl,
-            width: 52,
-            height: 52,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _placeholder(),
-          ),
-        ),
-      );
-    }
-    return _placeholder();
-  }
-
-  Widget _placeholder() {
     return Container(
       width: 52,
       height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        border: Border.all(color: kPurple, width: 2),
         color: Colors.white,
-        border: Border.all(color: const Color(0xFFE3E3E3)),
       ),
-      child: const Icon(Icons.person, color: Color(0xFFBDBDBD), size: 26),
+      clipBehavior: Clip.antiAlias,
+      child: avatarUrl.isNotEmpty
+          ? Image.network(
+              avatarUrl,
+              width: 52,
+              height: 52,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(),
+            )
+          : _placeholder(),
+    );
+  }
+
+  Widget _placeholder() {
+    final letter = label.isNotEmpty
+        ? label.trim().characters.first.toUpperCase()
+        : "?";
+
+    return Center(
+      child: Text(
+        letter,
+        style: const TextStyle(
+          color: kPurple,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
     );
   }
 }
