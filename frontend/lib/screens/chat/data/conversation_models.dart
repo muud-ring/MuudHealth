@@ -22,7 +22,9 @@ class ConversationItem {
         ? (json['otherUser'] as Map).cast<String, dynamic>()
         : <String, dynamic>{};
 
-    final name = (otherUser['name'] ?? otherSub).toString();
+    final name = (otherUser['name'] ?? '').toString().isNotEmpty
+        ? otherUser['name'].toString()
+        : (otherUser['username'] ?? otherSub).toString();
     final username = (otherUser['username'] ?? '').toString();
     final avatarUrl = (otherUser['avatarUrl'] ?? '').toString();
 

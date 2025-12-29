@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../../services/chat_api.dart';
+import '../../../services/chat_socket.dart';
+
 import '../../people/pages/chat_page.dart';
 import '../data/conversation_models.dart';
 
@@ -15,18 +18,29 @@ class _ConversationsPageState extends State<ConversationsPage> {
   static const kGrey = Color(0xFF898384);
 
   bool loading = true;
+  bool _socketReady = false;
   String? error;
   String q = "";
 
   List<ConversationItem> all = [];
 
+  // ✅ keep a reference so we can .off() in dispose
+  dynamic _socket; // io.Socket, but using dynamic avoids import issues here
+
   @override
   void initState() {
     super.initState();
     _load();
+    _initSocket();
   }
 
+  /* -------------------------------------------------------------------------- */
+  /*                               DATA LOAD                                    */
+  /* -------------------------------------------------------------------------- */
+
   Future<void> _load() async {
+    if (!mounted) return;
+
     setState(() {
       loading = true;
       error = null;
@@ -35,14 +49,72 @@ class _ConversationsPageState extends State<ConversationsPage> {
     try {
       final res = await ChatApi.fetchConversations();
       all = res.map((e) => ConversationItem.fromJson(e)).toList();
+
+      if (!mounted) return;
       setState(() => loading = false);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         loading = false;
         error = e.toString().replaceFirst("Exception: ", "");
       });
     }
   }
+
+  /* -------------------------------------------------------------------------- */
+  /*                             SOCKET (INBOX)                                 */
+  /* -------------------------------------------------------------------------- */
+
+  Future<void> _initSocket() async {
+    try {
+      final socket = await ChatSocket.instance.connect();
+      _socket = socket;
+
+      // ✅ Remove old listeners (safe)
+      socket.off('inboxUpdate');
+      socket.off('connect');
+      socket.off('disconnect');
+
+      // ✅ Fired when backend emits inboxUpdate
+      socket.on('inboxUpdate', (_) {
+        _load();
+      });
+
+      // Optional debug logs
+      socket.on('connect', (_) {
+        // ignore: avoid_print
+        print('✅ Inbox socket connected');
+        if (mounted) setState(() => _socketReady = true);
+      });
+
+      socket.on('disconnect', (_) {
+        // ignore: avoid_print
+        print('⚠️ Inbox socket disconnected');
+        if (mounted) setState(() => _socketReady = false);
+      });
+
+      if (mounted) setState(() => _socketReady = socket.connected == true);
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ Inbox socket error: $e');
+      if (mounted) setState(() => _socketReady = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    // ✅ detach listeners
+    try {
+      _socket?.off('inboxUpdate');
+      _socket?.off('connect');
+      _socket?.off('disconnect');
+    } catch (_) {}
+    super.dispose();
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   UI                                       */
+  /* -------------------------------------------------------------------------- */
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +135,23 @@ class _ConversationsPageState extends State<ConversationsPage> {
           "Messages",
           style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
         ),
+        actions: [
+          // tiny indicator for socket (optional)
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Icon(
+              Icons.circle,
+              size: 10,
+              color: _socketReady ? Colors.green : Colors.grey,
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
         child: Column(
           children: [
-            // Search
+            // 🔍 Search
             Container(
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -117,8 +200,8 @@ class _ConversationsPageState extends State<ConversationsPage> {
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPurple,
-                          shape: const StadiumBorder(),
                           elevation: 0,
+                          shape: const StadiumBorder(),
                         ),
                         onPressed: _load,
                         child: const Text(
@@ -151,7 +234,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
                       final c = filtered[i];
                       return _ConversationRow(
                         item: c,
-                        onTap: () async {
+                        onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -175,6 +258,10 @@ class _ConversationsPageState extends State<ConversationsPage> {
     );
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                             ROW + AVATAR                                   */
+/* -------------------------------------------------------------------------- */
 
 class _ConversationRow extends StatelessWidget {
   final ConversationItem item;
@@ -219,14 +306,15 @@ class _ConversationRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Container(
-            width: 10,
-            height: 10,
-            decoration: const BoxDecoration(
-              color: kPurple,
-              shape: BoxShape.circle,
+          if (item.lastMessage.isNotEmpty)
+            Container(
+              width: 10,
+              height: 10,
+              decoration: const BoxDecoration(
+                color: kPurple,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -259,6 +347,7 @@ class _Avatar extends StatelessWidget {
 
   Widget _placeholder() {
     final letter = label.isNotEmpty ? label.trim()[0].toUpperCase() : "?";
+
     return Container(
       width: 52,
       height: 52,

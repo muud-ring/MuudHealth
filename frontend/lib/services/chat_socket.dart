@@ -19,7 +19,7 @@ class ChatSocket {
       'http://localhost:4000',
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .enableAutoConnect()
+          .disableAutoConnect() // ✅ we connect manually
           .setAuth({'token': token})
           .build(),
     );
@@ -28,6 +28,8 @@ class ChatSocket {
     _socket = socket;
     return socket;
   }
+
+  io.Socket? get socket => _socket;
 
   void disconnect() {
     _socket?.disconnect();

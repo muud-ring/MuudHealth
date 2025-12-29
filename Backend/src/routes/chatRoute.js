@@ -10,8 +10,6 @@ router.get("/conversations", requireAuth, chatController.getConversations);
 // ✅ Optional: raw Conversation docs (if you still want it)
 router.get("/inbox", requireAuth, chatController.getInbox);
 
-router.get("/conversations", requireAuth, chatController.getConversations);
-
 // ✅ Chat thread
 router.post(
   "/conversation/:otherSub",
