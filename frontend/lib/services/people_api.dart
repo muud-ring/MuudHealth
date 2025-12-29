@@ -10,6 +10,7 @@ class PeopleApi {
   static const String _innerCircle = '/people/inner-circle';
   static const String _suggestions = '/people/suggestions';
   static const String _requests = '/people/requests';
+  static const String _me = '/people/me'; // ✅ NEW
 
   static Uri _uri(String path, [Map<String, dynamic>? query]) {
     final u = Uri.parse('$baseUrl$path');
@@ -69,6 +70,18 @@ class PeopleApi {
     throw Exception('GET $path failed: ${res.statusCode} ${res.body}');
   }
 
+  static Future<Map<String, dynamic>> _getMap(String path) async {
+    final res = await http.get(_uri(path), headers: await _headers());
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      final decoded = jsonDecode(res.body);
+      if (decoded is Map<String, dynamic>) return decoded;
+      throw Exception('Unexpected response shape for $path: ${res.body}');
+    }
+
+    throw Exception('GET $path failed: ${res.statusCode} ${res.body}');
+  }
+
   static Future<Map<String, dynamic>> _post(
     String path, {
     Map<String, dynamic>? body,
@@ -89,6 +102,9 @@ class PeopleApi {
   }
 
   // --------- Public API ----------
+
+  /// ✅ NEW: Fetch current user profile for center avatar
+  static Future<Map<String, dynamic>> fetchMe() => _getMap(_me);
 
   static Future<List<dynamic>> fetchConnections() => _getList(_connections);
   static Future<List<dynamic>> fetchInnerCircle() => _getList(_innerCircle);
@@ -116,7 +132,7 @@ class PeopleApi {
     await _post('/people/request/$requestId/decline');
   }
 
-  /// ✅ this is what we will use for move to inner circle / move back to connections
+  /// ✅ move to inner circle / move back to connections
   static Future<void> updateTier({
     required String sub,
     required String tier, // "connection" | "inner_circle"

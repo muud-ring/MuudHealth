@@ -22,20 +22,24 @@ class SectionTitle extends StatelessWidget {
           title,
           style: const TextStyle(
             color: kPurple,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
           ),
         ),
         const Spacer(),
         if (trailingText != null)
-          GestureDetector(
+          InkWell(
             onTap: onTapTrailing,
-            child: Text(
-              trailingText!,
-              style: const TextStyle(
-                color: kPurple,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Text(
+                trailingText!,
+                style: const TextStyle(
+                  color: kPurple,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),

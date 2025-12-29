@@ -55,6 +55,32 @@ function getOtherUserId(connection, myId) {
 /*                                   Lists                                    */
 /* -------------------------------------------------------------------------- */
 
+
+/**
+ * GET /people/me
+ * Returns the current user's profile (with avatarUrl)
+ */
+exports.getMe = async (req, res) => {
+  try {
+    const me = await getMyProfile(req);
+    if (!me) return res.status(401).json({ message: "UserProfile not found" });
+
+    let profile = await UserProfile.findOne(
+      { _id: me._id },
+      { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
+    ).lean();
+
+    if (!profile) return res.status(404).json({ message: "User not found" });
+
+    profile = (await attachAvatarUrls([profile]))[0];
+
+    return res.status(200).json({ me: profile });
+  } catch (err) {
+    console.error("getMe error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 /**
  * GET /people/connections
  */

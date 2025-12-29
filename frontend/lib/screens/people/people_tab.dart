@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../services/token_storage.dart';
-
 import 'state/people_controller.dart';
 import 'widgets/section_title.dart';
 import 'widgets/inner_circle_ring.dart';
@@ -29,16 +28,11 @@ class _PeopleTabState extends State<PeopleTab> {
   void initState() {
     super.initState();
     controller.addListener(_onUpdate);
-
-    // ✅ reload when any People action happens elsewhere
     PeopleEvents.reload.addListener(_onExternalReload);
-
     controller.loadAll();
   }
 
-  void _onExternalReload() {
-    controller.loadAll();
-  }
+  void _onExternalReload() => controller.loadAll();
 
   void _onUpdate() {
     if (mounted) setState(() {});
@@ -63,12 +57,10 @@ class _PeopleTabState extends State<PeopleTab> {
     final hasPeople =
         controller.innerCircle.isNotEmpty || controller.connections.isNotEmpty;
 
-    // --- Loading
     if (controller.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // --- Error
     if (controller.error != null) {
       final isExpired = controller.error!.toLowerCase().contains(
         "session expired",
@@ -134,206 +126,195 @@ class _PeopleTabState extends State<PeopleTab> {
 
     final suggestions = controller.suggestions;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ✅ Manual refresh row (guaranteed)
-          Row(
-            children: [
-              const Text(
-                "People",
-                style: TextStyle(
-                  color: kPurple,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: controller.loadAll,
-                icon: const Icon(Icons.refresh, color: kPurple),
-                label: const Text(
-                  "Refresh",
-                  style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
+    return SafeArea(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
 
-          // --- Inner Circle
-          SectionTitle(
-            title: "Inner Circle",
-            trailingText: "See All",
-            onTapTrailing: () {
-              Navigator.pushNamed(context, '/people/inner-circle');
-            },
-          ),
-          const SizedBox(height: 12),
-
-          InnerCircleRing(
-            isEmpty: controller.innerCircle.isEmpty,
-            people: controller.innerCircle,
-            onTapAddFriends: () {
-              Navigator.pushNamed(context, '/people/suggestions');
-            },
-            onTapPerson: (p) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ProfilePage(person: p)),
-              );
-            },
-          ),
-
-          const SizedBox(height: 18),
-
-          // Empty helper
-          if (!hasPeople) ...[
-            const SizedBox(height: 14),
-            const Text(
-              "No Inner Circle",
-              style: TextStyle(
-                color: kPurple,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
+            // --- Inner Circle
+            SectionTitle(
+              title: "Inner Circle",
+              trailingText: "See All",
+              onTapTrailing: () =>
+                  Navigator.pushNamed(context, '/people/inner-circle'),
             ),
-            const SizedBox(height: 6),
-            const Text(
-              "Add friends to your inner circle\nto keep up with their muuds.",
-              style: TextStyle(
-                color: kGreyText,
-                fontSize: 13.5,
-                height: 1.25,
-                fontWeight: FontWeight.w600,
-              ),
+            const SizedBox(height: 12),
+
+            InnerCircleRing(
+              isEmpty: controller.innerCircle.isEmpty,
+              people: controller.innerCircle,
+              centerPerson: controller.me, // ✅ NEW
+              onTapAddFriends: () {
+                Navigator.pushNamed(context, '/people/suggestions');
+              },
+              onTapPerson: (p) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfilePage(person: p)),
+                );
+              },
             ),
-            const SizedBox(height: 14),
-            PrimaryButton(
-              text: "Add Friends",
-              onTap: () => Navigator.pushNamed(context, '/people/suggestions'),
-            ),
-            const SizedBox(height: 26),
-          ] else ...[
+
             const SizedBox(height: 18),
-          ],
 
-          // --- Connections preview
-          SectionTitle(
-            title: "Connections",
-            trailingText: "See All",
-            onTapTrailing: () {
-              Navigator.pushNamed(context, '/people/connections');
-            },
-          ),
-          const SizedBox(height: 14),
+            if (!hasPeople) ...[
+              const SizedBox(height: 10),
+              PrimaryButton(
+                text: "Add Friends",
+                onTap: () =>
+                    Navigator.pushNamed(context, '/people/suggestions'),
+              ),
+              const SizedBox(height: 26),
+            ] else ...[
+              const SizedBox(height: 6),
+            ],
 
-          if (controller.connections.isEmpty) ...[
-            Center(
-              child: Column(
-                children: const [
-                  Icon(
-                    Icons.group_outlined,
-                    size: 44,
-                    color: Color(0xFFD7CDE3),
+            // --- Connections preview
+            SectionTitle(
+              title: "Connections",
+              trailingText: "See All",
+              onTapTrailing: () =>
+                  Navigator.pushNamed(context, '/people/connections'),
+            ),
+            const SizedBox(height: 14),
+
+            if (controller.connections.isEmpty) ...[
+              const SizedBox(height: 10),
+              Center(
+                child: Column(
+                  children: const [
+                    Icon(
+                      Icons.group_outlined,
+                      size: 44,
+                      color: Color(0xFFD7CDE3),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "No Connections",
+                      style: TextStyle(
+                        color: kPurple,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      "Add friends to connect and\nshare your muuds.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: kGreyText,
+                        fontSize: 13.5,
+                        height: 1.25,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              PrimaryButton(
+                text: "Add Friends",
+                onTap: () =>
+                    Navigator.pushNamed(context, '/people/suggestions'),
+              ),
+            ] else ...[
+              ...controller.connections
+                  .take(4)
+                  .map(
+                    (p) => PersonTile(
+                      person: p,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProfilePage(person: p),
+                          ),
+                        );
+                      },
+                      onTapMenu: () =>
+                          ManagePersonSheet.open(context, person: p),
+                    ),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    "No Connections",
+
+              const SizedBox(height: 10),
+
+              // ✅ Figma "Show more" pill button
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: kPurple, width: 1.5),
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/people/connections'),
+                  child: const Text(
+                    "Show more",
                     style: TextStyle(
                       color: kPurple,
-                      fontSize: 18,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    "Add friends to connect and\nshare your muuds.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: kGreyText,
-                      fontSize: 13.5,
-                      height: 1.25,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            PrimaryButton(
-              text: "Add Friends",
-              onTap: () => Navigator.pushNamed(context, '/people/suggestions'),
-            ),
-          ] else ...[
-            ...controller.connections
-                .take(3)
-                .map(
-                  (p) => PersonTile(
-                    person: p,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfilePage(person: p),
-                        ),
-                      );
-                    },
-
-                    onTapMenu: () => ManagePersonSheet.open(context, person: p),
-                  ),
                 ),
-          ],
-
-          const SizedBox(height: 26),
-
-          // --- Suggested friends row
-          SectionTitle(
-            title: "Suggested Friends",
-            trailingText: "See All",
-            onTapTrailing: () {
-              Navigator.pushNamed(context, '/people/suggestions');
-            },
-          ),
-          const SizedBox(height: 12),
-
-          if (suggestions.isEmpty)
-            const Text(
-              "No suggestions right now.",
-              style: TextStyle(
-                color: kGreyText,
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
               ),
-            )
-          else
-            SizedBox(
-              height: 104,
-              child: ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemCount: suggestions.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 14),
-                itemBuilder: (context, i) {
-                  final person = suggestions[i];
-                  return SuggestedAvatar(
-                    person: person,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfilePage(person: person),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+            ],
+
+            const SizedBox(height: 26),
+
+            // --- Suggested friends row
+            SectionTitle(
+              title: "Suggested Friends",
+              trailingText: "See All",
+              onTapTrailing: () =>
+                  Navigator.pushNamed(context, '/people/suggestions'),
             ),
-        ],
+            const SizedBox(height: 12),
+
+            if (suggestions.isEmpty)
+              const Text(
+                "No suggestions right now.",
+                style: TextStyle(
+                  color: kGreyText,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            else
+              SizedBox(
+                height: 112,
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: suggestions.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  itemBuilder: (context, i) {
+                    final person = suggestions[i];
+                    return SuggestedAvatar(
+                      person: person,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProfilePage(person: person),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 10),
+
+            // hidden dev refresh (optional): long-press title to refresh
+            // (keeps Figma clean but still lets you refresh)
+          ],
+        ),
       ),
     );
   }

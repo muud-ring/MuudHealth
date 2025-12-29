@@ -7,6 +7,8 @@ class PeopleController extends ChangeNotifier {
   bool loading = false;
   String? error;
 
+  Person? me; // ✅ NEW: current user
+
   List<Person> connections = [];
   List<Person> innerCircle = [];
   List<Person> suggestions = [];
@@ -20,16 +22,26 @@ class PeopleController extends ChangeNotifier {
 
     try {
       final results = await Future.wait([
-        PeopleApi.fetchConnections(),
-        PeopleApi.fetchInnerCircle(),
-        PeopleApi.fetchSuggestions(),
-        PeopleApi.fetchRequests(),
+        PeopleApi.fetchMe(), // Map
+        PeopleApi.fetchConnections(), // List
+        PeopleApi.fetchInnerCircle(), // List
+        PeopleApi.fetchSuggestions(), // List
+        PeopleApi.fetchRequests(), // List
       ]);
 
-      connections = results[0].map(_personFromJson).toList();
-      innerCircle = results[1].map(_personFromJson).toList();
-      suggestions = results[2].map(_personFromJson).toList();
-      requests = results[3].map(_requestFromJson).toList();
+      // ✅ Explicit casting (THIS fixes your error)
+      final meMap = results[0] as Map<String, dynamic>;
+      final connectionsRaw = results[1] as List<dynamic>;
+      final innerCircleRaw = results[2] as List<dynamic>;
+      final suggestionsRaw = results[3] as List<dynamic>;
+      final requestsRaw = results[4] as List<dynamic>;
+
+      me = _personFromJson(meMap['me']);
+
+      connections = connectionsRaw.map(_personFromJson).toList();
+      innerCircle = innerCircleRaw.map(_personFromJson).toList();
+      suggestions = suggestionsRaw.map(_personFromJson).toList();
+      requests = requestsRaw.map(_requestFromJson).toList();
 
       loading = false;
       notifyListeners();
@@ -41,7 +53,7 @@ class PeopleController extends ChangeNotifier {
       if (msg.contains('401') || msg.contains('Unauthorized')) {
         error = "Session expired. Please log in again.";
       } else {
-        error = msg.replaceFirst('Exception: ', '');
+        error = msg;
       }
 
       notifyListeners();
@@ -52,30 +64,27 @@ class PeopleController extends ChangeNotifier {
 
   Person _personFromJson(dynamic raw) {
     if (raw is Map<String, dynamic>) {
-      // ✅ IMPORTANT: our backend uses "sub" as the identity for all People actions
+      // ✅ IMPORTANT: backend returns `sub`, not `_id`
       final sub = (raw['sub'] ?? '').toString();
 
       final username = (raw['username'] ?? '').toString();
       final name = (raw['name'] ?? '').toString();
-
+      final avatarUrl = (raw['avatarUrl'] ?? '').toString();
       final location = (raw['location'] ?? '').toString();
 
-      // backend currently returns avatarKey, not avatarUrl (so this is often empty)
-      final avatarUrl =
-          (raw['avatarUrl'] ?? raw['avatar'] ?? raw['photoUrl'] ?? '')
-              .toString();
+      final displayName = name.isNotEmpty
+          ? name
+          : (username.isNotEmpty ? username : "Unknown");
 
       return Person(
-        id: sub, // ✅ always SUB (never name / _id)
-        name: name.isNotEmpty
-            ? name
-            : (username.isNotEmpty ? username : "Unknown"),
+        id: sub, // ✅ store sub everywhere
+        name: displayName,
         handle: username.isEmpty ? "" : '@$username',
         avatarUrl: avatarUrl,
         location: location,
         lastActive: "",
         moodChip: "",
-        tint: _tintForId(sub),
+        tint: _tintForId(sub.isEmpty ? displayName : sub),
       );
     }
 
@@ -95,9 +104,7 @@ class PeopleController extends ChangeNotifier {
     if (raw is Map<String, dynamic>) {
       final requestId = (raw['_id'] ?? raw['id'] ?? raw['requestId'] ?? '')
           .toString();
-
-      // our backend returns fromUser in requests list
-      final personRaw = raw['fromUser'] ?? raw['person'] ?? raw['user'] ?? raw;
+      final personRaw = raw['fromUser'] ?? raw['person'] ?? raw;
 
       return ConnectionRequest(
         id: requestId.isEmpty

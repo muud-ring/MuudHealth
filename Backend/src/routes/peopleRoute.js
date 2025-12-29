@@ -13,6 +13,7 @@ router.use(requireAuth);
 router.get("/suggestions", peopleController.getSuggestions);
 router.get("/connections", peopleController.getConnections);
 router.get("/inner-circle", peopleController.getInnerCircle);
+router.get("/me", peopleController.getMe);
 
 // Requests
 router.get("/requests", peopleController.getRequests);
