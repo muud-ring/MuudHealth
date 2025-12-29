@@ -8,6 +8,7 @@ import '../screens/journal/journal_tab.dart';
 import '../screens/people/people_tab.dart';
 import '../screens/explore/explore_tab.dart';
 import '../screens/people/sheets/connection_requests_sheet.dart';
+import '../screens/chat/pages/conversations_page.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -62,7 +63,7 @@ class _AppShellState extends State<AppShell> {
       return [
         IconButton(
           onPressed: () {
-            // TODO: messages route later
+            Navigator.pushNamed(context, '/chat/conversations');
           },
           icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
         ),
@@ -78,7 +79,7 @@ class _AppShellState extends State<AppShell> {
     return [
       IconButton(
         onPressed: () {
-          // TODO: messages route later
+          Navigator.pushNamed(context, '/chat/conversations');
         },
         icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
       ),

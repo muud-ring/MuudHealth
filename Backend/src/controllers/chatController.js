@@ -5,6 +5,75 @@ function keyFor(subA, subB) {
   return [subA, subB].sort().join("|");
 }
 
+// ✅ List conversations for inbox
+// GET /chat/conversations
+exports.getConversations = async (req, res) => {
+  try {
+    const mySub = req.user?.sub;
+    if (!mySub) return res.status(401).json({ message: "Missing user sub" });
+
+    const Message = require("../models/Message");
+    const UserProfile = require("../models/UserProfile");
+    const { attachAvatarUrls } = require("../utils/s3_avatar_url");
+
+    // 1) Find latest messages involving me (limit protects performance)
+    const latest = await Message.find({
+      $or: [{ fromSub: mySub }, { toSub: mySub }],
+    })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
+
+    // 2) Build "otherSub" -> lastMessage map
+    const map = new Map();
+    for (const m of latest) {
+      const otherSub = m.fromSub === mySub ? m.toSub : m.fromSub;
+      if (!otherSub) continue;
+      if (!map.has(otherSub)) map.set(otherSub, m); // first one is latest
+    }
+
+    const otherSubs = Array.from(map.keys());
+    if (otherSubs.length === 0) {
+      return res.status(200).json({ conversations: [] });
+    }
+
+    // 3) Fetch profiles
+    let profiles = await UserProfile.find(
+      { sub: { $in: otherSubs } },
+      { sub: 1, name: 1, username: 1, avatarKey: 1 }
+    ).lean();
+
+    profiles = await attachAvatarUrls(profiles);
+
+    const profileMap = new Map(profiles.map((p) => [p.sub, p]));
+
+    // 4) Shape response
+    const conversations = otherSubs.map((sub) => {
+      const last = map.get(sub);
+      const p = profileMap.get(sub);
+
+      return {
+        otherSub: sub,
+        otherUser: p || { sub, name: sub, username: "", avatarUrl: "" },
+        lastMessage: last?.text || "",
+        lastAt: last?.createdAt || null,
+      };
+    });
+
+    // Sort by lastAt desc
+    conversations.sort((a, b) => {
+      const ta = a.lastAt ? new Date(a.lastAt).getTime() : 0;
+      const tb = b.lastAt ? new Date(b.lastAt).getTime() : 0;
+      return tb - ta;
+    });
+
+    return res.status(200).json({ conversations });
+  } catch (err) {
+    console.error("getConversations error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 // POST /chat/conversation/:otherSub
 exports.getOrCreateConversation = async (req, res) => {
   try {

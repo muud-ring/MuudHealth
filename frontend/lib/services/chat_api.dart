@@ -97,4 +97,32 @@ class ChatApi {
 
     return (body['message'] as Map).cast<String, dynamic>();
   }
+
+  // ✅ NEW: Inbox list
+  static Future<List<Map<String, dynamic>>> fetchConversations() async {
+    final token = await TokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) {
+      throw Exception("Missing access token");
+    }
+
+    final uri = Uri.parse('$baseUrl/chat/conversations');
+
+    final res = await http.get(
+      uri,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    final body = jsonDecode(res.body);
+
+    if (res.statusCode != 200) {
+      throw Exception(
+        body is Map && body['message'] != null
+            ? body['message'].toString()
+            : 'Failed to load conversations',
+      );
+    }
+
+    final list = (body['conversations'] as List? ?? []);
+    return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
+  }
 }
