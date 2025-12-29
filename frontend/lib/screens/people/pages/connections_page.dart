@@ -5,6 +5,7 @@ import '../data/people_models.dart';
 import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
 import '../sheets/manage_person_sheet.dart';
+import '../pages/profile_page.dart';
 
 class ConnectionsPage extends StatefulWidget {
   const ConnectionsPage({super.key});
@@ -37,39 +38,25 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
   Person _personFromJson(dynamic raw) {
     if (raw is Map<String, dynamic>) {
-      final id = (raw['id'] ?? raw['_id'] ?? '').toString();
-      final name =
-          (raw['name'] ??
-                  raw['fullName'] ??
-                  raw['displayName'] ??
-                  raw['username'] ??
-                  'Unknown')
-              .toString();
-      final handle = (raw['handle'] ?? raw['username'] ?? '').toString();
-      final avatarUrl =
-          (raw['avatarUrl'] ?? raw['avatar'] ?? raw['photoUrl'] ?? '')
-              .toString();
-      final location = (raw['location'] ?? raw['city'] ?? '').toString();
-      final lastActive = (raw['lastActive'] ?? raw['lastSeen'] ?? '')
-          .toString();
-      final mood = (raw['mood'] ?? raw['moodChip'] ?? '').toString();
+      final sub = (raw['sub'] ?? '').toString(); // ✅ MUST be sub
+      final username = (raw['username'] ?? '').toString();
+      final name = (raw['name'] ?? '').toString();
+      final location = (raw['location'] ?? '').toString();
 
       return Person(
-        id: id.isEmpty ? name : id,
-        name: name,
-        handle: handle.isEmpty
-            ? ""
-            : (handle.startsWith('@') ? handle : '@$handle'),
-        avatarUrl: avatarUrl,
+        id: sub, // ✅ store sub here
+        name: name.isNotEmpty ? name : username,
+        handle: username.isEmpty ? "" : '@$username',
+        avatarUrl: "",
         location: location,
-        lastActive: lastActive,
-        moodChip: mood,
-        tint: _tintForId(id.isEmpty ? name : id),
+        lastActive: "",
+        moodChip: "",
+        tint: _tintForId(sub),
       );
     }
 
     return const Person(
-      id: "unknown",
+      id: "",
       name: "Unknown",
       handle: "",
       avatarUrl: "",
@@ -173,8 +160,15 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                       final p = filtered[i];
                       return PersonTile(
                         person: p,
-                        onTap: () =>
-                            Navigator.pushNamed(context, '/people/profile'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProfilePage(person: p),
+                            ),
+                          );
+                        },
+
                         onTapMenu: () =>
                             ManagePersonSheet.open(context, person: p),
                       );

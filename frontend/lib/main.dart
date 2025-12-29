@@ -24,8 +24,6 @@ import 'screens/onboarding/onboarding_page_08.dart';
 import 'screens/people/pages/inner_circle_page.dart';
 import 'screens/people/pages/connections_page.dart';
 import 'screens/people/pages/suggestions_page.dart';
-import 'screens/people/pages/profile_page.dart';
-import 'screens/people/pages/chat_page.dart';
 
 // ✅ App shell (fixed top bar + bottom nav)
 import 'shell/app_shell.dart';
@@ -114,8 +112,6 @@ class _MuudAppState extends State<MuudApp> {
         '/people/inner-circle': (_) => const InnerCirclePage(),
         '/people/connections': (_) => const ConnectionsPage(),
         '/people/suggestions': (_) => const SuggestionsPage(),
-        '/people/profile': (_) => const ProfilePage(),
-        '/people/chat': (_) => const ChatPage(),
       },
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
     );

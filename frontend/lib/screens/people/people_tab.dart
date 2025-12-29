@@ -9,7 +9,7 @@ import 'widgets/person_tile.dart';
 import 'widgets/suggested_avatar.dart';
 import 'widgets/primary_button.dart';
 import 'sheets/manage_person_sheet.dart';
-
+import 'pages/profile_page.dart';
 import 'state/people_events.dart';
 
 class PeopleTab extends StatefulWidget {
@@ -268,8 +268,15 @@ class _PeopleTabState extends State<PeopleTab> {
                 .map(
                   (p) => PersonTile(
                     person: p,
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/people/profile'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProfilePage(person: p),
+                        ),
+                      );
+                    },
+
                     onTapMenu: () => ManagePersonSheet.open(context, person: p),
                   ),
                 ),
@@ -308,8 +315,14 @@ class _PeopleTabState extends State<PeopleTab> {
                   final person = suggestions[i];
                   return SuggestedAvatar(
                     person: person,
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/people/profile'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProfilePage(person: person),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

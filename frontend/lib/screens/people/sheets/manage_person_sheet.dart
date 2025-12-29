@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../services/people_api.dart';
 import '../data/people_models.dart';
 import '../state/people_events.dart';
+import '../pages/chat_page.dart';
 
 class ManagePersonSheet {
   static Future<void> open(
@@ -148,6 +149,27 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
             const SizedBox(height: 14),
             const Divider(),
+
+            ListTile(
+              enabled: !working,
+              leading: const Icon(Icons.chat_bubble_outline, color: kPurple),
+              title: const Text(
+                "Message",
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatPage(
+                      otherSub: p.id,
+                      title: p.handle.isNotEmpty ? p.handle : p.name,
+                    ),
+                  ),
+                );
+              },
+            ),
 
             ListTile(
               enabled: !working,
