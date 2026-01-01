@@ -53,21 +53,36 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   Person _personFromJson(dynamic raw) {
+    bool looksLikeUuid(String v) {
+      return RegExp(
+        r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+      ).hasMatch(v.trim());
+    }
+
+    String clean(String v) => v.trim();
+    String safe(String v) => looksLikeUuid(v) ? "" : v;
+
     if (raw is Map<String, dynamic>) {
-      final sub = (raw['sub'] ?? '').toString(); // ✅ MUST be sub
-      final username = (raw['username'] ?? '').toString();
-      final name = (raw['name'] ?? '').toString();
-      final location = (raw['location'] ?? '').toString();
+      final sub = clean((raw['sub'] ?? '').toString());
+      final username = safe(clean((raw['username'] ?? '').toString()));
+      final name = safe(clean((raw['name'] ?? '').toString()));
+      final location = clean((raw['location'] ?? '').toString());
+
+      final displayName = name.isNotEmpty
+          ? name
+          : (username.isNotEmpty ? username : "User");
+
+      final handle = username.isNotEmpty ? '@$username' : "";
 
       return Person(
-        id: sub, // ✅ store sub here
-        name: name.isNotEmpty ? name : username,
-        handle: username.isEmpty ? "" : '@$username',
-        avatarUrl: (raw['avatarUrl'] ?? '').toString(), // safe
+        id: sub, // keep sub always for actions
+        name: displayName, // ✅ never UUID
+        handle: handle,
+        avatarUrl: (raw['avatarUrl'] ?? '').toString(),
         location: location,
         lastActive: "",
         moodChip: "",
-        tint: _tintForId(sub),
+        tint: _tintForId(sub.isNotEmpty ? sub : displayName),
       );
     }
 

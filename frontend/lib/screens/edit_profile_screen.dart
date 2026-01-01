@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
 import '../services/user_api.dart';
+import '../services/token_storage.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -21,12 +24,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phone = TextEditingController();
   final _email = TextEditingController();
 
-  String avatarUrl = ""; // signed URL for display
+  String avatarUrl = "";
   File? pickedImageFile;
 
   bool loading = true;
   bool saving = false;
   String? error;
+
+  bool _looksLikeUuid(String v) {
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(v.trim());
+  }
+
+  String _displayFromClaims(Map<String, dynamic> c) {
+    String s(dynamic v) => (v ?? '').toString().trim();
+
+    final preferred = s(c['preferred_username']);
+    final cognitoUsername = s(c['cognito:username']);
+    final username = s(c['username']);
+    final name = s(c['name']);
+    final email = s(c['email']);
+    final sub = s(c['sub']);
+
+    final candidates = [preferred, cognitoUsername, username, name, email];
+    for (final v in candidates) {
+      if (v.isNotEmpty && !_looksLikeUuid(v)) return v;
+    }
+    return sub.isNotEmpty ? sub : "";
+  }
+
+  Future<String> _tokenDisplayName() async {
+    final idToken = await TokenStorage.getIdToken();
+    if (idToken == null || idToken.isEmpty) return "";
+    try {
+      final claims = JwtDecoder.decode(idToken);
+      return _displayFromClaims(claims);
+    } catch (_) {
+      return "";
+    }
+  }
 
   @override
   void initState() {
@@ -43,14 +80,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final me = await UserApi.getMe();
 
-      _name.text = (me['name'] ?? '') as String;
-      _username.text = (me['username'] ?? '') as String;
-      _bio.text = (me['bio'] ?? '') as String;
-      _location.text = (me['location'] ?? '') as String;
-      _phone.text = (me['phone'] ?? '') as String;
-      _email.text = (me['email'] ?? '') as String;
+      _name.text = (me['name'] ?? '').toString();
+      _bio.text = (me['bio'] ?? '').toString();
+      _location.text = (me['location'] ?? '').toString();
+      _phone.text = (me['phone'] ?? '').toString();
+      final backendEmail = (me['email'] ?? '').toString().trim();
 
-      // Load avatar signed URL (if exists)
+      // if backend doesn't send email, take from idToken
+      final idToken = await TokenStorage.getIdToken();
+      String tokenEmail = "";
+      if (idToken != null && idToken.isNotEmpty) {
+        try {
+          final claims = JwtDecoder.decode(idToken);
+          tokenEmail = (claims['email'] ?? '').toString().trim();
+        } catch (_) {}
+      }
+
+      _email.text = backendEmail.isNotEmpty ? backendEmail : tokenEmail;
+
+      final rawUsername = (me['username'] ?? '').toString().trim();
+
+      // ✅ If backend has UUID, replace with token-based username (Test 33)
+      final tokenName = await _tokenDisplayName();
+      final fixedUsername =
+          (rawUsername.isNotEmpty && !_looksLikeUuid(rawUsername))
+          ? rawUsername
+          : (tokenName.isNotEmpty ? tokenName : "");
+
+      _username.text = fixedUsername;
+
       final url = await UserApi.getAvatarUrl();
       avatarUrl = url ?? '';
     } catch (e) {
@@ -78,13 +136,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
+      // ✅ Never save UUID as username
+      var usernameToSave = _username.text.trim();
+      if (usernameToSave.isEmpty || _looksLikeUuid(usernameToSave)) {
+        final tokenName = await _tokenDisplayName();
+        if (tokenName.isNotEmpty) {
+          usernameToSave = tokenName;
+          _username.text = tokenName;
+        }
+      }
+
       // 1) Upload avatar if selected
       if (pickedImageFile != null) {
         final file = pickedImageFile!;
         final lower = file.path.toLowerCase();
         final contentType = lower.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
-        // presign
         final presign = await UserApi.presignAvatarUpload(
           contentType: contentType,
         );
@@ -92,35 +159,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final uploadUrl = presign['uploadUrl'] as String;
         final key = presign['key'] as String;
 
-        // upload to S3
         await UserApi.uploadToS3Presigned(
           uploadUrl: uploadUrl,
           file: file,
           contentType: contentType,
         );
 
-        // confirm -> saves key in DocumentDB for this user
         await UserApi.confirmAvatar(key: key);
 
-        // refresh signed url for display
         final signed = await UserApi.getAvatarUrl();
         if (signed != null) avatarUrl = signed;
 
-        // clear local picked file after successful upload
         pickedImageFile = null;
       }
 
       // 2) Save profile fields
       await UserApi.updateMe(
         name: _name.text.trim(),
-        username: _username.text.trim(),
+        username: usernameToSave,
         bio: _bio.text.trim(),
         location: _location.text.trim(),
         phone: _phone.text.trim(),
       );
 
       if (!mounted) return;
-      Navigator.pop(context, true); // tell Home "updated"
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() => error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -227,7 +290,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 18),
 
             _Label("Name"),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
+import '../services/user_api.dart';
 import '../services/post_auth_redirect.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -60,6 +62,8 @@ class _OtpScreenState extends State<OtpScreen> {
   Future<void> _verifyAndLogin({
     required String identifier,
     required String password,
+    required String fullName,
+    required String username,
   }) async {
     final code = _getCode();
     if (code.length != 6) {
@@ -73,8 +77,10 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     try {
+      // 1) confirm signup
       await _api.confirmSignup(identifier: identifier, code: code);
 
+      // 2) login to get tokens
       final res = await _api.login(identifier: identifier, password: password);
       final tokens = (res['tokens'] as Map).cast<String, dynamic>();
 
@@ -84,20 +90,33 @@ class _OtpScreenState extends State<OtpScreen> {
         refreshToken: tokens['refreshToken'],
       );
 
-      final access = await TokenStorage.getAccessToken() ?? "";
-      print("ACCESS_TOKEN_CHUNKS_START len=${access.length}");
-      for (var i = 0; i < access.length; i += 500) {
-        final end = (i + 500 < access.length) ? i + 500 : access.length;
-        print(access.substring(i, end));
+      // 3) ✅ VERY IMPORTANT: save profile to MUUD backend (prevents sub showing)
+      // If these are empty, we skip safely.
+      final nameToSave = fullName.trim();
+      final usernameToSave = username.trim();
+
+      if (nameToSave.isNotEmpty || usernameToSave.isNotEmpty) {
+        await UserApi.updateMe(
+          name: nameToSave,
+          username: usernameToSave,
+          bio: "",
+          location: "",
+          phone: "",
+        );
       }
-      print("ACCESS_TOKEN_CHUNKS_END");
 
       if (!mounted) return;
+
+      // 4) Now go to onboarding/home redirect logic
+      // If you want onboarding always after signup, keep your route:
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/onboarding/01',
         (_) => false,
       );
+
+      // Or if you want to use your redirect helper:
+      // await PostAuthRedirect.go(context);
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -112,7 +131,6 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _onChanged(int index, String value) {
-    // Keep only 1 digit
     if (value.length > 1) {
       final v = value.substring(value.length - 1);
       _ctrl[index].text = v;
@@ -121,13 +139,11 @@ class _OtpScreenState extends State<OtpScreen> {
       );
     }
 
-    // Move forward when user enters a digit
     if (value.isNotEmpty && index < 5) {
       _focus[index + 1].requestFocus();
       return;
     }
 
-    // Move back when user deletes (stable, no keyboard listeners needed)
     if (value.isEmpty && index > 0) {
       _focus[index - 1].requestFocus();
     }
@@ -136,8 +152,13 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+
     final identifier = (args['identifier'] ?? '') as String;
     final password = (args['password'] ?? '') as String;
+
+    // ✅ received from signup_screen.dart
+    final fullName = (args['fullName'] ?? '') as String;
+    final username = (args['username'] ?? '') as String;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -154,7 +175,6 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               const SizedBox(height: 60),
-
               const Text(
                 'We sent you a code',
                 textAlign: TextAlign.center,
@@ -165,7 +185,6 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-
               const Text(
                 'Please enter the verification code sent to:',
                 textAlign: TextAlign.center,
@@ -176,7 +195,6 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
               Text(
                 _maskIdentifier(identifier),
                 textAlign: TextAlign.center,
@@ -186,7 +204,6 @@ class _OtpScreenState extends State<OtpScreen> {
                   color: Colors.black87,
                 ),
               ),
-
               const SizedBox(height: 55),
 
               Row(
@@ -257,6 +274,8 @@ class _OtpScreenState extends State<OtpScreen> {
                       : () => _verifyAndLogin(
                           identifier: identifier,
                           password: password,
+                          fullName: fullName,
+                          username: username,
                         ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPurple,

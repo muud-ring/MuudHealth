@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
 import '../../services/user_api.dart';
+import '../../services/token_storage.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -12,16 +15,92 @@ class _HomeTabState extends State<HomeTab> {
   static const Color kPurple = Color(0xFF5B288E);
   static const Color kGreyText = Color(0xFF898384);
 
-  final String firstName = "Sunny";
-  final String location = "Los Angeles, CA";
-
+  String _displayName = "there";
+  String _location = "";
   String? _avatarUrl;
+
+  bool _loading = true;
   bool _avatarLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadAvatar();
+    _loadAll();
+  }
+
+  bool _looksLikeUuid(String v) {
+    final s = v.trim();
+    if (s.isEmpty) return false;
+    // very common Cognito sub format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(s);
+  }
+
+  String _pickDisplayNameFromClaims(Map<String, dynamic> c) {
+    String s(dynamic v) => (v ?? '').toString().trim();
+
+    final preferred = s(c['preferred_username']); // often your real username
+    final cognitoUsername = s(c['cognito:username']); // sometimes real username
+    final username = s(c['username']);
+    final name = s(c['name']);
+    final email = s(c['email']);
+    final sub = s(c['sub']);
+
+    final candidates = <String>[
+      preferred,
+      cognitoUsername,
+      username,
+      name,
+      email,
+    ];
+
+    for (final v in candidates) {
+      if (v.isNotEmpty && !_looksLikeUuid(v)) return v;
+    }
+
+    // last resort
+    return sub.isNotEmpty ? sub : "there";
+  }
+
+  Future<void> _loadAll() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      // ✅ 1) Get display name directly from ID token
+      final idToken = await TokenStorage.getIdToken();
+      if (idToken != null && idToken.isNotEmpty) {
+        final claims = JwtDecoder.decode(idToken);
+        final nameFromToken = _pickDisplayNameFromClaims(claims);
+
+        if (mounted) {
+          setState(() => _displayName = nameFromToken);
+        }
+      }
+
+      // ✅ 2) Get location from backend (optional)
+      try {
+        final me = await UserApi.getMe();
+        final location = (me['location'] ?? '').toString().trim();
+        if (mounted) setState(() => _location = location);
+      } catch (_) {
+        // ignore profile errors for now; username still works from token
+      }
+
+      // ✅ 3) Load avatar
+      await _loadAvatar();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _loadAvatar() async {
@@ -31,7 +110,7 @@ class _HomeTabState extends State<HomeTab> {
       if (!mounted) return;
       setState(() => _avatarUrl = url);
     } catch (_) {
-      // ignore
+      // ignore avatar errors
     } finally {
       if (mounted) setState(() => _avatarLoading = false);
     }
@@ -42,7 +121,7 @@ class _HomeTabState extends State<HomeTab> {
     final avatarWidget = _buildAvatar();
 
     return RefreshIndicator(
-      onRefresh: _loadAvatar,
+      onRefresh: _loadAll,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
@@ -50,7 +129,7 @@ class _HomeTabState extends State<HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Good Morning $firstName!",
+              "Good Morning $_displayName!",
               style: const TextStyle(
                 fontSize: 28,
                 height: 1.1,
@@ -59,6 +138,18 @@ class _HomeTabState extends State<HomeTab> {
               ),
             ),
             const SizedBox(height: 18),
+
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
 
             // Profile card
             Container(
@@ -86,7 +177,7 @@ class _HomeTabState extends State<HomeTab> {
                           '/edit-profile',
                         );
                         if (updated == true) {
-                          await _loadAvatar();
+                          await _loadAll();
                         }
                       },
                       child: const Text(
@@ -102,8 +193,9 @@ class _HomeTabState extends State<HomeTab> {
                   const SizedBox(height: 6),
                   avatarWidget,
                   const SizedBox(height: 12),
+
                   Text(
-                    firstName,
+                    _displayName,
                     style: const TextStyle(
                       color: kPurple,
                       fontSize: 18,
@@ -111,8 +203,9 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                   ),
                   const SizedBox(height: 4),
+
                   Text(
-                    location,
+                    _location.isNotEmpty ? _location : " ",
                     style: const TextStyle(
                       color: kGreyText,
                       fontSize: 13.5,
@@ -125,35 +218,43 @@ class _HomeTabState extends State<HomeTab> {
 
             const SizedBox(height: 34),
 
-            Center(
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.storage_outlined,
-                    size: 48,
-                    color: Color(0xFFD7CDE3),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "No Data",
-                    style: TextStyle(
-                      color: kPurple,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+            if (_loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else
+              Center(
+                child: Column(
+                  children: const [
+                    Icon(
+                      Icons.storage_outlined,
+                      size: 48,
+                      color: Color(0xFFD7CDE3),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    "Your trends will show up here.",
-                    style: const TextStyle(
-                      color: kGreyText,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
+                    SizedBox(height: 10),
+                    Text(
+                      "No Data",
+                      style: TextStyle(
+                        color: kPurple,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 6),
+                    Text(
+                      "Your trends will show up here.",
+                      style: TextStyle(
+                        color: kGreyText,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             const SizedBox(height: 26),
 
