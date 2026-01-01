@@ -27,7 +27,7 @@ import 'screens/people/pages/suggestions_page.dart';
 
 import 'screens/chat/pages/conversations_page.dart';
 
-// ✅ App shell (fixed top bar + bottom nav)
+// ✅ App shell (bottom nav)
 import 'shell/app_shell.dart';
 
 void main() {
@@ -71,7 +71,7 @@ class _MuudAppState extends State<MuudApp> {
     if (uri.host == 'auth' && uri.path == '/callback') {
       final code = uri.queryParameters['code'];
       debugPrint("✅ OAuth code: $code");
-      // Keep your Cognito OAuth exchange in your service layer
+      // OAuth exchange stays in your service layer
     }
   }
 
@@ -87,7 +87,10 @@ class _MuudAppState extends State<MuudApp> {
       title: 'MUUD',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
+
+      // ✅ Splash → Redirect happens here
       home: const Boot(),
+
       routes: {
         '/login': (_) => const LoginScreen(),
         '/signup': (_) => const SignupScreen(),
@@ -95,9 +98,7 @@ class _MuudAppState extends State<MuudApp> {
         '/forgot': (_) => const ForgotPasswordScreen(),
         '/reset': (_) => const ResetPasswordScreen(),
 
-        // ✅ Home loads AppShell which contains bottom nav tabs
         '/home': (_) => const AppShell(),
-
         '/edit-profile': (_) => const EditProfileScreen(),
 
         // Onboarding
@@ -115,8 +116,10 @@ class _MuudAppState extends State<MuudApp> {
         '/people/connections': (_) => const ConnectionsPage(),
         '/people/suggestions': (_) => const SuggestionsPage(),
 
+        // Chat
         '/chat/conversations': (_) => const ConversationsPage(),
       },
+
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
     );
   }
@@ -137,16 +140,19 @@ class _BootState extends State<Boot> {
   }
 
   Future<void> _go() async {
+    // ⏳ Small delay so splash feels intentional
+    await Future.delayed(const Duration(milliseconds: 300));
+
     final accessToken = await TokenStorage.getAccessToken();
     if (!mounted) return;
 
-    // 1) No token → login
+    // 1️⃣ No token → Login
     if (accessToken == null || accessToken.isEmpty) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
     }
 
-    // 2) Token exists → check onboarding status
+    // 2️⃣ Token exists → Check onboarding
     try {
       final completed = await OnboardingApi.isCompleted();
       if (!mounted) return;
@@ -155,7 +161,7 @@ class _BootState extends State<Boot> {
         context,
       ).pushReplacementNamed(completed ? '/home' : '/onboarding/01');
     } catch (_) {
-      // token bad/expired → logout
+      // Token invalid → reset
       await TokenStorage.clearTokens();
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/login');
@@ -164,6 +170,14 @@ class _BootState extends State<Boot> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    // 🟣 Flutter splash bridge (same as native splash)
+    return const Scaffold(
+      body: SizedBox.expand(
+        child: Image(
+          image: AssetImage('assets/images/splash_screen.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
   }
 }

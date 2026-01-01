@@ -62,26 +62,37 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      if (_dob == null) {
-        throw Exception('Please select your date of birth.');
-      }
+      final identifier = _identifier.text.trim();
+      final fullName = _fullName.text.trim();
+      final username = _username.text.trim();
+      final password = _password.text;
+
+      if (identifier.isEmpty) throw Exception('Please enter email or phone.');
+      if (fullName.isEmpty) throw Exception('Please enter your full name.');
+      if (username.isEmpty) throw Exception('Please enter a username.');
+      if (password.isEmpty) throw Exception('Please enter a password.');
+      if (_dob == null) throw Exception('Please select your date of birth.');
 
       await _api.signup(
-        identifier: _identifier.text.trim(),
-        password: _password.text,
-        fullName: _fullName.text.trim(),
-        username: _username.text.trim(),
+        identifier: identifier,
+        password: password,
+        fullName: fullName,
+        username: username,
         birthdate: _formatDobForBackend(_dob!),
       );
 
       if (!mounted) return;
 
+      // ✅ Pass ALL data to OTP so we can save profile after verification
       Navigator.pushNamed(
         context,
         '/otp',
         arguments: {
-          'identifier': _identifier.text.trim(),
-          'password': _password.text,
+          'identifier': identifier,
+          'password': password,
+          'fullName': fullName,
+          'username': username,
+          'dob': _formatDobForBackend(_dob!),
         },
       );
     } catch (e) {
@@ -205,7 +216,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
             const SizedBox(height: 16),
 
-            // Small legal text (matches layout)
             RichText(
               text: const TextSpan(
                 style: TextStyle(

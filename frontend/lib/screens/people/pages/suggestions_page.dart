@@ -44,31 +44,39 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     return options[code % options.length];
   }
 
+  String _shortSub(String sub) {
+    if (sub.isEmpty) return "user";
+    return sub.length > 8 ? sub.substring(0, 8) : sub;
+  }
+
+  /// ✅ Display priority:
+  /// 1) username (preferred)
+  /// 2) name
+  /// 3) short sub fallback
   Person _personFromProfile(Map<String, dynamic> raw) {
-    final sub = (raw['sub'] ?? '').toString();
+    final sub = (raw['sub'] ?? '').toString().trim();
 
-    final rawUsername = (raw['username'] ?? '').toString().trim();
-    final handle = rawUsername.isEmpty
-        ? ""
-        : (rawUsername.startsWith('@') ? rawUsername : '@$rawUsername');
+    final username = (raw['username'] ?? '').toString().trim();
+    final name = (raw['name'] ?? '').toString().trim();
+    final location = (raw['location'] ?? '').toString().trim();
 
-    // ✅ Suggestions: show ONLY usernames (fallback to short sub)
-    final display = handle.isNotEmpty
-        ? handle
-        : (sub.isNotEmpty ? '@${sub.substring(0, 8)}' : '@user');
+    // Prefer username, else name, else short sub
+    final displayName = username.isNotEmpty
+        ? username
+        : (name.isNotEmpty ? name : _shortSub(sub));
 
-    final location = (raw['location'] ?? '').toString();
-    final avatarKey = (raw['avatarKey'] ?? '').toString();
+    // Handle shows @username if we actually have a username
+    final handle = username.isNotEmpty ? '@$username' : '';
 
     return Person(
       id: sub, // keep sub always
-      name: display, // ✅ put username here so PersonTile shows it
-      handle: "", // optional: keep empty so you don't show it twice
-      avatarUrl: "", // later: convert avatarKey -> signed url
+      name: displayName, // ✅ this is what PersonTile shows as the main title
+      handle: handle, // optional if you want to show later
+      avatarUrl: (raw['avatarUrl'] ?? '').toString(), // if backend returns it
       location: location,
       lastActive: "",
       moodChip: "",
-      tint: _tintForSub(sub.isEmpty ? display : sub),
+      tint: _tintForSub(sub.isEmpty ? displayName : sub),
     );
   }
 
@@ -115,7 +123,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   }
 
   Future<void> _sendRequest(Person p) async {
-    final sub = p.id; // we stored sub in id
+    final sub = p.id;
     if (sub.isEmpty) return;
 
     try {
@@ -131,7 +139,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         ),
       );
 
-      // refresh list to hide requested user (backend excludes pending)
       await _load();
     } catch (e) {
       if (!mounted) return;
@@ -164,7 +171,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                   ),
                 ),
                 const SizedBox(height: 14),
-
                 ListTile(
                   leading: const Icon(Icons.person_add_alt_1, color: kPurple),
                   title: const Text(
@@ -176,7 +182,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                     await _sendRequest(p);
                   },
                 ),
-
                 const SizedBox(height: 6),
               ],
             ),

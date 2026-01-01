@@ -11,50 +11,107 @@ const { attachAvatarUrls } = require("../utils/s3_avatar_url");
 /*                               Helper Utils                                 */
 /* -------------------------------------------------------------------------- */
 
+function looksLikeUuid(v) {
+  if (typeof v !== "string") return false;
+  const s = v.trim();
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+    s
+  );
+}
+
+function pickFirstHumanString(candidates) {
+  for (const c of candidates) {
+    const s = (c || "").toString().trim();
+    if (s && !looksLikeUuid(s)) return s;
+  }
+  return "";
+}
+
+function getClaim(req, key) {
+  // supports keys like "cognito:username"
+  if (!req.user) return "";
+  return (req.user[key] || "").toString().trim();
+}
+
+function pickUsernameFromToken(req) {
+  // ✅ Try all common Cognito claim keys
+  const preferred = getClaim(req, "preferred_username");
+  const cognitoUsername = getClaim(req, "cognito:username");
+  const username = getClaim(req, "username");
+  const email = getClaim(req, "email");
+
+  return pickFirstHumanString([preferred, cognitoUsername, username, email]);
+}
+
+function pickNameFromToken(req) {
+  const name = getClaim(req, "name");
+  const given = getClaim(req, "given_name");
+  const preferred = getClaim(req, "preferred_username");
+  const cognitoUsername = getClaim(req, "cognito:username");
+
+  return pickFirstHumanString([name, given, preferred, cognitoUsername]);
+}
+
 async function getMyProfile(req) {
   const mySub = req.user?.sub;
   if (!mySub) return null;
 
-  // ✅ Create profile on-demand if missing (demo-safe)
+  // find minimal profile
   let me = await UserProfile.findOne({ sub: mySub }, { _id: 1, sub: 1 }).lean();
 
+  const tokenUsername = pickUsernameFromToken(req);
+  const tokenName = pickNameFromToken(req);
+
+  // create on demand
   if (!me) {
-    // Optional: try to pull name/username from token claims if available
-    const name =
-      req.user?.name ||
-      req.user?.given_name ||
-      req.user?.preferred_username ||
-      "";
-
-    const username = req.user?.preferred_username || "";
-
     const created = await UserProfile.create({
       sub: mySub,
-      name,
-      username,
+      name: tokenName || "",
+      username: tokenUsername || "",
       bio: "",
       location: "",
       phone: "",
       avatarKey: "",
     });
 
-    me = { _id: created._id, sub: created.sub };
+    return { _id: created._id, sub: created.sub };
+  }
+
+  // ✅ If profile exists but username/name is missing or wrongly stored as UUID, fix it now
+  const existing = await UserProfile.findById(me._id, { username: 1, name: 1 })
+    .lean();
+
+  const shouldFixUsername =
+    !existing?.username ||
+    existing.username.trim() === "" ||
+    looksLikeUuid(existing.username);
+
+  const shouldFixName =
+    (!existing?.name || existing.name.trim() === "" || looksLikeUuid(existing.name)) &&
+    tokenName;
+
+  if ((shouldFixUsername && tokenUsername) || shouldFixName) {
+    await UserProfile.updateOne(
+      { _id: me._id },
+      {
+        $set: {
+          ...(shouldFixUsername && tokenUsername ? { username: tokenUsername } : {}),
+          ...(shouldFixName ? { name: tokenName } : {}),
+        },
+      }
+    );
   }
 
   return me;
 }
 
-
 function getOtherUserId(connection, myId) {
-  return String(connection.userA) === String(myId)
-    ? connection.userB
-    : connection.userA;
+  return String(connection.userA) === String(myId) ? connection.userB : connection.userA;
 }
 
 /* -------------------------------------------------------------------------- */
 /*                                   Lists                                    */
 /* -------------------------------------------------------------------------- */
-
 
 /**
  * GET /people/me
@@ -94,19 +151,16 @@ exports.getConnections = async (req, res) => {
       $or: [{ userA: me._id }, { userB: me._id }],
     }).lean();
 
-    const otherUserIds = connections.map((c) =>
-      getOtherUserId(c, me._id)
-    );
+    const otherUserIds = connections.map((c) => getOtherUserId(c, me._id));
 
     let profiles = await UserProfile.find(
       { _id: { $in: otherUserIds } },
       { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
     ).lean();
-    
+
     profiles = await attachAvatarUrls(profiles);
-    
+
     return res.status(200).json({ connections: profiles });
-    
   } catch (err) {
     console.error("getConnections error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -126,19 +180,16 @@ exports.getInnerCircle = async (req, res) => {
       $or: [{ userA: me._id }, { userB: me._id }],
     }).lean();
 
-    const otherUserIds = connections.map((c) =>
-      getOtherUserId(c, me._id)
-    );
+    const otherUserIds = connections.map((c) => getOtherUserId(c, me._id));
 
     let profiles = await UserProfile.find(
       { _id: { $in: otherUserIds } },
       { sub: 1, name: 1, username: 1, bio: 1, location: 1, avatarKey: 1 }
     ).lean();
-    
+
     profiles = await attachAvatarUrls(profiles);
-    
+
     return res.status(200).json({ innerCircle: profiles });
-    
   } catch (err) {
     console.error("getInnerCircle error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -161,10 +212,9 @@ exports.getSuggestions = async (req, res) => {
     }).lean();
 
     const connectedIds = connections
-  .map((c) => getOtherUserId(c, me._id))
-  .filter((id) => mongoose.Types.ObjectId.isValid(id))
-  .map((id) => new mongoose.Types.ObjectId(id));
-
+      .map((c) => getOtherUserId(c, me._id))
+      .filter((id) => mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
 
     const pending = await FriendRequest.find({
       status: "pending",
@@ -195,11 +245,10 @@ exports.getSuggestions = async (req, res) => {
     )
       .limit(limit)
       .lean();
-    
+
     suggestions = await attachAvatarUrls(suggestions);
-    
+
     return res.status(200).json({ suggestions });
-    
   } catch (err) {
     console.error("getSuggestions error:", err);
     return res.status(500).json({ message: "Server error" });
@@ -207,7 +256,7 @@ exports.getSuggestions = async (req, res) => {
 };
 
 /* -------------------------------------------------------------------------- */
-/*                                Friend Requests                              */
+/*                                Friend Requests                             */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -231,11 +280,10 @@ exports.getRequests = async (req, res) => {
       { sub: { $in: fromSubs } },
       { sub: 1, name: 1, username: 1, avatarKey: 1 }
     ).lean();
-    
+
     profiles = await attachAvatarUrls(profiles);
-    
+
     const map = new Map(profiles.map((p) => [p.sub, p]));
-    
 
     const requests = incoming.map((r) => ({
       ...r,
@@ -256,12 +304,6 @@ exports.getRequests = async (req, res) => {
 /**
  * POST /people/request/:sub
  */
-/**
- * POST /people/request/:sub
- */
-/**
- * POST /people/request/:sub
- */
 exports.sendRequest = async (req, res) => {
   try {
     const mySub = req.user?.sub;
@@ -274,7 +316,6 @@ exports.sendRequest = async (req, res) => {
       return res.status(400).json({ message: "Cannot request yourself" });
     }
 
-    // ✅ Block if reverse pending exists too
     const reverse = await FriendRequest.findOne({
       fromSub: targetSub,
       toSub: mySub,
@@ -282,10 +323,11 @@ exports.sendRequest = async (req, res) => {
     }).lean();
 
     if (reverse) {
-      return res.status(400).json({ message: "They already requested you. Check requests." });
+      return res
+        .status(400)
+        .json({ message: "They already requested you. Check requests." });
     }
 
-    // ✅ Atomic upsert prevents double-create race
     const result = await FriendRequest.findOneAndUpdate(
       { fromSub: mySub, toSub: targetSub, status: "pending" },
       { $setOnInsert: { fromSub: mySub, toSub: targetSub, status: "pending" } },
@@ -294,7 +336,6 @@ exports.sendRequest = async (req, res) => {
 
     return res.status(201).json({ request: result });
   } catch (err) {
-    // ✅ Duplicate key means request already exists
     if (err?.code === 11000) {
       return res.status(400).json({ message: "Request already exists" });
     }
@@ -303,11 +344,8 @@ exports.sendRequest = async (req, res) => {
   }
 };
 
-
-
 /**
  * POST /people/request/:requestId/accept
- * Only receiver can accept. Creates/ensures connection.
  */
 exports.acceptRequest = async (req, res) => {
   try {
@@ -321,9 +359,10 @@ exports.acceptRequest = async (req, res) => {
       return res.status(400).json({ message: "Request already handled" });
     }
 
-    // ✅ Security: only the receiver can accept
     if (request.toSub !== mySub) {
-      return res.status(403).json({ message: "Only the receiver can accept this request" });
+      return res
+        .status(403)
+        .json({ message: "Only the receiver can accept this request" });
     }
 
     const [fromUser, toUser] = await Promise.all([
@@ -335,7 +374,8 @@ exports.acceptRequest = async (req, res) => {
       return res.status(400).json({ message: "UserProfile missing" });
     }
 
-    const a = String(fromUser._id) < String(toUser._id) ? fromUser._id : toUser._id;
+    const a =
+      String(fromUser._id) < String(toUser._id) ? fromUser._id : toUser._id;
     const b = a === fromUser._id ? toUser._id : fromUser._id;
 
     await Connection.updateOne(
@@ -356,7 +396,6 @@ exports.acceptRequest = async (req, res) => {
 
 /**
  * POST /people/request/:requestId/decline
- * Only receiver can decline.
  */
 exports.declineRequest = async (req, res) => {
   try {
@@ -371,7 +410,9 @@ exports.declineRequest = async (req, res) => {
     }
 
     if (request.toSub !== mySub) {
-      return res.status(403).json({ message: "Only the receiver can decline this request" });
+      return res
+        .status(403)
+        .json({ message: "Only the receiver can decline this request" });
     }
 
     request.status = "declined";
@@ -397,7 +438,10 @@ exports.updateTier = async (req, res) => {
       return res.status(400).json({ message: "Invalid request" });
     }
 
-    const target = await UserProfile.findOne({ sub: targetSub }, { _id: 1 }).lean();
+    const target = await UserProfile.findOne(
+      { sub: targetSub },
+      { _id: 1 }
+    ).lean();
     if (!target) return res.status(404).json({ message: "User not found" });
 
     const a = String(me._id) < String(target._id) ? me._id : target._id;
@@ -422,7 +466,6 @@ exports.updateTier = async (req, res) => {
 
 /**
  * DELETE /people/:sub
- * Remove connection between me and target user.
  */
 exports.removeConnection = async (req, res) => {
   try {
@@ -430,7 +473,8 @@ exports.removeConnection = async (req, res) => {
     const targetSub = req.params.sub;
 
     if (!mySub) return res.status(401).json({ message: "Missing user sub" });
-    if (!targetSub) return res.status(400).json({ message: "Missing target sub" });
+    if (!targetSub)
+      return res.status(400).json({ message: "Missing target sub" });
 
     const [me, target] = await Promise.all([
       UserProfile.findOne({ sub: mySub }, { _id: 1 }).lean(),
