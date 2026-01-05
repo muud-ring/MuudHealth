@@ -24,7 +24,6 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
   String? _audioPath;
 
   bool _recording = false;
-  String _visibility = "Public"; // Public | Inner Circle | Connections
   String? _error;
 
   @override
@@ -33,32 +32,19 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFromGallery() async {
+  Future<void> _pickImage(ImageSource source) async {
     setState(() => _error = null);
     try {
       final x = await _picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         imageQuality: 92,
-      );
-      if (x == null) return;
-      setState(() => _imageFile = File(x.path));
-    } catch (e) {
-      setState(() => _error = "Failed to pick image: $e");
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    setState(() => _error = null);
-    try {
-      final x = await _picker.pickImage(
-        source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.rear,
-        imageQuality: 92,
       );
       if (x == null) return;
+
       setState(() => _imageFile = File(x.path));
     } catch (e) {
-      setState(() => _error = "Failed to open camera: $e");
+      setState(() => _error = "Failed to get image: $e");
     }
   }
 
@@ -108,31 +94,16 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
 
   void _goNext() {
     if (_imageFile == null) {
-      setState(() => _error = "Pick or take a photo to continue.");
+      setState(() => _error = "Add a photo to continue.");
       return;
     }
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => PreviewScreen(
-          imageFile: _imageFile!,
-          audioPath: _audioPath,
-          initialVisibility: _visibility,
-        ),
+        builder: (_) =>
+            PreviewScreen(imageFile: _imageFile!, audioPath: _audioPath),
       ),
     );
-  }
-
-  void _cycleVisibility() {
-    setState(() {
-      if (_visibility == "Public") {
-        _visibility = "Inner Circle";
-      } else if (_visibility == "Inner Circle") {
-        _visibility = "Connections";
-      } else {
-        _visibility = "Public";
-      }
-    });
   }
 
   @override
@@ -147,8 +118,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
               child: _imageFile == null
                   ? const Center(
                       child: Text(
-                        "Tap camera to take a photo\nor gallery to upload",
-                        textAlign: TextAlign.center,
+                        "Add a photo (camera or gallery)",
                         style: TextStyle(color: Colors.white70),
                       ),
                     )
@@ -208,7 +178,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
                 ),
               ),
 
-            // Bottom bar (matches your figma style)
+            // Bottom bar
             Positioned(
               left: 0,
               right: 0,
@@ -217,23 +187,20 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: _cycleVisibility,
-                      child: _pill(label: _visibility),
-                    ),
+                    _pill(label: "Public"),
                     const SizedBox(width: 10),
 
-                    // ✅ Camera (take photo)
+                    // ✅ Camera
                     _circleIcon(
                       icon: Icons.photo_camera_outlined,
-                      onTap: _takePhoto,
+                      onTap: () => _pickImage(ImageSource.camera),
                     ),
                     const SizedBox(width: 10),
 
-                    // ✅ Gallery (upload photo)
+                    // ✅ Gallery
                     _circleIcon(
                       icon: Icons.photo_library_outlined,
-                      onTap: _pickFromGallery,
+                      onTap: () => _pickImage(ImageSource.gallery),
                     ),
                     const SizedBox(width: 10),
 
@@ -251,6 +218,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
               ),
             ),
 
+            // Tiny status text
             if (_audioPath != null && !_recording)
               Positioned(
                 left: 16,
