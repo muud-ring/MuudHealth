@@ -8,6 +8,7 @@ import '../screens/journal/journal_tab.dart';
 import '../screens/people/people_tab.dart';
 import '../screens/explore/explore_tab.dart';
 import '../screens/people/sheets/connection_requests_sheet.dart';
+import '../screens/top_nav/settings_screen.dart';
 import '../screens/chat/pages/conversations_page.dart';
 
 // Journal Tab
@@ -111,8 +112,11 @@ class _AppShellState extends State<AppShell> {
             title: _titleForIndex(_selectedIndex),
             rightActions: _rightActionsForIndex(),
             onTapLeft1: () {
-              // TODO: settings
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
             },
+
             onTapLeft2: () {
               // TODO: vault/lock
             },
