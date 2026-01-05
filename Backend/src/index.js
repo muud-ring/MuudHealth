@@ -14,6 +14,11 @@ const cognitoAuthRoute = require("./routes/cognitoAuthRoute");
 const userRoute = require("./routes/userRoute");
 const peopleRoute = require("./routes/peopleRoute");
 const chatRoute = require("./routes/chatRoute"); // ✅ ADD
+const uploadRoute = require("./routes/uploadRoute");
+const postRoute = require("./routes/postRoute");
+const postReadRoute = require("./routes/postReadRoute");
+const feedRoute = require("./routes/feedRoute");
+
 
 const app = express();
 
@@ -26,6 +31,11 @@ app.use("/user", userRoute);
 app.use("/onboarding", onboardingRoute);
 app.use("/people", peopleRoute);
 app.use("/chat", chatRoute); // ✅ ADD
+app.use("/uploads", uploadRoute);
+app.use("/posts", postRoute);
+app.use("/posts", postReadRoute);
+app.use("/feed", feedRoute);
+
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "MUUD Backend" });

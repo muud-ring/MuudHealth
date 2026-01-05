@@ -10,6 +10,9 @@ import '../screens/explore/explore_tab.dart';
 import '../screens/people/sheets/connection_requests_sheet.dart';
 import '../screens/chat/pages/conversations_page.dart';
 
+// Journal Tab
+import '../screens/journal/pages/creator_tool_screen.dart';
+
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -32,11 +35,16 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _onNavTap(int index) {
-    // "+" goes to Journal (index 2) — allowed
+    // ✅ "+" should open Creator Tool instead of switching tabs
+    if (index == 2) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const CreatorToolScreen()));
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
-
-      // ✅ if user taps People, rebuild PeopleTab
       if (index == 3) _peopleReloadTick++;
     });
   }
