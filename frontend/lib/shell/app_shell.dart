@@ -118,7 +118,7 @@ class _AppShellState extends State<AppShell> {
             },
 
             onTapLeft2: () {
-              // TODO: vault/lock
+              Navigator.of(context).pushNamed('/vault');
             },
           ),
         ),
