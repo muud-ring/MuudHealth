@@ -111,7 +111,7 @@ class _JournalTabState extends State<JournalTab> {
     if (chosen == null) return;
 
     try {
-      await VaultApi.savePostToVault(postId: p.id, category: chosen);
+      await VaultApi.save(sourceId: p.id, category: chosen);
 
       if (!mounted) return;
       ScaffoldMessenger.of(

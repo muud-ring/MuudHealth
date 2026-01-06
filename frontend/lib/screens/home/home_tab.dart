@@ -348,7 +348,7 @@ class _HomeTabState extends State<HomeTab> {
     if (chosen == null || chosen.isEmpty) return;
 
     try {
-      await VaultApi.savePostToVault(postId: p.id, category: chosen);
+      await VaultApi.save(sourceId: p.id, category: chosen);
 
       if (!mounted) return;
       ScaffoldMessenger.of(
