@@ -1,3 +1,4 @@
+// backend/src/controllers/postController.js
 const Post = require("../models/Post");
 
 function normalizeVisibility(v) {
@@ -8,6 +9,7 @@ function normalizeVisibility(v) {
 }
 
 // POST /posts
+// body: { caption, mediaKeys: [], audioKey, visibility, recipientSubs: [] }
 exports.createPost = async (req, res) => {
   try {
     const sub = req.user.sub;
@@ -16,10 +18,7 @@ exports.createPost = async (req, res) => {
     const mediaKeys = Array.isArray(req.body?.mediaKeys) ? req.body.mediaKeys : [];
     const audioKey = (req.body?.audioKey || "").toString();
     const visibility = normalizeVisibility(req.body?.visibility);
-
-    const recipientSubs = Array.isArray(req.body?.recipientSubs)
-      ? req.body.recipientSubs
-      : [];
+    const recipientSubs = Array.isArray(req.body?.recipientSubs) ? req.body.recipientSubs : [];
 
     if (!mediaKeys.length) {
       return res.status(400).json({ message: "mediaKeys required" });
@@ -46,6 +45,7 @@ exports.createPost = async (req, res) => {
 };
 
 // PUT /posts/:id  (owner-only)
+// body: { caption, visibility, recipientSubs }
 exports.updatePost = async (req, res) => {
   try {
     const sub = req.user.sub;
@@ -54,18 +54,23 @@ exports.updatePost = async (req, res) => {
     const post = await Post.findById(id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
+    // ✅ only owner can edit
     if (post.authorSub !== sub) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    const caption = (req.body?.caption ?? post.caption).toString();
+    const caption = (req.body?.caption ?? post.caption ?? "").toString();
     const visibility = normalizeVisibility(req.body?.visibility ?? post.visibility);
 
     const recipientSubs = Array.isArray(req.body?.recipientSubs)
       ? req.body.recipientSubs
-      : post.recipientSubs;
+      : (post.recipientSubs || []);
 
-    // keep media/audio keys unchanged for now (safe)
+    // enforce: non-public must have recipients
+    if (visibility !== "public" && recipientSubs.length === 0) {
+      return res.status(400).json({ message: "recipientSubs required for non-public posts" });
+    }
+
     post.caption = caption;
     post.visibility = visibility;
     post.recipientSubs = recipientSubs;
@@ -95,39 +100,9 @@ exports.deletePost = async (req, res) => {
     await Post.deleteOne({ _id: id });
 
     // NOTE: Later we can also delete from S3 (mediaKeys/audioKey) safely.
-    return res.status(200).json({ message: "Deleted" });
+    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error("deletePost error:", err);
     return res.status(500).json({ message: "Failed to delete post" });
-  }
-};
-
-// PUT /posts/:id
-// body: { caption }
-exports.updatePost = async (req, res) => {
-  try {
-    const sub = req.user.sub;
-    const id = req.params.id;
-
-    const caption = (req.body?.caption || "").toString();
-
-    const post = await Post.findById(id).lean();
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
-    // ✅ only owner can edit
-    if (post.authorSub !== sub) {
-      return res.status(403).json({ message: "Not allowed" });
-    }
-
-    const updated = await Post.findByIdAndUpdate(
-      id,
-      { $set: { caption } },
-      { new: true }
-    ).lean();
-
-    return res.status(200).json({ post: updated });
-  } catch (err) {
-    console.error("updatePost error:", err);
-    return res.status(500).json({ message: "Failed to update post" });
   }
 };
