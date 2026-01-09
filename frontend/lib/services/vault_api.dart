@@ -73,7 +73,7 @@ class VaultApi {
   }
 
   /// POST /vault/save
-  static Future<void> save({
+  static Future<String> save({
     required String sourceId, // postId
     required String category, // friends/family/...
     List<Map<String, String>> tags = const [],
@@ -85,15 +85,24 @@ class VaultApi {
     final body = {
       "sourceType": "post",
       "sourceId": sourceId,
-      "category": category,
+      "category": category.toLowerCase().trim(),
       "tags": tags,
       "experienceType": experienceType,
     };
 
     final res = await http.post(uri, headers: headers, body: jsonEncode(body));
+
+    // backend may return 200 { ok:true, message:"Already saved" } OR 201
     if (res.statusCode != 200 && res.statusCode != 201) {
       throw Exception("Vault save failed: ${res.body}");
     }
+
+    final decoded = jsonDecode(res.body);
+    if (decoded is Map && decoded["message"] != null) {
+      return decoded["message"].toString();
+    }
+
+    return res.statusCode == 201 ? "Saved to Vault ✅" : "Saved ✅";
   }
 
   /// DELETE /vault/save?sourceId=<postId>

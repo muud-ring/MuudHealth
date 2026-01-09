@@ -348,12 +348,9 @@ class _HomeTabState extends State<HomeTab> {
     if (chosen == null || chosen.isEmpty) return;
 
     try {
-      await VaultApi.save(sourceId: p.id, category: chosen);
-
+      final msg = await VaultApi.save(sourceId: p.id, category: chosen);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Saved to Vault")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

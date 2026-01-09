@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/vault_api.dart';
 import '../journal/pages/creator_tool_screen.dart';
+import 'vault_category_page.dart';
 
 class VaultScreen extends StatefulWidget {
   const VaultScreen({super.key});
@@ -466,64 +467,76 @@ class _VaultScreenState extends State<VaultScreen> {
     return nonEmpty.map((s) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: kBorder),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 14,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    s.title,
-                    style: const TextStyle(
-                      color: kPurple,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    "${s.count}",
-                    style: const TextStyle(
-                      color: kGrey,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              if (s.preview.isEmpty)
-                const Text(
-                  "No previews yet",
-                  style: TextStyle(color: kGrey, fontWeight: FontWeight.w600),
-                )
-              else
-                SizedBox(
-                  height: 56,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: s.preview.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
-                    itemBuilder: (_, i) {
-                      final p = s.preview[i];
-                      return _PreviewThumb(imageUrl: p.imageUrl);
-                    },
-                  ),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => VaultCategoryPage(
+                  categoryKey: s.keyName,
+                  categoryTitle: s.title,
                 ),
-            ],
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: kBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 14,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      s.title,
+                      style: const TextStyle(
+                        color: kPurple,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      "${s.count}",
+                      style: const TextStyle(
+                        color: kGrey,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                if (s.preview.isEmpty)
+                  const Text(
+                    "No previews yet",
+                    style: TextStyle(color: kGrey, fontWeight: FontWeight.w600),
+                  )
+                else
+                  SizedBox(
+                    height: 56,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: s.preview.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      itemBuilder: (_, i) {
+                        final p = s.preview[i];
+                        return _PreviewThumb(imageUrl: p.imageUrl);
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       );
