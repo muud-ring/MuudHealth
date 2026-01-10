@@ -12,7 +12,7 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Log out?"),
-        content: const Text("You’ll be signed out of MUUD Health."),
+        content: const Text("You'll be signed out of MUUD Health."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -40,85 +40,122 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "Settings",
-          style: TextStyle(
-            color: kPurple,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        children: [
-          const SizedBox(height: 18),
-          const Text(
-            "Account Settings",
-            style: TextStyle(
-              color: kPurple,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with back arrow and title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: kPurple,
+                      size: 22,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        "Settings",
+                        style: TextStyle(
+                          color: kPurple,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Placeholder for symmetry
+                  const SizedBox(width: 22),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
 
-          const _SettingsRow(icon: Icons.person_outline, title: "Security"),
-          const Divider(color: kDivider, height: 1),
+            const SizedBox(height: 24),
 
-          const _SettingsRow(
-            icon: Icons.lock_outline,
-            title: "Profile Privacy",
-          ),
-          const Divider(color: kDivider, height: 1),
+            // Account Settings section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: const Text(
+                "Account Settings",
+                style: TextStyle(
+                  color: kPurple,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
 
-          const _SettingsRow(
-            icon: Icons.visibility_outlined,
-            title: "Content Visibility",
-          ),
-          const Divider(color: kDivider, height: 1),
+            const SizedBox(height: 16),
 
-          const _SettingsRow(
-            icon: Icons.notifications_none,
-            title: "Notifications",
-          ),
-          const Divider(color: kDivider, height: 1),
+            // Settings list
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  const _SettingsRow(
+                    icon: Icons.account_circle_outlined,
+                    title: "Security",
+                  ),
+                  const Divider(color: kDivider, height: 1),
 
-          const _SettingsRow(icon: Icons.help_outline, title: "Support"),
-          const Divider(color: kDivider, height: 1),
+                  const _SettingsRow(
+                    icon: Icons.lock_outline,
+                    title: "Profile Privacy",
+                  ),
+                  const Divider(color: kDivider, height: 1),
 
-          const _SettingsRow(
-            icon: Icons.privacy_tip_outlined,
-            title: "Privacy Policy",
-          ),
-          const Divider(color: kDivider, height: 1),
+                  const _SettingsRow(
+                    icon: Icons.remove_red_eye_outlined,
+                    title: "Content Visibility",
+                  ),
+                  const Divider(color: kDivider, height: 1),
 
-          const _SettingsRow(
-            icon: Icons.article_outlined,
-            title: "Terms & Conditions",
-          ),
+                  const _SettingsRow(
+                    icon: Icons.notifications_outlined,
+                    title: "Notifications",
+                  ),
+                  const Divider(color: kDivider, height: 1),
 
-          // ✅ Logout row (under Terms & Conditions)
-          const Divider(color: kDivider, height: 1),
-          _SettingsRow(
-            icon: Icons.logout,
-            title: "Logout",
-            titleColor: Colors.red,
-            iconColor: Colors.red,
-            trailingColor: Colors.red,
-            onTap: () => _confirmAndLogout(context),
-          ),
-          const Divider(color: kDivider, height: 1),
-        ],
+                  const _SettingsRow(
+                    icon: Icons.help_outline,
+                    title: "Support",
+                  ),
+                  const Divider(color: kDivider, height: 1),
+
+                  const _SettingsRow(
+                    icon: Icons.policy_outlined,
+                    title: "Privacy Policy",
+                  ),
+                  const Divider(color: kDivider, height: 1),
+
+                  const _SettingsRow(
+                    icon: Icons.description_outlined,
+                    title: "Terms & Conditions",
+                  ),
+                  const Divider(color: kDivider, height: 1),
+
+                  // ✅ Logout row (keeping functionality)
+                  _SettingsRow(
+                    icon: Icons.logout,
+                    title: "Logout",
+                    titleColor: Colors.red,
+                    iconColor: Colors.red,
+                    trailingColor: Colors.red,
+                    onTap: () => _confirmAndLogout(context),
+                  ),
+                  const Divider(color: kDivider, height: 1),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -135,6 +172,7 @@ class _SettingsRow extends StatelessWidget {
   });
 
   static const Color kPurple = Color(0xFF5B288E);
+  static const Color kGray = Color(0xFF9E9E9E);
 
   final IconData icon;
   final String title;
@@ -157,26 +195,22 @@ class _SettingsRow extends StatelessWidget {
     return InkWell(
       onTap: effectiveOnTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 22),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? kPurple, size: 28),
+            Icon(icon, color: iconColor ?? kPurple, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
                   color: titleColor ?? kPurple,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: trailingColor ?? kPurple,
-              size: 28,
-            ),
+            Icon(Icons.chevron_right, color: trailingColor ?? kGray, size: 24),
           ],
         ),
       ),
