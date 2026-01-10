@@ -27,6 +27,8 @@ import 'screens/people/pages/suggestions_page.dart';
 
 import 'screens/chat/pages/conversations_page.dart';
 
+import 'screens/top_nav/vault_screen.dart';
+
 // ✅ App shell (bottom nav)
 import 'shell/app_shell.dart';
 
@@ -118,6 +120,9 @@ class _MuudAppState extends State<MuudApp> {
 
         // Chat
         '/chat/conversations': (_) => const ConversationsPage(),
+
+        //Vault
+        '/vault': (_) => const VaultScreen(),
       },
 
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),

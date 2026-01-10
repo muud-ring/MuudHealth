@@ -12,70 +12,81 @@ class OnboardingPage05 extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+          padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                padding: EdgeInsets.zero,
+              // Back arrow
+              Align(
                 alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back, color: kPurple),
-                onPressed: () => Navigator.pop(context),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: kPurple,
+                    size: 22,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-              const SizedBox(height: 16),
 
+              // Illustration - takes up available space
               Expanded(
                 child: Center(
-                  child: Container(
-                    height: 260,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF2F2F7),
-                      borderRadius: BorderRadius.circular(18),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Image.asset(
+                      'assets/images/onboarding/onboarding05.png',
+                      fit: BoxFit.contain,
                     ),
-                    alignment: Alignment.center,
-                    child: const Text("Alarm illustration placeholder"),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 18),
-
+              // Title
               const Center(
                 child: Text(
                   "MUUD wants to send you\nnotifications",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
                     color: kPurple,
-                    height: 1.15,
+                    height: 1.2,
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // Subtitle
               const Center(
                 child: Text(
-                  "MUUD’s notifications will remind you to log\nyour journal/journey.",
+                  "MUUD's notifications will remind you to log\nyour journal/journey.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
-                    height: 1.35,
-                    color: Color(0xFF6B6B6B),
+                    fontSize: 18,
+                    height: 1.4,
+                    color: kPurple,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 32),
 
+              // Allow notifications button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPurple,
-                    shape: const StadiumBorder(),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                     elevation: 0,
                   ),
                   onPressed: () {
@@ -88,20 +99,25 @@ class OnboardingPage05 extends StatelessWidget {
                     "Allow notifications",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // No thanks button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple),
-                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: kPurple, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                   ),
                   onPressed: () {
                     OnboardingState.answers.notificationsEnabled =
@@ -112,7 +128,7 @@ class OnboardingPage05 extends StatelessWidget {
                     "No thanks",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: kPurple,
                     ),
                   ),

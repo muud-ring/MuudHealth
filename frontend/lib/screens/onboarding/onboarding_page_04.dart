@@ -48,59 +48,75 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
 
   @override
   Widget build(BuildContext context) {
+    final canContinue = selected.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+          padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                padding: EdgeInsets.zero,
+              // Back arrow
+              Align(
                 alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back, color: kPurple),
-                onPressed: () => Navigator.pop(context),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: kPurple,
+                    size: 22,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 32),
+
+              // Title
               const Text(
                 "Do you have any preferred\ntypes of activities?",
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
                   color: kPurple,
-                  height: 1.15,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 16),
+
+              // Subtitle
               const Text(
-                "Your answers won’t prevent you from\n"
-                "accessing any wellness tips, and you can\n"
-                "adjust your settings later.",
+                "Your answers won't prevent you from accessing any wellness tips, and you can adjust your settings later.",
                 style: TextStyle(
-                  fontSize: 16,
-                  height: 1.35,
-                  color: Color(0xFF6B6B6B),
+                  fontSize: 18,
+                  height: 1.4,
+                  color: kPurple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 16),
 
+              const SizedBox(height: 20),
+
+              // Activity grid
               Expanded(
                 child: GridView.builder(
                   itemCount: items.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 1.05,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.0,
                   ),
                   itemBuilder: (_, i) {
                     final item = items[i];
                     final isSelected = selected.contains(item.title);
 
                     return InkWell(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         setState(() {
                           if (isSelected) {
@@ -115,21 +131,11 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isSelected
-                                ? kPurple
-                                : const Color(0xFFE8E8E8),
-                            width: 2,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x11000000),
-                              blurRadius: 12,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSelected
+                              ? Border.all(color: kPurple, width: 2)
+                              : null,
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -137,14 +143,15 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                           children: [
                             Text(
                               item.emoji,
-                              style: const TextStyle(fontSize: 44),
+                              style: const TextStyle(fontSize: 56),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Text(
                               item.title,
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
                             ),
                           ],
@@ -155,15 +162,19 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
+              // Continue button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
-                    shape: const StadiumBorder(),
+                    backgroundColor: kPurple.withOpacity(canContinue ? 1 : 0.5),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                     elevation: 0,
                   ),
                   onPressed: () =>
@@ -172,27 +183,32 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                     "Continue",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // Skip setup button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple),
-                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: kPurple, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                   ),
                   onPressed: () => _skip(context),
                   child: const Text(
                     "Skip setup",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: kPurple,
                     ),
                   ),

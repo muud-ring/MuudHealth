@@ -24,6 +24,32 @@ class _SignupScreenState extends State<SignupScreen> {
 
   static const Color kPurple = Color(0xFF5B288E);
 
+  // ✅ Figma-like disabled button color (light grey-purple)
+  static const Color kDisabledPurple = Color(0xFFB7A6C8);
+
+  // ✅ UI-only: enable button only when ALL fields filled + dob selected
+  bool get _isFormComplete {
+    return _identifier.text.trim().isNotEmpty &&
+        _fullName.text.trim().isNotEmpty &&
+        _username.text.trim().isNotEmpty &&
+        _password.text.isNotEmpty &&
+        _dob != null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ UI-only listeners so button updates while typing
+    _identifier.addListener(_onFormChanged);
+    _fullName.addListener(_onFormChanged);
+    _username.addListener(_onFormChanged);
+    _password.addListener(_onFormChanged);
+  }
+
+  void _onFormChanged() {
+    if (mounted) setState(() {});
+  }
+
   String _formatDobForBackend(DateTime d) {
     final y = d.year.toString().padLeft(4, '0');
     final m = d.month.toString().padLeft(2, '0');
@@ -51,7 +77,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (picked != null) {
-      setState(() => _dob = picked);
+      setState(() => _dob = picked); // ✅ updates button too
     }
   }
 
@@ -104,6 +130,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+    _identifier.removeListener(_onFormChanged);
+    _fullName.removeListener(_onFormChanged);
+    _username.removeListener(_onFormChanged);
+    _password.removeListener(_onFormChanged);
+
     _identifier.dispose();
     _fullName.dispose();
     _username.dispose();
@@ -114,6 +145,8 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    final bool enabled = _isFormComplete && !_loading;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -290,10 +323,13 @@ class _SignupScreenState extends State<SignupScreen> {
             SizedBox(
               height: 54,
               child: ElevatedButton(
-                onPressed: _loading ? null : _signup,
+                // ✅ disabled until complete, exactly like Figma
+                onPressed: enabled ? _signup : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple.withOpacity(_loading ? 0.5 : 0.45),
-                  disabledBackgroundColor: kPurple.withOpacity(0.35),
+                  // When enabled -> dark purple (Figma "after")
+                  backgroundColor: kPurple,
+                  // When disabled -> light grey-purple (Figma "before")
+                  disabledBackgroundColor: kDisabledPurple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),

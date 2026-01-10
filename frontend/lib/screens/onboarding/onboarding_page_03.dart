@@ -54,87 +54,94 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+          padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                padding: EdgeInsets.zero,
+              // Back arrow
+              Align(
                 alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back, color: kPurple),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                "Is there anything specific\nyou’d like to focus on?",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: kPurple,
-                  height: 1.15,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: kPurple,
+                    size: 22,
+                  ),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 32),
+
+              // Title
               const Text(
-                "Your answers won’t prevent you from\n"
-                "accessing any wellness tips, and you can\n"
-                "adjust your settings later.",
+                "Is there anything specific\nyou'd like to focus on?",
                 style: TextStyle(
-                  fontSize: 16,
-                  height: 1.35,
-                  color: Color(0xFF6B6B6B),
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: kPurple,
+                  height: 1.2,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Subtitle
+              const Text(
+                "Your answers won't prevent you from accessing any wellness tips, and you can adjust your settings later.",
+                style: TextStyle(
+                  fontSize: 18,
+                  height: 1.4,
+                  color: kPurple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 24),
+
+              // Options list
               Expanded(
                 child: ListView.separated(
                   itemCount: goalOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 14),
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
                     final option = goalOptions[i];
                     final selected = selectedGoal == option;
 
                     return InkWell(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         setState(() => selectedGoal = option);
                         OnboardingState.answers.focusGoal = option; // ✅ store
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
+                          horizontal: 20,
+                          vertical: 18,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: const Color(0xFFE8E8E8),
-                            width: 1.2,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x11000000),
-                              blurRadius: 12,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              width: 26,
-                              height: 26,
+                              width: 28,
+                              height: 28,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: kPurple, width: 2),
+                                color: selected
+                                    ? Colors.white
+                                    : Colors.transparent,
                               ),
                               child: selected
                                   ? Center(
                                       child: Container(
-                                        width: 12,
-                                        height: 12,
+                                        width: 14,
+                                        height: 14,
                                         decoration: const BoxDecoration(
                                           color: kPurple,
                                           shape: BoxShape.circle,
@@ -143,13 +150,13 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                                     )
                                   : null,
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Text(
                                 option,
                                 style: const TextStyle(
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                   color: Colors.black87,
                                 ),
                               ),
@@ -161,16 +168,20 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                   },
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 16),
+
+              // Continue button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(
-                      canContinue ? 1 : 0.45,
+                    backgroundColor: kPurple.withOpacity(canContinue ? 1 : 0.5),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
                     ),
-                    shape: const StadiumBorder(),
                     elevation: 0,
                   ),
                   onPressed: canContinue
@@ -180,27 +191,32 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                     "Continue",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // Skip setup button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple),
-                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: kPurple, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                   ),
                   onPressed: () => _skip(context),
                   child: const Text(
                     "Skip setup",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: kPurple,
                     ),
                   ),

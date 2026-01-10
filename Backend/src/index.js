@@ -18,6 +18,7 @@ const uploadRoute = require("./routes/uploadRoute");
 const postRoute = require("./routes/postRoute");
 const postReadRoute = require("./routes/postReadRoute");
 const feedRoute = require("./routes/feedRoute");
+const vaultRoute = require("./routes/vaultRoute");
 
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/uploads", uploadRoute);
 app.use("/posts", postRoute);
 app.use("/posts", postReadRoute);
 app.use("/feed", feedRoute);
+app.use("/vault", vaultRoute);
 
 
 app.get("/health", (req, res) => {

@@ -2,10 +2,37 @@ import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
 
-class OnboardingPage06 extends StatelessWidget {
+class OnboardingPage06 extends StatefulWidget {
   const OnboardingPage06({super.key});
 
+  @override
+  State<OnboardingPage06> createState() => _OnboardingPage06State();
+}
+
+class _OnboardingPage06State extends State<OnboardingPage06> {
   static const Color kPurple = Color(0xFF5B288E);
+
+  final List<_SupportOption> options = const [
+    _SupportOption(
+      id: 'emotions',
+      text:
+          "Discover strategies to help you navigate and work with your emotions.",
+      imagePath: 'assets/images/onboarding/onboarding06_map.png',
+    ),
+    _SupportOption(
+      id: 'journal',
+      text:
+          "Uncover patterns by reflecting through your daily journal or journey.",
+      imagePath: 'assets/images/onboarding/onboarding06_journal.png',
+    ),
+    _SupportOption(
+      id: 'wellness',
+      text: "Find the right wellness session tailored to your needs.",
+      imagePath: 'assets/images/onboarding/onboarding06_wellness.png',
+    ),
+  ];
+
+  final Set<String> selectedOptions = {};
 
   Future<void> _skip(BuildContext context) async {
     try {
@@ -30,58 +57,80 @@ class OnboardingPage06 extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+          padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                padding: EdgeInsets.zero,
+              // Back arrow
+              Align(
                 alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back, color: kPurple),
-                onPressed: () => Navigator.pop(context),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: kPurple,
+                    size: 22,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-              const SizedBox(height: 10),
 
+              const SizedBox(height: 24),
+
+              // Title
               const Text(
-                "Great! Here’s how MUUD\nHealth can support you:",
+                "Great! Here's how MUUD\nHealth can support you:",
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
                   color: kPurple,
-                  height: 1.15,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 18),
 
+              const SizedBox(height: 20),
+
+              // Cards list
               Expanded(
-                child: ListView(
-                  children: const [
-                    _SupportCard(
-                      text:
-                          "Discover strategies to help you navigate and work with your emotions.",
-                    ),
-                    SizedBox(height: 14),
-                    _SupportCard(
-                      text:
-                          "Uncover patterns by reflecting through your daily journal or journey.",
-                    ),
-                    SizedBox(height: 14),
-                    _SupportCard(
-                      text:
-                          "Find the right wellness session tailored to your needs.",
-                    ),
-                  ],
+                child: ListView.separated(
+                  itemCount: options.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isSelected = selectedOptions.contains(option.id);
+
+                    return _SupportCard(
+                      text: option.text,
+                      imagePath: option.imagePath,
+                      isSelected: isSelected,
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            selectedOptions.remove(option.id);
+                          } else {
+                            selectedOptions.add(option.id);
+                          }
+                        });
+                      },
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // Continue button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPurple,
-                    shape: const StadiumBorder(),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                     elevation: 0,
                   ),
                   onPressed: () =>
@@ -90,27 +139,32 @@ class OnboardingPage06 extends StatelessWidget {
                     "Continue",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // Skip setup button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple),
-                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: kPurple, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                   ),
                   onPressed: () => _skip(context),
                   child: const Text(
                     "Skip setup",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: kPurple,
                     ),
                   ),
@@ -124,52 +178,66 @@ class OnboardingPage06 extends StatelessWidget {
   }
 }
 
+class _SupportOption {
+  final String id;
+  final String text;
+  final String imagePath;
+
+  const _SupportOption({
+    required this.id,
+    required this.text,
+    required this.imagePath,
+  });
+}
+
 class _SupportCard extends StatelessWidget {
   final String text;
-  const _SupportCard({required this.text});
+  final String imagePath;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SupportCard({
+    required this.text,
+    required this.imagePath,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   static const Color kPurple = Color(0xFF5B288E);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8E8E8)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 14.5,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-              height: 1.35,
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: kPurple, width: 2) : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+                height: 1.4,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 120,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2F2F7),
-              borderRadius: BorderRadius.circular(14),
+            const SizedBox(height: 16),
+            Center(
+              child: SizedBox(
+                height: 120,
+                child: Image.asset(imagePath, fit: BoxFit.contain),
+              ),
             ),
-            alignment: Alignment.center,
-            child: const Text("Illustration placeholder"),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

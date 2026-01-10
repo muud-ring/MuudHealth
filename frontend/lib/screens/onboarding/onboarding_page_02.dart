@@ -37,78 +37,84 @@ class OnboardingPage02 extends StatelessWidget {
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+            padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back arrow (matches Figma style)
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                // Back arrow
+                Align(
                   alignment: Alignment.centerLeft,
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: kPurple,
-                    size: 22,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: kPurple,
+                      size: 22,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
-                // Title (Figma-like)
+                // Title - "Hello!" and "Welcome to MUUD Health!"
                 const Text(
-                  "Hello!\nWelcome to MUUD Health!",
+                  "Hello!",
                   style: TextStyle(
-                    fontSize:
-                        40, // slightly smaller than 44; closer to your Figma pic
-                    fontWeight: FontWeight.w800,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
                     color: kPurple,
-                    height: 1.08,
+                    height: 1.2,
+                  ),
+                ),
+                const Text(
+                  "Welcome to MUUD Health!",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: kPurple,
+                    height: 1.2,
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
-                // Body text (in Figma it's purple + larger than your earlier gray)
+                // Body text
                 const Text(
-                  "Let’s take a few minutes to get you set up.\n"
-                  "Ensure you’re in a quiet space and ready for\n"
-                  "the next steps.",
+                  "Let's take a few minutes to get you set up. Ensure you're in a quiet space and ready for the next steps.",
                   style: TextStyle(
                     fontSize: 20,
-                    height: 1.28,
+                    height: 1.4,
                     color: kPurple,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                // Push illustration down like Figma, but keep it flexible to avoid overflow
-                const Spacer(),
-
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 360,
-                      maxHeight: 320,
-                    ),
-                    child: Image.asset(
-                      'assets/images/onboarding/onboarding02.png',
-                      fit: BoxFit.contain,
+                // Illustration centered in remaining space
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Image.asset(
+                        'assets/images/onboarding/onboarding02.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
 
-                const Spacer(),
-
                 // Continue button
                 SizedBox(
                   width: double.infinity,
-                  height: 62,
+                  height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kPurple,
-                      shape: const StadiumBorder(),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: () =>
@@ -117,30 +123,32 @@ class OnboardingPage02 extends StatelessWidget {
                       "Continue",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Skip setup button
                 SizedBox(
                   width: double.infinity,
-                  height: 62,
+                  height: 56,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: kPurple, width: 2),
-                      shape: const StadiumBorder(),
+                      side: const BorderSide(color: kPurple, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
                     ),
                     onPressed: () => _skip(context),
                     child: const Text(
                       "Skip setup",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: kPurple,
                       ),
                     ),

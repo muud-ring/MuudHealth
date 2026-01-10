@@ -82,6 +82,11 @@ flutter:
     - assets/images/splash_screen.jpg
     - assets/images/onboarding/onboarding01.png
     - assets/images/onboarding/onboarding02.png
+    - assets/images/onboarding/onboarding05.png
+    - assets/images/onboarding/onboarding06_map.png
+    - assets/images/onboarding/onboarding06_journal.png
+    - assets/images/onboarding/onboarding06_wellness.png
+
 
 flutter_native_splash:
   android: true

@@ -16,10 +16,25 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
   bool loading = false;
   String? error;
 
-  // Placeholder toggles (UI only)
-  bool done1 = true;
-  bool done2 = true;
-  bool done3 = false;
+  // Multi-selection toggles
+  final Set<String> selectedOptions = {};
+
+  final List<String> options = const [
+    "Customize journal and journey",
+    "Prepare your first wellness sessions",
+    "Creating your optimal plan to enhance your mood",
+  ];
+
+  void _toggleOption(String option) {
+    if (loading) return;
+    setState(() {
+      if (selectedOptions.contains(option)) {
+        selectedOptions.remove(option);
+      } else {
+        selectedOptions.add(option);
+      }
+    });
+  }
 
   Future<void> _completeSetup() async {
     setState(() {
@@ -51,81 +66,94 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
 
   @override
   Widget build(BuildContext context) {
+    final hasSelection = selectedOptions.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+          padding: const EdgeInsets.fromLTRB(32, 8, 32, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Back arrow
               IconButton(
                 padding: EdgeInsets.zero,
-                alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back, color: kPurple),
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: kPurple,
+                  size: 22,
+                ),
                 onPressed: loading ? null : () => Navigator.pop(context),
               ),
-              const SizedBox(height: 12),
 
+              const SizedBox(height: 32),
+
+              // Title
               const Text(
-                "Just a moment while we get\nMUUD ready for you…",
+                "Just a moment while we get\nMUUD ready for you...",
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
                   color: kPurple,
-                  height: 1.15,
+                  height: 1.2,
                 ),
               ),
+
               const SizedBox(height: 12),
+
+              // Subtitle
               const Text(
-                "Thank you for your patience :) We’re here to\nhelp you feel better.",
+                "Thank you for your patience :) We're here to\nhelp you feel better.",
                 style: TextStyle(
-                  fontSize: 16,
-                  height: 1.35,
-                  color: Color(0xFF6B6B6B),
+                  fontSize: 18,
+                  height: 1.4,
+                  color: kPurple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 22),
 
-              _CheckRow(
-                checked: done1,
-                text: "Customize journal and journey",
-                onTap: loading ? null : () => setState(() => done1 = !done1),
-              ),
-              const SizedBox(height: 12),
-              _CheckRow(
-                checked: done2,
-                text: "Prepare your first wellness sessions",
-                onTap: loading ? null : () => setState(() => done2 = !done2),
-              ),
-              const SizedBox(height: 12),
-              _CheckRow(
-                checked: done3,
-                text: "Creating your optimal plan to enhance your mood",
-                onTap: loading ? null : () => setState(() => done3 = !done3),
+              const SizedBox(height: 24),
+
+              // Options list
+              ...options.map(
+                (option) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _CheckRow(
+                    checked: selectedOptions.contains(option),
+                    text: option,
+                    onTap: () => _toggleOption(option),
+                  ),
+                ),
               ),
 
               if (error != null) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
                 Text(
                   error!,
                   style: const TextStyle(
                     color: Colors.red,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
 
               const Spacer(),
 
+              // Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
-                    shape: const StadiumBorder(),
+                    backgroundColor: kPurple.withOpacity(
+                      hasSelection ? 1 : 0.5,
+                    ),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
                     elevation: 0,
                   ),
                   onPressed: loading ? null : _completeSetup,
@@ -138,11 +166,11 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          "Complete setup",
-                          style: TextStyle(
+                      : Text(
+                          hasSelection ? "Complete setup" : "Continue",
+                          style: const TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
@@ -159,7 +187,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
 class _CheckRow extends StatelessWidget {
   final bool checked;
   final String text;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   const _CheckRow({
     required this.checked,
@@ -168,18 +196,22 @@ class _CheckRow extends StatelessWidget {
   });
 
   static const Color kPurple = Color(0xFF5B288E);
+  static const Color kSelectedBg = Color(0xFFF5E6FA);
+  static const Color kSelectedBorder = Color(0xFFE8B4F8);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: checked ? const Color(0xFFF4EAFB) : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: kPurple.withOpacity(0.65), width: 1.2),
+          color: checked ? kSelectedBg : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(16),
+          border: checked
+              ? Border.all(color: kSelectedBorder, width: 1.5)
+              : null,
         ),
         child: Row(
           children: [
@@ -195,13 +227,13 @@ class _CheckRow extends StatelessWidget {
                   ? const Icon(Icons.check, color: Colors.white, size: 18)
                   : null,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Text(
                 text,
                 style: const TextStyle(
-                  fontSize: 15.5,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                   color: Colors.black87,
                 ),
               ),

@@ -6,6 +6,7 @@ import '../../services/user_api.dart';
 import '../../services/token_storage.dart';
 import '../../services/feed_api.dart';
 import '../../services/journal_api.dart';
+import '../../services/vault_api.dart';
 
 // ✅ ADD THIS IMPORT
 import '../journal/pages/edit_journal_screen.dart';
@@ -41,6 +42,16 @@ class _HomeTabState extends State<HomeTab> {
   final AudioPlayer _player = AudioPlayer();
   String? _playingId;
   bool _playing = false;
+
+  static const List<Map<String, String>> _vaultCategories = [
+    {"key": "family", "label": "Family"},
+    {"key": "friends", "label": "Friends"},
+    {"key": "events", "label": "Events"},
+    {"key": "holidays", "label": "Holidays"},
+    {"key": "work", "label": "Work"},
+    {"key": "school", "label": "School"},
+    {"key": "other", "label": "Other"},
+  ];
 
   @override
   void initState() {
@@ -316,6 +327,34 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ],
         ),
+      );
+    }
+  }
+
+  Future<void> _openSaveToVaultSheet(_FeedPost p) async {
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) => _VaultCategorySheet(
+        categories: _vaultCategories,
+        purple: kPurple,
+        grey: kGreyText,
+      ),
+    );
+
+    if (chosen == null || chosen.isEmpty) return;
+
+    try {
+      final msg = await VaultApi.save(sourceId: p.id, category: chosen);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
       );
     }
   }
@@ -632,6 +671,17 @@ class _HomeTabState extends State<HomeTab> {
                                       ),
                                     ),
                                     const Spacer(),
+
+                                    // ✅ Save to Vault
+                                    IconButton(
+                                      onPressed: () => _openSaveToVaultSheet(p),
+                                      icon: const Icon(
+                                        Icons.bookmark_border,
+                                        color: kPurple,
+                                      ),
+                                      tooltip: "Save to Vault",
+                                    ),
+
                                     Text(
                                       p.visibilityLabel,
                                       style: const TextStyle(
@@ -772,6 +822,139 @@ class _FeedPost {
       createdAt:
           DateTime.tryParse((m["createdAt"] ?? "").toString()) ??
           DateTime.now(),
+    );
+  }
+}
+
+class _VaultCategorySheet extends StatefulWidget {
+  final List<Map<String, String>> categories;
+  final Color purple;
+  final Color grey;
+
+  const _VaultCategorySheet({
+    required this.categories,
+    required this.purple,
+    required this.grey,
+  });
+
+  @override
+  State<_VaultCategorySheet> createState() => _VaultCategorySheetState();
+}
+
+class _VaultCategorySheetState extends State<_VaultCategorySheet> {
+  String selected = "other";
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE7E1EF),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              "Save to Vault",
+              style: TextStyle(
+                color: widget.purple,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Choose a category for this memory.",
+              style: TextStyle(color: widget.grey, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 14),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: widget.categories.map((c) {
+                  final key = c["key"]!;
+                  final label = c["label"]!;
+                  final isSelected = selected == key;
+
+                  return InkWell(
+                    onTap: () => setState(() => selected = key),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? widget.purple : Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: widget.purple),
+                      ),
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : widget.purple,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      side: BorderSide(color: widget.purple),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        color: widget.purple,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, selected),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.purple,
+                      shape: const StadiumBorder(),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      "Save",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
