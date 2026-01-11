@@ -1,4 +1,8 @@
+// backend/src/controllers/cognitoAuthController.js
+
 const cognito = require("../config/cognito");
+const UserProfile = require("../models/UserProfile");
+
 const {
   SignUpCommand,
   ConfirmSignUpCommand,
@@ -8,8 +12,6 @@ const {
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 function normalizeUsername(identifier) {
-  // Cognito expects the same "Username" you used at signup.
-  // If signup uses email/phone as username, keep it identical here.
   return (identifier || "").trim();
 }
 
@@ -21,8 +23,6 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // birthdate must be YYYY-MM-DD
-    // identifier is email or phone (E.164 recommended for phone, e.g. +14155552671)
     const cmd = new SignUpCommand({
       ClientId: process.env.COGNITO_CLIENT_ID,
       Username: normalizeUsername(identifier),
@@ -31,14 +31,41 @@ exports.signup = async (req, res) => {
         { Name: "name", Value: fullName },
         { Name: "birthdate", Value: birthdate },
         { Name: "custom:username", Value: username },
-        // Optional: If your pool needs explicit email/phone attributes, you can set them too:
-        // If identifier includes "@", set email; if starts with "+", set phone_number
-        ...(identifier.includes("@") ? [{ Name: "email", Value: identifier }] : []),
-        ...(!identifier.includes("@") ? [{ Name: "phone_number", Value: identifier }] : []),
+        ...(identifier.includes("@")
+          ? [{ Name: "email", Value: identifier }]
+          : []),
+        ...(!identifier.includes("@")
+          ? [{ Name: "phone_number", Value: identifier }]
+          : []),
       ],
     });
 
     const out = await cognito.send(cmd);
+
+    // ✅ IMPORTANT: Store name/username in our DB profile immediately
+    // This fixes "suggested friends showing sub/uuid".
+    try {
+      await UserProfile.updateOne(
+        { sub: out.UserSub },
+        {
+          $setOnInsert: {
+            sub: out.UserSub,
+            bio: "",
+            location: "",
+            phone: "",
+            avatarKey: "",
+          },
+          $set: {
+            name: fullName || "",
+            username: username || "",
+          },
+        },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.warn("⚠️ UserProfile upsert failed (signup):", e?.message || e);
+      // don't block signup if DB update fails
+    }
 
     return res.status(200).json({
       message: "Signup success. OTP sent for verification.",

@@ -38,6 +38,14 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     super.dispose();
   }
 
+  bool _looksLikeUuid(String v) {
+    final s = v.trim();
+    final r = RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    );
+    return r.hasMatch(s);
+  }
+
   String _tintForSub(String sub) {
     const options = ["purple", "orange", "green", "blue", "pink", "yellow"];
     final code = sub.codeUnits.fold<int>(0, (a, b) => a + b);
@@ -50,29 +58,29 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   }
 
   /// ✅ Display priority:
-  /// 1) username (preferred)
-  /// 2) name
-  /// 3) short sub fallback
+  /// 1) name (preferred)
+  /// 2) username (only if NOT uuid)
+  /// 3) short sub
   Person _personFromProfile(Map<String, dynamic> raw) {
     final sub = (raw['sub'] ?? '').toString().trim();
 
-    final username = (raw['username'] ?? '').toString().trim();
+    final rawUsername = (raw['username'] ?? '').toString().trim();
+    final username = _looksLikeUuid(rawUsername) ? "" : rawUsername;
+
     final name = (raw['name'] ?? '').toString().trim();
     final location = (raw['location'] ?? '').toString().trim();
 
-    // Prefer username, else name, else short sub
-    final displayName = username.isNotEmpty
-        ? username
-        : (name.isNotEmpty ? name : _shortSub(sub));
+    final displayName = name.isNotEmpty
+        ? name
+        : (username.isNotEmpty ? username : "User ${_shortSub(sub)}");
 
-    // Handle shows @username if we actually have a username
     final handle = username.isNotEmpty ? '@$username' : '';
 
     return Person(
-      id: sub, // keep sub always
-      name: displayName, // ✅ this is what PersonTile shows as the main title
-      handle: handle, // optional if you want to show later
-      avatarUrl: (raw['avatarUrl'] ?? '').toString(), // if backend returns it
+      id: sub,
+      name: displayName,
+      handle: handle,
+      avatarUrl: (raw['avatarUrl'] ?? '').toString(),
       location: location,
       lastActive: "",
       moodChip: "",
@@ -106,7 +114,8 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
       final msg = e.toString();
       setState(() {
         loading = false;
-        error = msg.contains('401') || msg.contains('Unauthorized')
+        error =
+            msg.contains('401') || msg.toLowerCase().contains('unauthorized')
             ? "Session expired. Please log in again."
             : msg.replaceFirst('Exception: ', '');
       });
@@ -128,7 +137,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
 
     try {
       await PeopleApi.sendRequest(sub: sub);
-
       PeopleEvents.notifyReload();
 
       if (!mounted) return;
@@ -269,7 +277,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                       final p = suggestions[i];
                       return PersonTile(
                         person: p,
-                        onTap: () {}, // keep safe for demo
+                        onTap: () {},
                         onTapMenu: () => _openMenu(p),
                       );
                     },

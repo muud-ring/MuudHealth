@@ -54,9 +54,6 @@ class _PeopleTabState extends State<PeopleTab> {
 
   @override
   Widget build(BuildContext context) {
-    final hasPeople =
-        controller.innerCircle.isNotEmpty || controller.connections.isNotEmpty;
-
     if (controller.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -147,10 +144,9 @@ class _PeopleTabState extends State<PeopleTab> {
             InnerCircleRing(
               isEmpty: controller.innerCircle.isEmpty,
               people: controller.innerCircle,
-              centerPerson: controller.me, // ✅ NEW
-              onTapAddFriends: () {
-                Navigator.pushNamed(context, '/people/suggestions');
-              },
+              centerPerson: controller.me,
+              onTapAddFriends: () =>
+                  Navigator.pushNamed(context, '/people/suggestions'),
               onTapPerson: (p) {
                 Navigator.push(
                   context,
@@ -159,21 +155,9 @@ class _PeopleTabState extends State<PeopleTab> {
               },
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 26),
 
-            if (!hasPeople) ...[
-              const SizedBox(height: 10),
-              PrimaryButton(
-                text: "Add Friends",
-                onTap: () =>
-                    Navigator.pushNamed(context, '/people/suggestions'),
-              ),
-              const SizedBox(height: 26),
-            ] else ...[
-              const SizedBox(height: 6),
-            ],
-
-            // --- Connections preview
+            // --- Connections
             SectionTitle(
               title: "Connections",
               trailingText: "See All",
@@ -203,7 +187,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      "Add friends to connect and\nshare your muuds.",
+                      "Your connections will show up here.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: kGreyText,
@@ -217,7 +201,7 @@ class _PeopleTabState extends State<PeopleTab> {
               ),
               const SizedBox(height: 14),
               PrimaryButton(
-                text: "Add Friends",
+                text: "Add friends",
                 onTap: () =>
                     Navigator.pushNamed(context, '/people/suggestions'),
               ),
@@ -242,7 +226,6 @@ class _PeopleTabState extends State<PeopleTab> {
 
               const SizedBox(height: 10),
 
-              // ✅ Figma "Show more" pill button
               SizedBox(
                 width: double.infinity,
                 height: 44,
@@ -308,11 +291,6 @@ class _PeopleTabState extends State<PeopleTab> {
                   },
                 ),
               ),
-
-            const SizedBox(height: 10),
-
-            // hidden dev refresh (optional): long-press title to refresh
-            // (keeps Figma clean but still lets you refresh)
           ],
         ),
       ),

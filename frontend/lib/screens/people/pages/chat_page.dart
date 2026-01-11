@@ -78,6 +78,14 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    try {
+      final s = ChatSocket.instance.socket;
+      if (conversationId != null) {
+        s?.emit("leaveConversation", conversationId);
+      }
+      s?.off("newMessage");
+    } catch (_) {}
+
     _text.dispose();
     super.dispose();
   }
@@ -95,9 +103,9 @@ class _ChatPageState extends State<ChatPage> {
       );
 
       // REST returns message too; we can optimistically add
-      if (mounted) {
-        setState(() => messages.add(msg));
-      }
+      // if (mounted) {
+      //   setState(() => messages.add(msg));
+      // }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

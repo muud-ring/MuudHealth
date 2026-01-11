@@ -19,6 +19,36 @@ function looksLikeUuid(v) {
   );
 }
 
+function shortSub(sub) {
+  const s = (sub || "").toString().trim();
+  if (!s) return "user";
+  return s.length > 8 ? s.substring(0, 8) : s;
+}
+
+function sanitizeProfile(p) {
+  if (!p) return p;
+
+  const name = (p.name || "").toString().trim();
+  const username = (p.username || "").toString().trim();
+  const sub = (p.sub || "").toString().trim();
+
+  // If username is UUID-like -> remove it (so frontend doesn't show junk)
+  const cleanedUsername = looksLikeUuid(username) ? "" : username;
+
+  // If name is missing -> use fallback "User xxxx"
+  const cleanedName = name && !looksLikeUuid(name) ? name : `User ${shortSub(sub)}`;
+
+  return {
+    ...p,
+    name: cleanedName,
+    username: cleanedUsername,
+  };
+}
+
+function sanitizeProfiles(list) {
+  return Array.isArray(list) ? list.map(sanitizeProfile) : list;
+}
+
 function pickFirstHumanString(candidates) {
   for (const c of candidates) {
     const s = (c || "").toString().trim();
@@ -115,7 +145,6 @@ function getOtherUserId(connection, myId) {
 
 /**
  * GET /people/me
- * Returns the current user's profile (with avatarUrl)
  */
 exports.getMe = async (req, res) => {
   try {
@@ -130,6 +159,7 @@ exports.getMe = async (req, res) => {
     if (!profile) return res.status(404).json({ message: "User not found" });
 
     profile = (await attachAvatarUrls([profile]))[0];
+    profile = sanitizeProfile(profile);
 
     return res.status(200).json({ me: profile });
   } catch (err) {
@@ -159,6 +189,7 @@ exports.getConnections = async (req, res) => {
     ).lean();
 
     profiles = await attachAvatarUrls(profiles);
+    profiles = sanitizeProfiles(profiles);
 
     return res.status(200).json({ connections: profiles });
   } catch (err) {
@@ -188,6 +219,7 @@ exports.getInnerCircle = async (req, res) => {
     ).lean();
 
     profiles = await attachAvatarUrls(profiles);
+    profiles = sanitizeProfiles(profiles);
 
     return res.status(200).json({ innerCircle: profiles });
   } catch (err) {
@@ -247,6 +279,7 @@ exports.getSuggestions = async (req, res) => {
       .lean();
 
     suggestions = await attachAvatarUrls(suggestions);
+    suggestions = sanitizeProfiles(suggestions);
 
     return res.status(200).json({ suggestions });
   } catch (err) {
@@ -254,10 +287,6 @@ exports.getSuggestions = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                Friend Requests                             */
-/* -------------------------------------------------------------------------- */
 
 /**
  * GET /people/requests
@@ -282,6 +311,7 @@ exports.getRequests = async (req, res) => {
     ).lean();
 
     profiles = await attachAvatarUrls(profiles);
+    profiles = sanitizeProfiles(profiles);
 
     const map = new Map(profiles.map((p) => [p.sub, p]));
 

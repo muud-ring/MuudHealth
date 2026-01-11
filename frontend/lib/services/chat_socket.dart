@@ -5,6 +5,12 @@ class ChatSocket {
   ChatSocket._();
   static final ChatSocket instance = ChatSocket._();
 
+  // ✅ same pattern used in APIs
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:4000',
+  );
+
   io.Socket? _socket;
 
   Future<io.Socket> connect() async {
@@ -16,10 +22,10 @@ class ChatSocket {
     }
 
     final socket = io.io(
-      'http://localhost:4000',
+      baseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .disableAutoConnect() // ✅ we connect manually
+          .disableAutoConnect()
           .setAuth({'token': token})
           .build(),
     );

@@ -22,21 +22,21 @@ class PeopleController extends ChangeNotifier {
 
     try {
       final results = await Future.wait([
-        PeopleApi.fetchMe(), // Map
-        PeopleApi.fetchConnections(), // List
-        PeopleApi.fetchInnerCircle(), // List
-        PeopleApi.fetchSuggestions(), // List
-        PeopleApi.fetchRequests(), // List
+        PeopleApi.fetchMe(),
+        PeopleApi.fetchConnections(),
+        PeopleApi.fetchInnerCircle(),
+        PeopleApi.fetchSuggestions(),
+        PeopleApi.fetchRequests(),
       ]);
 
-      // ✅ Explicit casting (THIS fixes your error)
       final meMap = results[0] as Map<String, dynamic>;
       final connectionsRaw = results[1] as List<dynamic>;
       final innerCircleRaw = results[2] as List<dynamic>;
       final suggestionsRaw = results[3] as List<dynamic>;
       final requestsRaw = results[4] as List<dynamic>;
 
-      me = _personFromJson(meMap['me']);
+      final meRaw = meMap['me'];
+      me = meRaw == null ? null : _personFromJson(meRaw);
 
       connections = connectionsRaw.map(_personFromJson).toList();
       innerCircle = innerCircleRaw.map(_personFromJson).toList();
@@ -49,8 +49,8 @@ class PeopleController extends ChangeNotifier {
       print("❌ People loadAll error: $e");
       loading = false;
 
-      final msg = e.toString();
-      if (msg.contains('401') || msg.contains('Unauthorized')) {
+      final msg = e.toString().replaceFirst("Exception: ", "");
+      if (msg.contains('401') || msg.toLowerCase().contains('unauthorized')) {
         error = "Session expired. Please log in again.";
       } else {
         error = msg;

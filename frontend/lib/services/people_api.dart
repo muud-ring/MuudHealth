@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import '../services/token_storage.dart';
 
 class PeopleApi {
-  static const String baseUrl = 'http://localhost:4000';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:4000',
+  );
 
   static const String _connections = '/people/connections';
   static const String _innerCircle = '/people/inner-circle';

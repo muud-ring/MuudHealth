@@ -7,7 +7,7 @@ class InnerCircleRing extends StatelessWidget {
   final VoidCallback? onTapAddFriends;
   final void Function(Person person)? onTapPerson;
 
-  // ✅ NEW: center avatar should be ME
+  // center avatar should be ME
   final Person? centerPerson;
 
   const InnerCircleRing({
@@ -54,11 +54,13 @@ class InnerCircleRing extends StatelessWidget {
                   ),
                 ),
 
+                // ring avatars
                 if (!isEmpty) ..._buildRingAvatars(items),
 
-                // ✅ Center is ME (fallback to placeholder if null)
+                // center avatar (only in non-empty state, like your screenshot)
                 if (!isEmpty) _CenterAvatar(person: centerPerson),
 
+                // EMPTY STATE (matches screenshot copy)
                 if (isEmpty)
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -79,48 +81,26 @@ class InnerCircleRing extends StatelessWidget {
                       ),
                       SizedBox(height: 6),
                       Text(
-                        "Add friends to your inner circle",
+                        "Your inner circles will show up here.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: kGreyText,
                           fontSize: 13.5,
+                          height: 1.25,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
-                  )
-                else
-                  Positioned(
-                    bottom: 64,
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Your Inner Circle",
-                          style: TextStyle(
-                            color: kPurple,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "${people.length} people",
-                          style: const TextStyle(
-                            color: kGreyText,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
               ],
             ),
           ),
 
+          // EMPTY CTA (full width, pill, “Add friends”)
           if (isEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             SizedBox(
+              width: double.infinity,
               height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -130,7 +110,7 @@ class InnerCircleRing extends StatelessWidget {
                 ),
                 onPressed: onTapAddFriends,
                 child: const Text(
-                  "Add Friends",
+                  "Add friends",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 15,
