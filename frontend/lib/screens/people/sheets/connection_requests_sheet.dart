@@ -49,13 +49,32 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
       final list = await PeopleApi.fetchRequests();
 
       final mapped = <Map<String, dynamic>>[];
+
       for (final item in list) {
-        if (item is Map<String, dynamic>) mapped.add(item);
-        if (item is Map) mapped.add(item.cast<String, dynamic>());
+        if (item is Map<String, dynamic>) {
+          mapped.add(item);
+        } else if (item is Map) {
+          mapped.add(item.cast<String, dynamic>());
+        }
+      }
+
+      // ✅ Optional safety: de-dupe by request _id (even if something weird happens)
+      final seen = <String>{};
+      final deduped = <Map<String, dynamic>>[];
+      for (final r in mapped) {
+        final id = (r['_id'] ?? '').toString();
+        if (id.isEmpty) {
+          deduped.add(r);
+          continue;
+        }
+        if (!seen.contains(id)) {
+          seen.add(id);
+          deduped.add(r);
+        }
       }
 
       setState(() {
-        requests = mapped;
+        requests = deduped;
         loading = false;
       });
     } catch (e) {
@@ -81,7 +100,6 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
     final username = (u?['username'] ?? '').toString();
     if (username.isNotEmpty) return username;
 
-    // fallback (short sub)
     final fromSub = (req['fromSub'] ?? '').toString();
     return fromSub.isEmpty ? 'Unknown' : '${fromSub.substring(0, 8)}…';
   }
@@ -98,7 +116,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
       await PeopleApi.acceptRequest(requestId: requestId);
       if (!mounted) return;
 
-      PeopleEvents.notifyReload(); // ✅ refresh People tab
+      PeopleEvents.notifyReload(); // refresh People + badge
       await _load(); // refresh sheet list
     } catch (e) {
       if (!mounted) return;
@@ -113,7 +131,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
       await PeopleApi.declineRequest(requestId: requestId);
       if (!mounted) return;
 
-      PeopleEvents.notifyReload(); // ✅ refresh People tab
+      PeopleEvents.notifyReload(); // refresh People + badge
       await _load(); // refresh sheet list
     } catch (e) {
       if (!mounted) return;

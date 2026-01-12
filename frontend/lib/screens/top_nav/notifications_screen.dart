@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../people/sheets/connection_requests_sheet.dart';
+
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
   static const Color kPurple = Color(0xFF5B288E);
+  static const Color kGreyText = Color(0xFF898384);
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +30,45 @@ class NotificationsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: const Center(
-        child: Text(
-          "Notifications screen (coming soon)",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Friend Requests",
+              style: TextStyle(
+                color: kPurple,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              tileColor: const Color(0xFFF5F2FA),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              leading: const Icon(Icons.group_outlined, color: kPurple),
+              title: const Text(
+                "Connection Requests",
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+              subtitle: const Text(
+                "Tap to view and manage requests",
+                style: TextStyle(color: kGreyText, fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () async {
+                await ConnectionRequestsSheet.open(context);
+              },
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "More notifications coming soon",
+              style: TextStyle(color: kGreyText, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
       ),
     );

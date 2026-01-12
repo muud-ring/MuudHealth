@@ -1,3 +1,5 @@
+// backend/src/index.js
+
 require("dotenv").config(); // MUST be first
 
 const express = require("express");
@@ -13,13 +15,15 @@ const debugRoute = require("./routes/debugRoute");
 const cognitoAuthRoute = require("./routes/cognitoAuthRoute");
 const userRoute = require("./routes/userRoute");
 const peopleRoute = require("./routes/peopleRoute");
-const chatRoute = require("./routes/chatRoute"); // ✅ ADD
+const chatRoute = require("./routes/chatRoute");
 const uploadRoute = require("./routes/uploadRoute");
 const postRoute = require("./routes/postRoute");
 const postReadRoute = require("./routes/postReadRoute");
 const feedRoute = require("./routes/feedRoute");
 const vaultRoute = require("./routes/vaultRoute");
 
+// ✅ NEW (DEV ONLY)
+const adminDevRoute = require("./routes/adminDevRoute");
 
 const app = express();
 
@@ -31,13 +35,15 @@ app.use("/debug", debugRoute);
 app.use("/user", userRoute);
 app.use("/onboarding", onboardingRoute);
 app.use("/people", peopleRoute);
-app.use("/chat", chatRoute); // ✅ ADD
+app.use("/chat", chatRoute);
 app.use("/uploads", uploadRoute);
 app.use("/posts", postRoute);
 app.use("/posts", postReadRoute);
 app.use("/feed", feedRoute);
 app.use("/vault", vaultRoute);
 
+// ✅ NEW (DEV ONLY)
+app.use("/dev", adminDevRoute);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "MUUD Backend" });
@@ -51,7 +57,7 @@ const io = new Server(server, {
   cors: { origin: "*" },
 });
 
-// ✅ Cognito token verification setup (same as your requireAuth)
+// ✅ Cognito token verification setup
 const region = process.env.AWS_REGION || "us-west-2";
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
 

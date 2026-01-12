@@ -7,9 +7,14 @@ import '../screens/trends/trends_tab.dart';
 import '../screens/journal/journal_tab.dart';
 import '../screens/people/people_tab.dart';
 import '../screens/explore/explore_tab.dart';
-import '../screens/people/sheets/connection_requests_sheet.dart';
+
 import '../screens/top_nav/settings_screen.dart';
+import '../screens/top_nav/notifications_screen.dart'; // ✅ NEW
 import '../screens/chat/pages/conversations_page.dart';
+
+// People events (to refresh badge)
+import '../screens/people/state/people_events.dart'; // ✅ NEW
+import '../services/people_api.dart'; // ✅ NEW (to fetch requests count)
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
@@ -29,6 +34,42 @@ class _AppShellState extends State<AppShell> {
   // ✅ forces PeopleTab to rebuild when user taps People
   int _peopleReloadTick = 0;
 
+  // ✅ badge count for bell
+  int _requestCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Load initial badge count
+    _refreshRequestCount();
+
+    // Whenever PeopleEvents says "reload", refresh badge too
+    PeopleEvents.reload.addListener(_onPeopleReloadSignal);
+  }
+
+  void _onPeopleReloadSignal() {
+    _refreshRequestCount();
+  }
+
+  @override
+  void dispose() {
+    PeopleEvents.reload.removeListener(_onPeopleReloadSignal);
+    super.dispose();
+  }
+
+  Future<void> _refreshRequestCount() async {
+    try {
+      final list = await PeopleApi.fetchRequests();
+      if (!mounted) return;
+      setState(() => _requestCount = list.length);
+    } catch (_) {
+      // if token expired or API fails, don't crash UI
+      if (!mounted) return;
+      setState(() => _requestCount = 0);
+    }
+  }
+
   Future<void> _logout() async {
     await TokenStorage.clearTokens();
     if (!mounted) return;
@@ -46,7 +87,10 @@ class _AppShellState extends State<AppShell> {
 
     setState(() {
       _selectedIndex = index;
-      if (index == 3) _peopleReloadTick++;
+      if (index == 3) {
+        _peopleReloadTick++;
+        _refreshRequestCount(); // ✅ update badge when you open People
+      }
     });
   }
 
@@ -68,6 +112,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   List<Widget> _rightActionsForIndex() {
+    // ✅ bell should exist only on People page (as you already designed)
     if (_selectedIndex == 3) {
       return [
         IconButton(
@@ -76,15 +121,23 @@ class _AppShellState extends State<AppShell> {
           },
           icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
         ),
+
+        // ✅ Bell with badge + opens NotificationsScreen
         IconButton(
-          onPressed: () {
-            ConnectionRequestsSheet.open(context);
+          onPressed: () async {
+            await Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+
+            // ✅ after coming back, refresh badge (accept/decline changes count)
+            _refreshRequestCount();
           },
-          icon: const Icon(Icons.notifications_none, color: kPurple),
+          icon: _BellWithBadge(count: _requestCount),
         ),
       ];
     }
 
+    // Default (Home/Trends/Explore): chat + logout
     return [
       IconButton(
         onPressed: () {
@@ -116,7 +169,6 @@ class _AppShellState extends State<AppShell> {
                 context,
               ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
             },
-
             onTapLeft2: () {
               Navigator.of(context).pushNamed('/vault');
             },
@@ -145,6 +197,8 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
+
+/* ----------------------------- TOP BAR UI ----------------------------- */
 
 class _TopBar extends StatelessWidget {
   final String title;
@@ -195,6 +249,51 @@ class _TopBar extends StatelessWidget {
     );
   }
 }
+
+/* -------------------------- BELL WITH BADGE --------------------------- */
+
+class _BellWithBadge extends StatelessWidget {
+  final int count;
+  const _BellWithBadge({required this.count});
+
+  static const Color kPurple = Color(0xFF5B288E);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        const Icon(Icons.notifications_none, color: kPurple),
+
+        if (count > 0)
+          Positioned(
+            right: -4,
+            top: -4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Center(
+                child: Text(
+                  count > 99 ? "99+" : "$count",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/* ---------------------------- BOTTOM NAV ------------------------------ */
 
 class _BottomNav extends StatelessWidget {
   final int selectedIndex;

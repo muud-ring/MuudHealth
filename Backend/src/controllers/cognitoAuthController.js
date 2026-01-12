@@ -12,6 +12,8 @@ const {
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 function normalizeUsername(identifier) {
+  // Cognito expects the same "Username" you used at signup.
+  // If signup uses email/phone as username, keep it identical here.
   return (identifier || "").trim();
 }
 
@@ -31,9 +33,11 @@ exports.signup = async (req, res) => {
         { Name: "name", Value: fullName },
         { Name: "birthdate", Value: birthdate },
         { Name: "custom:username", Value: username },
+
         ...(identifier.includes("@")
           ? [{ Name: "email", Value: identifier }]
           : []),
+
         ...(!identifier.includes("@")
           ? [{ Name: "phone_number", Value: identifier }]
           : []),
@@ -42,30 +46,25 @@ exports.signup = async (req, res) => {
 
     const out = await cognito.send(cmd);
 
-    // ✅ IMPORTANT: Store name/username in our DB profile immediately
-    // This fixes "suggested friends showing sub/uuid".
-    try {
-      await UserProfile.updateOne(
-        { sub: out.UserSub },
-        {
-          $setOnInsert: {
-            sub: out.UserSub,
-            bio: "",
-            location: "",
-            phone: "",
-            avatarKey: "",
-          },
-          $set: {
-            name: fullName || "",
-            username: username || "",
-          },
+    // ✅ IMPORTANT FIX:
+    // Create / update DocumentDB profile so People shows real names (not "User f8f18380")
+    await UserProfile.updateOne(
+      { sub: out.UserSub },
+      {
+        $set: {
+          sub: out.UserSub,
+          name: fullName,
+          username: username,
         },
-        { upsert: true }
-      );
-    } catch (e) {
-      console.warn("⚠️ UserProfile upsert failed (signup):", e?.message || e);
-      // don't block signup if DB update fails
-    }
+        $setOnInsert: {
+          bio: "",
+          location: "",
+          phone: "",
+          avatarKey: "",
+        },
+      },
+      { upsert: true }
+    );
 
     return res.status(200).json({
       message: "Signup success. OTP sent for verification.",
