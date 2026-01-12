@@ -30,4 +30,18 @@ class FeedApi {
     final list = (decoded["posts"] as List?) ?? [];
     return list.cast<Map<String, dynamic>>();
   }
+
+  static Future<List<Map<String, dynamic>>> getExploreFeed() async {
+    final headers = await _authHeaders();
+    final uri = Uri.parse("$_baseUrl/feed/explore");
+
+    final res = await http.get(uri, headers: headers);
+    if (res.statusCode != 200) {
+      throw Exception("Explore feed failed: ${res.body}");
+    }
+
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = (decoded["posts"] as List?) ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
 }

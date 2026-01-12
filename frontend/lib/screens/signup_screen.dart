@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+
 import '../services/api_service.dart';
+
+// ✅ Legal popup imports
+import 'legal/legal_modal_page.dart';
+import 'legal/legal_texts.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -27,6 +33,13 @@ class _SignupScreenState extends State<SignupScreen> {
   // ✅ Figma-like disabled button color (light grey-purple)
   static const Color kDisabledPurple = Color(0xFFB7A6C8);
 
+  // ✅ Tooltip copy (DOB info)
+  static const String _dobTooltipText =
+      "To help keep MUUD safe, you must provide your birthdate and be 14 or older. "
+      "Providing your birthdate also helps make sure you get the right experience "
+      "and recommendations for your age. We don’t share this information and it "
+      "won’t be visible on your profile. For more details, please visit our ";
+
   // ✅ UI-only: enable button only when ALL fields filled + dob selected
   bool get _isFormComplete {
     return _identifier.text.trim().isNotEmpty &&
@@ -36,10 +49,99 @@ class _SignupScreenState extends State<SignupScreen> {
         _dob != null;
   }
 
+  // ✅ Open legal popup (same as Login)
+  void _openLegal({required String title, required String body}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => LegalModalPage(title: title, body: body),
+      ),
+    );
+  }
+
+  // ✅ DOB tooltip modal (center popup with 25% black background)
+  void _openDobTooltip() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: const Color(0x40000000), // ✅ black 25% opacity
+      builder: (ctx) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(ctx).size.width * 0.86,
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.5,
+                        color: Color(0xFF1E1E1E),
+                        fontWeight: FontWeight.w400,
+                      ),
+                      children: [
+                        const TextSpan(text: _dobTooltipText),
+                        TextSpan(
+                          text: 'Privacy Policy.',
+                          style: const TextStyle(
+                            color: kPurple,
+                            fontWeight: FontWeight.w800,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pop(ctx); // close tooltip
+                              _openLegal(
+                                title: LegalTexts.privacyTitle,
+                                body: LegalTexts.privacyBody,
+                              );
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    height: 56,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPurple,
+                        shape: const StadiumBorder(),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Okay',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    // ✅ UI-only listeners so button updates while typing
     _identifier.addListener(_onFormChanged);
     _fullName.addListener(_onFormChanged);
     _username.addListener(_onFormChanged);
@@ -77,7 +179,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (picked != null) {
-      setState(() => _dob = picked); // ✅ updates button too
+      setState(() => _dob = picked);
     }
   }
 
@@ -109,7 +211,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      // ✅ Pass ALL data to OTP so we can save profile after verification
       Navigator.pushNamed(
         context,
         '/otp',
@@ -145,7 +246,6 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
     final bool enabled = _isFormComplete && !_loading;
 
     return Scaffold(
@@ -220,11 +320,19 @@ class _SignupScreenState extends State<SignupScreen> {
 
             const SizedBox(height: 14),
 
+            // ✅ DOB label + info icon opens tooltip
             Row(
-              children: const [
-                _Label('Date of birth'),
-                SizedBox(width: 6),
-                Icon(Icons.info_outline, size: 16, color: Colors.black54),
+              children: [
+                const _Label('Date of birth'),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: _openDobTooltip,
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.black54,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -249,24 +357,29 @@ class _SignupScreenState extends State<SignupScreen> {
 
             const SizedBox(height: 16),
 
+            // ✅ Learn More opens tooltip modal
             RichText(
-              text: const TextSpan(
-                style: TextStyle(
+              text: TextSpan(
+                style: const TextStyle(
                   color: Colors.black54,
                   fontSize: 12.5,
                   height: 1.4,
                 ),
                 children: [
-                  TextSpan(
+                  const TextSpan(
                     text: 'People who use our service may have uploaded\n',
                   ),
-                  TextSpan(text: 'your contact information to MUUD. '),
+                  const TextSpan(text: 'your contact information to MUUD. '),
                   TextSpan(
                     text: 'Learn More',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: kPurple,
                       fontWeight: FontWeight.w700,
                     ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        _openDobTooltip();
+                      },
                   ),
                 ],
               ),
@@ -274,31 +387,46 @@ class _SignupScreenState extends State<SignupScreen> {
 
             const SizedBox(height: 10),
 
+            // ✅ Terms + Privacy open full-screen legal popup
             RichText(
-              text: const TextSpan(
-                style: TextStyle(
+              text: TextSpan(
+                style: const TextStyle(
                   color: Colors.black54,
                   fontSize: 12.5,
                   height: 1.4,
                 ),
                 children: [
-                  TextSpan(text: 'By signing up, you agree to our '),
+                  const TextSpan(text: 'By signing up, you agree to our '),
                   TextSpan(
                     text: 'Terms of Service',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: kPurple,
                       fontWeight: FontWeight.w700,
                     ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        _openLegal(
+                          title: LegalTexts.termsTitle,
+                          body: LegalTexts.termsBody,
+                        );
+                      },
                   ),
-                  TextSpan(text: ' and\n'),
+                  const TextSpan(text: ' and\n'),
                   TextSpan(
                     text: 'Privacy Policy',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: kPurple,
                       fontWeight: FontWeight.w700,
                     ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        _openLegal(
+                          title: LegalTexts.privacyTitle,
+                          body: LegalTexts.privacyBody,
+                        );
+                      },
                   ),
-                  TextSpan(
+                  const TextSpan(
                     text:
                         '. You may receive SMS\nnotifications from us and can opt out any time.',
                   ),
@@ -323,12 +451,9 @@ class _SignupScreenState extends State<SignupScreen> {
             SizedBox(
               height: 54,
               child: ElevatedButton(
-                // ✅ disabled until complete, exactly like Figma
                 onPressed: enabled ? _signup : null,
                 style: ElevatedButton.styleFrom(
-                  // When enabled -> dark purple (Figma "after")
                   backgroundColor: kPurple,
-                  // When disabled -> light grey-purple (Figma "before")
                   disabledBackgroundColor: kDisabledPurple,
                   shape: const StadiumBorder(),
                   elevation: 0,

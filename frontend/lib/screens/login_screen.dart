@@ -5,6 +5,10 @@ import '../services/social_auth_service.dart';
 import '../services/cognito_oauth.dart';
 import '../services/post_auth_redirect.dart';
 
+// ✅ Legal popup imports
+import 'legal/legal_modal_page.dart';
+import 'legal/legal_texts.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -23,8 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   String? _error;
 
-  // Colors close to your design
   static const Color kPurple = Color(0xFF5B288E);
+
+  // ✅ Open legal popup
+  void _openLegal({required String title, required String body}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => LegalModalPage(title: title, body: body),
+      ),
+    );
+  }
 
   Future<void> _login() async {
     setState(() {
@@ -33,7 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      print("✅ _login() started");
       final res = await _api.login(
         identifier: _identifier.text.trim(),
         password: _password.text,
@@ -47,19 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
         refreshToken: tokens['refreshToken'],
       );
 
-      // ✅ TEMP DEBUG: confirm token saved
-      final saved = await TokenStorage.getAccessToken();
-      print("✅ AccessToken saved? ${saved != null && saved.isNotEmpty}");
-      if (saved != null && saved.length > 20) {
-        print("✅ AccessToken head: ${saved.substring(0, 20)}...");
-      } else {
-        print("⚠️ AccessToken value: $saved");
-      }
-
       if (!mounted) return;
       await PostAuthRedirect.go(context);
     } catch (e) {
-      print("❌ Login error: $e");
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -88,13 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
 
               // Logo
-              Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 140,
-                  fit: BoxFit.contain,
-                ),
-              ),
+              Center(child: Image.asset('assets/images/logo.png', height: 140)),
 
               const SizedBox(height: 30),
 
@@ -106,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               _RoundedInput(
                 controller: _identifier,
-                hint: '',
                 keyboardType: TextInputType.emailAddress,
               ),
 
@@ -118,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
-              _RoundedInput(controller: _password, hint: '', obscureText: true),
+              _RoundedInput(controller: _password, obscureText: true),
 
               const SizedBox(height: 10),
 
@@ -141,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 18),
 
-              // Error
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -186,10 +180,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 26),
 
-              // OR divider
+              // OR
               Row(
                 children: const [
-                  Expanded(child: Divider(thickness: 1)),
+                  Expanded(child: Divider()),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
@@ -200,83 +194,58 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  Expanded(child: Divider(thickness: 1)),
+                  Expanded(child: Divider()),
                 ],
               ),
 
               const SizedBox(height: 18),
 
-              // Social buttons row (UI only for now)
-              // Social buttons row
+              // Social buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _SocialIconButton(
                     assetPath: 'assets/icons/google.png',
                     onTap: () async {
-                      try {
-                        final result = await CognitoOAuthService.instance
-                            .signInWithGoogle();
-
-                        await TokenStorage.saveTokens(
-                          idToken: result.idToken!,
-                          accessToken: result.accessToken!,
-                          refreshToken: result.refreshToken,
-                        );
-
-                        if (!mounted) return;
-                        await PostAuthRedirect.go(context);
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
+                      final result = await CognitoOAuthService.instance
+                          .signInWithGoogle();
+                      await TokenStorage.saveTokens(
+                        idToken: result.idToken!,
+                        accessToken: result.accessToken!,
+                        refreshToken: result.refreshToken,
+                      );
+                      if (!mounted) return;
+                      await PostAuthRedirect.go(context);
                     },
                   ),
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/apple.png',
                     onTap: () async {
-                      try {
-                        final result = await CognitoOAuthService.instance
-                            .signInWithApple();
-
-                        await TokenStorage.saveTokens(
-                          idToken: result.idToken!,
-                          accessToken: result.accessToken!,
-                          refreshToken: result.refreshToken,
-                        );
-
-                        if (!mounted) return;
-                        await PostAuthRedirect.go(context);
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
+                      final result = await CognitoOAuthService.instance
+                          .signInWithApple();
+                      await TokenStorage.saveTokens(
+                        idToken: result.idToken!,
+                        accessToken: result.accessToken!,
+                        refreshToken: result.refreshToken,
+                      );
+                      if (!mounted) return;
+                      await PostAuthRedirect.go(context);
                     },
                   ),
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/facebook.png',
                     onTap: () async {
-                      try {
-                        final result = await CognitoOAuthService.instance
-                            .signInWithFacebook();
-
-                        await TokenStorage.saveTokens(
-                          idToken: result.idToken!,
-                          accessToken: result.accessToken!,
-                          refreshToken: result.refreshToken,
-                        );
-
-                        if (!mounted) return;
-                        await PostAuthRedirect.go(context);
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
+                      final result = await CognitoOAuthService.instance
+                          .signInWithFacebook();
+                      await TokenStorage.saveTokens(
+                        idToken: result.idToken!,
+                        accessToken: result.accessToken!,
+                        refreshToken: result.refreshToken,
+                      );
+                      if (!mounted) return;
+                      await PostAuthRedirect.go(context);
                     },
                   ),
                 ],
@@ -284,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 24),
 
-              // Join MUUD Today
+              // Join MUUD
               SizedBox(
                 height: 56,
                 child: OutlinedButton(
@@ -306,21 +275,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 24),
 
-              // Footer links (UI only)
+              // Footer links
               Center(
                 child: Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 10,
                   children: [
-                    _FooterLink(text: 'Privacy Policy', onTap: () {}),
+                    _FooterLink(
+                      text: 'Privacy Policy',
+                      onTap: () => _openLegal(
+                        title: LegalTexts.privacyTitle,
+                        body: LegalTexts.privacyBody,
+                      ),
+                    ),
                     const Text('|', style: TextStyle(color: Colors.black45)),
-                    _FooterLink(text: 'Terms of Use', onTap: () {}),
+                    _FooterLink(
+                      text: 'Terms of Use',
+                      onTap: () => _openLegal(
+                        title: LegalTexts.termsTitle,
+                        body: LegalTexts.termsBody,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
               Center(
-                child: _FooterLink(text: 'HIPAA Notice', onTap: () {}),
+                child: _FooterLink(
+                  text: 'HIPAA Notice',
+                  onTap: () => _openLegal(
+                    title: LegalTexts.hipaaTitle,
+                    body: LegalTexts.hipaaBody,
+                  ),
+                ),
               ),
             ],
           ),
@@ -332,13 +319,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
 class _RoundedInput extends StatelessWidget {
   final TextEditingController controller;
-  final String hint;
   final bool obscureText;
   final TextInputType? keyboardType;
 
   const _RoundedInput({
     required this.controller,
-    required this.hint,
     this.obscureText = false,
     this.keyboardType,
   });
@@ -350,7 +335,6 @@ class _RoundedInput extends StatelessWidget {
       obscureText: obscureText,
       keyboardType: keyboardType,
       decoration: InputDecoration(
-        hintText: hint,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 18,
