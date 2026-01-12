@@ -5,6 +5,7 @@ import '../../../services/chat_socket.dart';
 
 import '../../people/pages/chat_page.dart';
 import '../data/conversation_models.dart';
+import '../state/chat_badge.dart';
 
 class ConversationsPage extends StatefulWidget {
   const ConversationsPage({super.key});
@@ -24,14 +25,17 @@ class _ConversationsPageState extends State<ConversationsPage> {
 
   List<ConversationItem> all = [];
 
-  // ✅ keep a reference so we can .off() in dispose
-  dynamic _socket; // io.Socket, but using dynamic avoids import issues here
+  // keep a reference so we can .off() in dispose
+  dynamic _socket; // io.Socket (dynamic avoids import issues)
 
   @override
   void initState() {
     super.initState();
     _load();
     _initSocket();
+
+    // ✅ when user opens Messages screen, refresh badge once
+    ChatBadge.refresh();
   }
 
   /* -------------------------------------------------------------------------- */
@@ -70,17 +74,17 @@ class _ConversationsPageState extends State<ConversationsPage> {
       final socket = await ChatSocket.instance.connect();
       _socket = socket;
 
-      // ✅ Remove old listeners (safe)
+      // remove old listeners (safe)
       socket.off('inboxUpdate');
       socket.off('connect');
       socket.off('disconnect');
 
-      // ✅ Fired when backend emits inboxUpdate
+      // fired when backend emits inboxUpdate
       socket.on('inboxUpdate', (_) {
         _load();
+        ChatBadge.refresh(); // ✅ keep badge in sync too
       });
 
-      // Optional debug logs
       socket.on('connect', (_) {
         // ignore: avoid_print
         print('✅ Inbox socket connected');
@@ -103,7 +107,6 @@ class _ConversationsPageState extends State<ConversationsPage> {
 
   @override
   void dispose() {
-    // ✅ detach listeners
     try {
       _socket?.off('inboxUpdate');
       _socket?.off('connect');
@@ -151,7 +154,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
         child: Column(
           children: [
-            // 🔍 Search
+            // Search
             Container(
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -203,7 +206,10 @@ class _ConversationsPageState extends State<ConversationsPage> {
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
-                        onPressed: _load,
+                        onPressed: () async {
+                          await _load();
+                          ChatBadge.refresh();
+                        },
                         child: const Text(
                           "Retry",
                           style: TextStyle(color: Colors.white),
@@ -225,27 +231,37 @@ class _ConversationsPageState extends State<ConversationsPage> {
             else
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _load,
+                  onRefresh: () async {
+                    await _load();
+                    ChatBadge.refresh();
+                  },
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) => const Divider(height: 18),
                     itemBuilder: (context, i) {
                       final c = filtered[i];
+
+                      // ✅ always try username first for title
+                      final displayTitle = c.username.isNotEmpty
+                          ? '@${c.username}'
+                          : c.name;
+
                       return _ConversationRow(
                         item: c,
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => ChatPage(
                                 otherSub: c.otherSub,
-                                title: c.username.isNotEmpty
-                                    ? '@${c.username}'
-                                    : c.name,
+                                title: displayTitle,
                               ),
                             ),
                           );
+
+                          // ✅ after returning from chat, refresh badge
+                          ChatBadge.refresh();
                         },
                       );
                     },
@@ -258,10 +274,6 @@ class _ConversationsPageState extends State<ConversationsPage> {
     );
   }
 }
-
-/* -------------------------------------------------------------------------- */
-/*                             ROW + AVATAR                                   */
-/* -------------------------------------------------------------------------- */
 
 class _ConversationRow extends StatelessWidget {
   final ConversationItem item;
@@ -286,6 +298,8 @@ class _ConversationRow extends StatelessWidget {
               children: [
                 Text(
                   item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w800,
@@ -306,6 +320,8 @@ class _ConversationRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
+
+          // Keep your existing small dot behavior (does NOT depend on unreadCount)
           if (item.lastMessage.isNotEmpty)
             Container(
               width: 10,

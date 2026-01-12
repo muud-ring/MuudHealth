@@ -101,7 +101,6 @@ class ChatApi {
     return (body['message'] as Map).cast<String, dynamic>();
   }
 
-  // ✅ NEW: Inbox list
   static Future<List<Map<String, dynamic>>> fetchConversations() async {
     final token = await TokenStorage.getAccessToken();
     if (token == null || token.isEmpty) {
@@ -127,5 +126,36 @@ class ChatApi {
 
     final list = (body['conversations'] as List? ?? []);
     return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
+  }
+
+  // ✅ total unread count (for badge)
+  static Future<int> fetchUnreadCount() async {
+    final token = await TokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) {
+      throw Exception("Missing access token");
+    }
+
+    final uri = Uri.parse('$baseUrl/chat/unread-count');
+
+    final res = await http.get(
+      uri,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    final body = jsonDecode(res.body);
+
+    if (res.statusCode != 200) {
+      throw Exception(
+        body is Map && body['message'] != null
+            ? body['message'].toString()
+            : 'Failed to load unread count',
+      );
+    }
+
+    final unread = (body is Map) ? body['unread'] : null;
+    if (unread is int) return unread;
+    if (unread is String) return int.tryParse(unread) ?? 0;
+
+    return 0;
   }
 }

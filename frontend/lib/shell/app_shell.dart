@@ -9,12 +9,14 @@ import '../screens/people/people_tab.dart';
 import '../screens/explore/explore_tab.dart';
 
 import '../screens/top_nav/settings_screen.dart';
-import '../screens/top_nav/notifications_screen.dart'; // ✅ NEW
-import '../screens/chat/pages/conversations_page.dart';
+import '../screens/top_nav/notifications_screen.dart';
 
 // People events (to refresh badge)
-import '../screens/people/state/people_events.dart'; // ✅ NEW
-import '../services/people_api.dart'; // ✅ NEW (to fetch requests count)
+import '../screens/people/state/people_events.dart';
+import '../services/people_api.dart';
+
+// ✅ NEW: chat badge
+import '../screens/chat/state/chat_badge.dart';
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
@@ -46,6 +48,9 @@ class _AppShellState extends State<AppShell> {
 
     // Whenever PeopleEvents says "reload", refresh badge too
     PeopleEvents.reload.addListener(_onPeopleReloadSignal);
+
+    // ✅ start chat badge socket + initial unread fetch
+    ChatBadge.start();
   }
 
   void _onPeopleReloadSignal() {
@@ -55,6 +60,7 @@ class _AppShellState extends State<AppShell> {
   @override
   void dispose() {
     PeopleEvents.reload.removeListener(_onPeopleReloadSignal);
+    ChatBadge.dispose();
     super.dispose();
   }
 
@@ -64,13 +70,15 @@ class _AppShellState extends State<AppShell> {
       if (!mounted) return;
       setState(() => _requestCount = list.length);
     } catch (_) {
-      // if token expired or API fails, don't crash UI
       if (!mounted) return;
       setState(() => _requestCount = 0);
     }
   }
 
   Future<void> _logout() async {
+    // ✅ reset badge + disconnect socket so no stale UI
+    ChatBadge.reset();
+
     await TokenStorage.clearTokens();
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
@@ -89,7 +97,7 @@ class _AppShellState extends State<AppShell> {
       _selectedIndex = index;
       if (index == 3) {
         _peopleReloadTick++;
-        _refreshRequestCount(); // ✅ update badge when you open People
+        _refreshRequestCount();
       }
     });
   }
@@ -112,24 +120,20 @@ class _AppShellState extends State<AppShell> {
   }
 
   List<Widget> _rightActionsForIndex() {
-    // ✅ bell should exist only on People page (as you already designed)
+    // ✅ only People page shows bell + messages
     if (_selectedIndex == 3) {
       return [
         IconButton(
           onPressed: () {
             Navigator.pushNamed(context, '/chat/conversations');
           },
-          icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
+          icon: const _MessageWithBadge(),
         ),
-
-        // ✅ Bell with badge + opens NotificationsScreen
         IconButton(
           onPressed: () async {
             await Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             );
-
-            // ✅ after coming back, refresh badge (accept/decline changes count)
             _refreshRequestCount();
           },
           icon: _BellWithBadge(count: _requestCount),
@@ -137,13 +141,13 @@ class _AppShellState extends State<AppShell> {
       ];
     }
 
-    // Default (Home/Trends/Explore): chat + logout
+    // Default: chat + logout
     return [
       IconButton(
         onPressed: () {
           Navigator.pushNamed(context, '/chat/conversations');
         },
-        icon: const Icon(Icons.chat_bubble_outline, color: kPurple),
+        icon: const _MessageWithBadge(),
       ),
       IconButton(
         onPressed: _logout,
@@ -182,10 +186,7 @@ class _AppShellState extends State<AppShell> {
           const HomeTab(),
           const TrendsTab(),
           const JournalTab(),
-
-          // ✅ key changes each time you tap People → rebuild + re-fetch with latest token
           PeopleTab(key: ValueKey("people_$_peopleReloadTick")),
-
           const ExploreTab(),
         ],
       ),
@@ -250,6 +251,58 @@ class _TopBar extends StatelessWidget {
   }
 }
 
+/* -------------------------- MESSAGE WITH BADGE --------------------------- */
+
+class _MessageWithBadge extends StatelessWidget {
+  const _MessageWithBadge();
+
+  static const Color kPurple = Color(0xFF5B288E);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: ChatBadge.unread,
+      builder: (context, count, _) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.chat_bubble_outline, color: kPurple),
+            if (count > 0)
+              Positioned(
+                right: -4,
+                top: -4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Center(
+                    child: Text(
+                      count > 99 ? "99+" : "$count",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 /* -------------------------- BELL WITH BADGE --------------------------- */
 
 class _BellWithBadge extends StatelessWidget {
@@ -264,7 +317,6 @@ class _BellWithBadge extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         const Icon(Icons.notifications_none, color: kPurple),
-
         if (count > 0)
           Positioned(
             right: -4,

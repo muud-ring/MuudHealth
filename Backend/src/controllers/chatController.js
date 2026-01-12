@@ -1,9 +1,29 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 
+// helper for conversation uniqueness
 function keyFor(subA, subB) {
   return [subA, subB].sort().join("|");
 }
+
+/* ------------------------------ NEW: Unread Count ------------------------------ */
+// GET /chat/unread-count
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const mySub = req.user?.sub;
+    if (!mySub) return res.status(401).json({ message: "Missing user sub" });
+
+    const unread = await Message.countDocuments({
+      toSub: mySub,
+      readAt: null,
+    });
+
+    return res.status(200).json({ unread });
+  } catch (err) {
+    console.error("getUnreadCount error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 // ✅ List conversations for inbox
 // GET /chat/conversations
@@ -12,7 +32,6 @@ exports.getConversations = async (req, res) => {
     const mySub = req.user?.sub;
     if (!mySub) return res.status(401).json({ message: "Missing user sub" });
 
-    const Message = require("../models/Message");
     const UserProfile = require("../models/UserProfile");
     const { attachAvatarUrls } = require("../utils/s3_avatar_url");
 
@@ -44,7 +63,6 @@ exports.getConversations = async (req, res) => {
     ).lean();
 
     profiles = await attachAvatarUrls(profiles);
-
     const profileMap = new Map(profiles.map((p) => [p.sub, p]));
 
     // 4) Shape response
@@ -105,12 +123,25 @@ exports.getMessages = async (req, res) => {
 
     const convo = await Conversation.findById(conversationId).lean();
     if (!convo) return res.status(404).json({ message: "Not found" });
-    if (!convo.members.includes(mySub)) return res.status(403).json({ message: "Forbidden" });
+    if (!convo.members.includes(mySub))
+      return res.status(403).json({ message: "Forbidden" });
 
     const messages = await Message.find({ conversationId })
       .sort({ createdAt: 1 })
       .limit(300)
       .lean();
+
+    // ✅ MARK AS READ: everything sent TO me in this conversation
+    await Message.updateMany(
+      { conversationId, toSub: mySub, readAt: null },
+      { $set: { readAt: new Date() } }
+    );
+
+    // ✅ notify my own devices to refresh badge + inbox UI
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${mySub}`).emit("inboxUpdate", { conversationId });
+    }
 
     return res.status(200).json({ messages });
   } catch (err) {
@@ -130,7 +161,8 @@ exports.sendMessage = async (req, res) => {
 
     const convo = await Conversation.findById(conversationId).lean();
     if (!convo) return res.status(404).json({ message: "Not found" });
-    if (!convo.members.includes(mySub)) return res.status(403).json({ message: "Forbidden" });
+    if (!convo.members.includes(mySub))
+      return res.status(403).json({ message: "Forbidden" });
 
     const toSub = convo.members.find((s) => s !== mySub);
 
@@ -139,29 +171,29 @@ exports.sendMessage = async (req, res) => {
       fromSub: mySub,
       toSub,
       text,
+      readAt: null, // ✅ unread for receiver
     });
 
     const io = req.app.get("io");
-if (io) {
-  io.to(`conv:${conversationId}`).emit("newMessage", {
-    _id: msg._id,
-    conversationId,
-    fromSub: msg.fromSub,
-    toSub: msg.toSub,
-    text: msg.text,
-    createdAt: msg.createdAt,
-  });
+    if (io) {
+      io.to(`conv:${conversationId}`).emit("newMessage", {
+        _id: msg._id,
+        conversationId,
+        fromSub: msg.fromSub,
+        toSub: msg.toSub,
+        text: msg.text,
+        createdAt: msg.createdAt,
+      });
 
-  io.to(`user:${toSub}`).emit("inboxUpdate", { conversationId });
-}
-
+      // ✅ triggers inbox refresh on receiver (and badge refresh if you listen)
+      io.to(`user:${toSub}`).emit("inboxUpdate", { conversationId });
+    }
 
     await Conversation.updateOne(
       { _id: conversationId },
       { $set: { lastMessage: text, lastMessageAt: new Date() } }
     );
 
-    // Socket emit is handled in socket layer (we’ll call io there)
     return res.status(201).json({ message: msg });
   } catch (err) {
     console.error("sendMessage error:", err);

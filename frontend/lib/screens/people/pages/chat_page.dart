@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../services/chat_api.dart';
 import '../../../services/chat_socket.dart';
+import '../../chat/state/chat_badge.dart';
 
 class ChatPage extends StatefulWidget {
   final String otherSub;
@@ -47,6 +48,7 @@ class _ChatPageState extends State<ChatPage> {
       messages
         ..clear()
         ..addAll(list);
+      ChatBadge.refresh();
 
       // connect socket
       final socket = await ChatSocket.instance.connect();
@@ -88,6 +90,7 @@ class _ChatPageState extends State<ChatPage> {
 
     _text.dispose();
     super.dispose();
+    ChatBadge.refresh();
   }
 
   Future<void> _send() async {

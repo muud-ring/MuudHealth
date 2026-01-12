@@ -11,6 +11,9 @@ const MessageSchema = new mongoose.Schema(
     fromSub: { type: String, required: true, index: true },
     toSub: { type: String, required: true, index: true },
     text: { type: String, required: true },
+
+    // ✅ NEW: unread tracking
+    readAt: { type: Date, default: null, index: true },
   },
   { timestamps: true }
 );

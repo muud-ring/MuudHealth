@@ -4,6 +4,9 @@ const router = express.Router();
 const requireAuth = require("../middleware/requireAuth");
 const chatController = require("../controllers/chatController");
 
+// ✅ NEW: badge count
+router.get("/unread-count", requireAuth, chatController.getUnreadCount);
+
 // ✅ Inbox list (UI-ready)
 router.get("/conversations", requireAuth, chatController.getConversations);
 
@@ -17,16 +20,8 @@ router.post(
   chatController.getOrCreateConversation
 );
 
-router.get(
-  "/messages/:conversationId",
-  requireAuth,
-  chatController.getMessages
-);
+router.get("/messages/:conversationId", requireAuth, chatController.getMessages);
 
-router.post(
-  "/messages/:conversationId",
-  requireAuth,
-  chatController.sendMessage
-);
+router.post("/messages/:conversationId", requireAuth, chatController.sendMessage);
 
 module.exports = router;
