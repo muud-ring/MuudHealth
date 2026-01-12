@@ -24,14 +24,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      await _api.forgotPassword(identifier: _identifier.text.trim());
+      final id = _identifier.text.trim();
+      await _api.forgotPassword(identifier: id);
 
       if (!mounted) return;
-      Navigator.pushNamed(
-        context,
-        '/reset',
-        arguments: {'identifier': _identifier.text.trim()},
-      );
+
+      // ✅ Go to verify code screen (route kept as /reset to not break app)
+      Navigator.pushNamed(context, '/reset', arguments: {'identifier': id});
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -75,7 +74,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 12),
-
             const Text(
               'Enter mobile number or email',
               style: TextStyle(
@@ -84,11 +82,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 color: kPurple,
               ),
             ),
-
             const SizedBox(height: 10),
-
             const Text(
-              "We’ll send a link to get back in if the number or\nemail matches an existing MUUD account.",
+              "We’ll send a code if the number or\nemail matches an existing MUUD account.",
               style: TextStyle(
                 fontSize: 14.5,
                 height: 1.4,
@@ -96,9 +92,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-
             const SizedBox(height: 22),
-
             const Text(
               'Mobile number or email',
               style: TextStyle(
@@ -108,7 +102,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
             ),
             const SizedBox(height: 8),
-
             TextField(
               controller: _identifier,
               keyboardType: TextInputType.emailAddress,
@@ -127,9 +120,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
-
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -141,9 +132,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
               ),
-
             const SizedBox(height: 10),
-
             SizedBox(
               height: 54,
               child: ElevatedButton(
@@ -163,7 +152,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       )
                     : const Text(
-                        'Send login link',
+                        'Send code',
                         style: TextStyle(
                           fontSize: 16.5,
                           fontWeight: FontWeight.w800,
@@ -172,9 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
               ),
             ),
-
             const SizedBox(height: 22),
-
             Center(
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),

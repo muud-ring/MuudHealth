@@ -10,6 +10,7 @@ import 'screens/signup_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
+import 'screens/verify_reset_code_screen.dart';
 import 'screens/edit_profile_screen.dart';
 
 import 'screens/onboarding/onboarding_page_01.dart';
@@ -97,8 +98,16 @@ class _MuudAppState extends State<MuudApp> {
         '/login': (_) => const LoginScreen(),
         '/signup': (_) => const SignupScreen(),
         '/otp': (_) => const OtpScreen(),
+
+        // ✅ Forgot password flow (FIXED)
         '/forgot': (_) => const ForgotPasswordScreen(),
-        '/reset': (_) => const ResetPasswordScreen(),
+
+        // ✅ Keep this route name so nothing breaks
+        // /reset now shows "We sent you a code" screen (6 boxes)
+        '/reset': (_) => const VerifyResetCodeScreen(),
+
+        // ✅ Final screen: Update Password
+        '/reset-password': (_) => const ResetPasswordScreen(),
 
         '/home': (_) => const AppShell(),
         '/edit-profile': (_) => const EditProfileScreen(),
@@ -121,10 +130,11 @@ class _MuudAppState extends State<MuudApp> {
         // Chat
         '/chat/conversations': (_) => const ConversationsPage(),
 
-        //Vault
+        // Vault
         '/vault': (_) => const VaultScreen(),
       },
 
+      // ✅ Keep this as-is (your splash redirect)
       onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const Boot()),
     );
   }
