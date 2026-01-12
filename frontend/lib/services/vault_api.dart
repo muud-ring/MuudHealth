@@ -121,11 +121,15 @@ class VaultApi {
     required String category,
     int limit = 20,
     String? cursor, // savedAt ISO
+    String? from, // ISO
+    String? to, // ISO
   }) async {
     final headers = await _authHeaders();
 
     final qp = <String, String>{"category": category, "limit": "$limit"};
     if (cursor != null && cursor.isNotEmpty) qp["cursor"] = cursor;
+    if (from != null && from.isNotEmpty) qp["from"] = from;
+    if (to != null && to.isNotEmpty) qp["to"] = to;
 
     final uri = Uri.parse("$_baseUrl/vault/items").replace(queryParameters: qp);
 

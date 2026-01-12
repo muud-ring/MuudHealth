@@ -17,8 +17,22 @@ async function signKey(key, expiresIn = 600) {
 
 function normalizeCategory(v) {
   const s = (v || "").toString().toLowerCase().trim();
-  const allowed = new Set(["family", "friends", "events", "holidays", "work", "school", "other"]);
+  const allowed = new Set([
+    "family",
+    "friends",
+    "events",
+    "holidays",
+    "work",
+    "school",
+    "other",
+  ]);
   return allowed.has(s) ? s : "other";
+}
+
+function toValidDate(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 function mapVaultCard({ post, authorProfile, imageUrl, audioUrl, authorAvatarUrl }) {
@@ -54,7 +68,9 @@ exports.save = async (req, res) => {
     const tags = Array.isArray(req.body?.tags) ? req.body.tags : [];
 
     if (sourceType !== "post") {
-      return res.status(400).json({ message: "Only sourceType=post supported for now" });
+      return res
+        .status(400)
+        .json({ message: "Only sourceType=post supported for now" });
     }
     if (!sourceId) return res.status(400).json({ message: "sourceId required" });
 
@@ -62,43 +78,42 @@ exports.save = async (req, res) => {
     const post = await Post.findById(sourceId).select("_id authorSub").lean();
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // MVP: allow saving own post only (keep this for now)
+    // MVP: allow saving own post only
     if (post.authorSub !== ownerSub) {
-      return res.status(403).json({ message: "For MVP, you can only save your own posts" });
+      return res
+        .status(403)
+        .json({ message: "For MVP, you can only save your own posts" });
     }
 
     const cleanTags = tags
       .filter((t) => t && t.type && t.value)
-      .map((t) => ({ type: t.type, value: t.value }));
+      .map((t) => ({
+        type: t.type,
+        value: t.value,
+      }));
 
-    // ✅ Check if already saved
-    const existing = await VaultItem.findOne({
-      ownerSub,
-      sourceType: "post",
-      sourceId: post._id,
-    }).lean();
-
-    if (existing && existing.category === category) {
-      return res.status(200).json({ ok: true, message: "Already saved", item: existing });
-    }
-
+    // ✅ Upsert: create if not exists, otherwise UPDATE category/tags
     const savedAt = new Date();
 
     const doc = await VaultItem.findOneAndUpdate(
       { ownerSub, sourceType: "post", sourceId: post._id },
       {
-        $set: { category, tags: cleanTags, experienceType, savedAt },
-        $setOnInsert: { ownerSub, sourceType: "post", sourceId: post._id },
+        $set: {
+          category,
+          tags: cleanTags,
+          experienceType,
+          savedAt,
+        },
+        $setOnInsert: {
+          ownerSub,
+          sourceType: "post",
+          sourceId: post._id,
+        },
       },
       { upsert: true, new: true }
     );
 
-    if (existing && existing.category !== category) {
-      const title = category[0].toUpperCase() + category.slice(1);
-      return res.status(200).json({ ok: true, message: "Moved to " + title, item: doc });
-    }
-
-    return res.status(201).json({ ok: true, message: "Saved", item: doc });
+    return res.status(200).json({ ok: true, item: doc });
   } catch (err) {
     console.error("vault.save error:", err);
     return res.status(500).json({ message: "Failed to save to vault" });
@@ -121,23 +136,43 @@ exports.unsave = async (req, res) => {
   }
 };
 
-// GET /vault/items?category=friends&limit=20&cursor=<savedAtISO>
+// GET /vault/items?category=friends&limit=20&cursor=<savedAtISO>&from=<ISO>&to=<ISO>
+// NOTE: cursor is still based on vault.savedAt (bookmark date) for paging,
+// but filtering is applied to post.createdAt (journal/post date) to match your expectation.
 exports.items = async (req, res) => {
   try {
     const ownerSub = req.user.sub;
 
-    const category = req.query?.category ? normalizeCategory(req.query.category) : null;
+    const category = req.query?.category
+      ? normalizeCategory(req.query.category)
+      : null;
+
     const limit = Math.min(parseInt(req.query?.limit || "20", 10) || 20, 50);
-    const cursor = (req.query?.cursor || "").toString().trim(); // savedAt ISO
+    const cursor = (req.query?.cursor || "").toString().trim(); // vault.savedAt ISO
+
+    // ✅ date filters (we will apply to post.createdAt)
+    const from = (req.query?.from || "").toString().trim(); // ISO
+    const to = (req.query?.to || "").toString().trim(); // ISO
+    const fromD = toValidDate(from);
+    const toD = toValidDate(to);
 
     const q = { ownerSub, sourceType: "post" };
     if (category) q.category = category;
+
+    // cursor pagination uses vault savedAt
     if (cursor) q.savedAt = { $lt: new Date(cursor) };
 
-    const vaultItems = await VaultItem.find(q)
-      .sort({ savedAt: -1 })
-      .limit(limit)
-      .lean();
+    // If date filtering is active, fetch a bigger batch first,
+// then filter down to the requested limit.
+// (Fixes “empty results” when first 20 don’t match date range)
+const dateFilteringOn = !!(fromD || toD);
+const fetchLimit = dateFilteringOn ? Math.min(limit * 10, 200) : limit;
+
+const vaultItems = await VaultItem.find(q)
+  .sort({ savedAt: -1 })
+  .limit(fetchLimit)
+  .lean();
+
 
     const postIds = vaultItems.map((v) => v.sourceId);
     const posts = postIds.length
@@ -177,15 +212,38 @@ exports.items = async (req, res) => {
             category: v.category,
             tags: v.tags || [],
             experienceType: v.experienceType || "",
-            savedAt: v.savedAt,
+            savedAt: v.savedAt, // bookmark date
           },
           post: mapVaultCard({ post, authorProfile, imageUrl, audioUrl, authorAvatarUrl }),
         };
       })
     );
 
-    const cleaned = out.filter(Boolean);
-    const nextCursor = cleaned.length ? cleaned[cleaned.length - 1].vault.savedAt.toISOString() : null;
+    // base clean
+    let cleaned = out.filter(Boolean);
+
+    // ✅ Apply date filter to POST createdAt (journal/post date)
+    if (fromD || toD) {
+      // include full "to" day (23:59:59.999)
+      const toEnd = toD ? new Date(toD.getTime()) : null;
+      if (toEnd) {
+        toEnd.setHours(23, 59, 59, 999);
+      }
+    
+      cleaned = cleaned.filter((x) => {
+        const created = toValidDate(x.post.createdAt);
+        if (!created) return false;
+        if (fromD && created < fromD) return false;
+        if (toEnd && created > toEnd) return false;
+        return true;
+      });
+    }
+
+    cleaned = cleaned.slice(0, limit);
+
+    const nextCursor = cleaned.length
+      ? cleaned[cleaned.length - 1].vault.savedAt.toISOString()
+      : null;
 
     return res.status(200).json({ items: cleaned, nextCursor });
   } catch (err) {

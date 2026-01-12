@@ -4,11 +4,15 @@ import '../../services/vault_api.dart';
 class VaultCategoryPage extends StatefulWidget {
   final String categoryKey; // friends | family | holidays | etc
   final String categoryTitle; // Friends | Family | ...
+  final String? fromIso; // ISO
+  final String? toIso; // ISO
 
   const VaultCategoryPage({
     super.key,
     required this.categoryKey,
     required this.categoryTitle,
+    this.fromIso,
+    this.toIso,
   });
 
   @override
@@ -60,6 +64,8 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
         category: widget.categoryKey,
         limit: 20,
         cursor: null,
+        from: widget.fromIso,
+        to: widget.toIso,
       );
 
       final items = (decoded["items"] as List?) ?? [];
@@ -94,6 +100,8 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
         category: widget.categoryKey,
         limit: 20,
         cursor: nextCursor,
+        from: widget.fromIso,
+        to: widget.toIso,
       );
 
       final items = (decoded["items"] as List?) ?? [];
