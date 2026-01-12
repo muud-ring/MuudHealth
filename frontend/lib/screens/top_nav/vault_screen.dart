@@ -22,7 +22,8 @@ class _VaultScreenState extends State<VaultScreen> {
   String? _error;
 
   // landing sections from backend
-  List<_VaultSection> _sections = [];
+  List<_VaultSection> _allSections = [];
+  List<_VaultSection> _sections = []; // filtered view shown on UI
 
   // UI state
   String _selectedChip = "All";
@@ -60,7 +61,11 @@ class _VaultScreenState extends State<VaultScreen> {
       final mapped = raw.map((m) => _VaultSection.fromMap(m)).toList();
 
       if (!mounted) return;
-      setState(() => _sections = mapped);
+      setState(() {
+        _allSections = mapped;
+        _sections =
+            mapped; // because your backend is currently returning filtered already
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString().replaceFirst("Exception: ", ""));
@@ -77,7 +82,7 @@ class _VaultScreenState extends State<VaultScreen> {
 
   bool get _hasAnySaved {
     // If any section has count > 0 => vault not empty
-    for (final s in _sections) {
+    for (final s in _allSections) {
       if (s.count > 0) return true;
     }
     return false;
@@ -204,7 +209,16 @@ class _VaultScreenState extends State<VaultScreen> {
   }
 
   Widget _buildChips() {
-    final chips = <String>["All", "Family", "Friends", "Holidays"];
+    final chips = <String>[
+      "All",
+      "Family",
+      "Friends",
+      "Events",
+      "Holidays",
+      "Work",
+      "School",
+      "Other",
+    ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
