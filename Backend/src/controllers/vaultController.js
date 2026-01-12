@@ -54,9 +54,7 @@ exports.save = async (req, res) => {
     const tags = Array.isArray(req.body?.tags) ? req.body.tags : [];
 
     if (sourceType !== "post") {
-      return res
-        .status(400)
-        .json({ message: "Only sourceType=post supported for now" });
+      return res.status(400).json({ message: "Only sourceType=post supported for now" });
     }
     if (!sourceId) return res.status(400).json({ message: "sourceId required" });
 
@@ -64,48 +62,48 @@ exports.save = async (req, res) => {
     const post = await Post.findById(sourceId).select("_id authorSub").lean();
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // MVP: allow saving own post only
+    // MVP: allow saving own post only (keep this for now)
     if (post.authorSub !== ownerSub) {
-      return res
-        .status(403)
-        .json({ message: "For MVP, you can only save your own posts" });
+      return res.status(403).json({ message: "For MVP, you can only save your own posts" });
     }
 
     const cleanTags = tags
       .filter((t) => t && t.type && t.value)
-      .map((t) => ({
-        type: t.type,
-        value: t.value,
-      }));
+      .map((t) => ({ type: t.type, value: t.value }));
 
-    // ✅ Upsert: create if not exists, otherwise UPDATE category/tags
+    // ✅ Check if already saved
+    const existing = await VaultItem.findOne({
+      ownerSub,
+      sourceType: "post",
+      sourceId: post._id,
+    }).lean();
+
+    if (existing && existing.category === category) {
+      return res.status(200).json({ ok: true, message: "Already saved", item: existing });
+    }
+
     const savedAt = new Date();
 
     const doc = await VaultItem.findOneAndUpdate(
       { ownerSub, sourceType: "post", sourceId: post._id },
       {
-        $set: {
-          category,
-          tags: cleanTags,
-          experienceType,
-          savedAt,
-        },
-        $setOnInsert: {
-          ownerSub,
-          sourceType: "post",
-          sourceId: post._id,
-        },
+        $set: { category, tags: cleanTags, experienceType, savedAt },
+        $setOnInsert: { ownerSub, sourceType: "post", sourceId: post._id },
       },
       { upsert: true, new: true }
     );
 
-    return res.status(200).json({ ok: true, item: doc });
+    if (existing && existing.category !== category) {
+      const title = category[0].toUpperCase() + category.slice(1);
+      return res.status(200).json({ ok: true, message: "Moved to " + title, item: doc });
+    }
+
+    return res.status(201).json({ ok: true, message: "Saved", item: doc });
   } catch (err) {
     console.error("vault.save error:", err);
     return res.status(500).json({ message: "Failed to save to vault" });
   }
 };
-
 
 // DELETE /vault/save?sourceId=<postId>
 exports.unsave = async (req, res) => {

@@ -125,6 +125,7 @@ class _HomeTabState extends State<HomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
             Text(
               "Good Morning $_displayName!",
               style: const TextStyle(
@@ -136,6 +137,7 @@ class _HomeTabState extends State<HomeTab> {
             ),
             const SizedBox(height: 18),
 
+            // Error (keep)
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -148,7 +150,7 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
 
-            // Profile card
+            // Profile card (Figma-like)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
@@ -209,13 +211,87 @@ class _HomeTabState extends State<HomeTab> {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 90),
 
+            // ✅ Empty State (Figma)
+            Center(
+              child: Column(
+                children: [
+                  // icon
+                  Container(
+                    width: 72,
+                    height: 72,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.pie_chart_outline,
+                      size: 54,
+                      color: kPurple.withOpacity(0.25),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    "No Data",
+                    style: TextStyle(
+                      color: kPurple,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    "Your trends will show up here.",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 26),
+
+            // ✅ Start Journaling button (Figma)
+            SizedBox(
+              height: 56,
+              width: double.infinity,
+              child: ElevatedButton(
+                // UI-only: keep safe (do nothing if loading)
+                onPressed: _loading
+                    ? null
+                    : () {
+                        // Keep logic unchanged; wire later if needed
+                        // Navigator.pushNamed(context, '/journal/create');
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPurple,
+                  disabledBackgroundColor: kPurple.withOpacity(0.35),
+                  shape: const StadiumBorder(),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  "Start Journaling",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+
+            // Keep loading indicator but don't change logic
             if (_loading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 10),
-                  child: CircularProgressIndicator(),
+              const Padding(
+                padding: EdgeInsets.only(top: 18),
+                child: Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
               ),
           ],
