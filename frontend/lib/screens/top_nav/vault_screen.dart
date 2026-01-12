@@ -1,8 +1,11 @@
+// frontend/lib/screens/top_nav/vault_screen.dart
+
 import 'package:flutter/material.dart';
 
 import '../../services/vault_api.dart';
 import '../journal/pages/creator_tool_screen.dart';
 import 'vault_category_page.dart';
+import 'vault_filter_page.dart';
 
 class VaultScreen extends StatefulWidget {
   const VaultScreen({super.key});
@@ -21,23 +24,29 @@ class _VaultScreenState extends State<VaultScreen> {
   bool _loading = true;
   String? _error;
 
-  // landing sections from backend
+  // keep full landing sections so empty-state is correct
   List<_VaultSection> _allSections = [];
-  List<_VaultSection> _sections = []; // filtered view shown on UI
+
+  // what we render (can be filtered by chip/search etc)
+  List<_VaultSection> _sections = [];
 
   // UI state
   String _selectedChip = "All";
   String _search = "";
 
+  // filter screen payload (we’ll use it in next step to actually filter)
+  Map<String, dynamic>? _activeFilter;
+
   @override
   void initState() {
     super.initState();
     _load();
+
     _searchCtrl.addListener(() {
       final v = _searchCtrl.text.trim();
       if (v == _search) return;
       setState(() => _search = v);
-      _load(); // MVP: client-side filter, still ok to reload
+      _load(); // MVP: client-side-ish, still ok to reload
     });
   }
 
@@ -58,13 +67,19 @@ class _VaultScreenState extends State<VaultScreen> {
         chip: _selectedChip,
         search: _search,
       );
+
       final mapped = raw.map((m) => _VaultSection.fromMap(m)).toList();
 
       if (!mounted) return;
+
       setState(() {
+        // IMPORTANT:
+        // backend currently applies chip/search filter, so:
+        // - _sections is what we display
+        // - _allSections we treat as “what we got”
+        // In the future, we’ll fetch unfiltered and filter locally.
         _allSections = mapped;
-        _sections =
-            mapped; // because your backend is currently returning filtered already
+        _sections = mapped;
       });
     } catch (e) {
       if (!mounted) return;
@@ -81,7 +96,6 @@ class _VaultScreenState extends State<VaultScreen> {
   }
 
   bool get _hasAnySaved {
-    // If any section has count > 0 => vault not empty
     for (final s in _allSections) {
       if (s.count > 0) return true;
     }
@@ -92,6 +106,28 @@ class _VaultScreenState extends State<VaultScreen> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const CreatorToolScreen()));
+  }
+
+  Future<void> _openFilter() async {
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const VaultFilterPage()));
+
+    if (!mounted) return;
+
+    if (result is Map) {
+      final map = Map<String, dynamic>.from(result);
+
+      setState(() {
+        _activeFilter = map;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Applied: ${map["tag"]}, ${map["sortBy"]} ✅")),
+      );
+
+      // Next step: use _activeFilter to filter backend results
+    }
   }
 
   @override
@@ -186,7 +222,7 @@ class _VaultScreenState extends State<VaultScreen> {
         ),
         const SizedBox(width: 10),
 
-        // Filter icon (we'll hook to filter screen next step)
+        // Filter icon
         Container(
           width: 46,
           height: 44,
@@ -196,11 +232,7 @@ class _VaultScreenState extends State<VaultScreen> {
             border: Border.all(color: kBorder),
           ),
           child: IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Filter screen next ✅")),
-              );
-            },
+            onPressed: _openFilter,
             icon: const Icon(Icons.tune, color: kPurple),
           ),
         ),
@@ -293,7 +325,6 @@ class _VaultScreenState extends State<VaultScreen> {
   }
 
   Widget _buildEmptyState() {
-    // matches your figma empty state vibe
     return Column(
       children: [
         const SizedBox(height: 40),
@@ -475,7 +506,6 @@ class _VaultScreenState extends State<VaultScreen> {
   }
 
   List<Widget> _buildSections() {
-    // Show only non-empty sections (like curated memory space)
     final nonEmpty = _sections.where((s) => s.count > 0).toList();
 
     return nonEmpty.map((s) {
