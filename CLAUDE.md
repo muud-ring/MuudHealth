@@ -141,7 +141,7 @@ The Muud workspace spans **two GitHub organizations** (`muud-health` and `muud-r
 | **Settings** | Settings screen, Edit Profile |
 | **Notifications** | Notifications screen |
 
-#### Backend API Routes
+#### Backend API Routes (13 route files, 14+ controllers)
 
 | Route | Endpoint | Features |
 |-------|----------|----------|
@@ -153,18 +153,25 @@ The Muud workspace spans **two GitHub organizations** (`muud-health` and `muud-r
 | Posts | `/posts` | Content creation, reading |
 | Feed | `/feed` | Social feed aggregation |
 | Vault | `/vault` | Private content vault |
-| Uploads | `/uploads` | S3 file upload (presigned URLs) |
+| Journal | `/journal` | Journal entries CRUD |
+| Journal Feed | `/journal-feed` | Journal feed aggregation |
+| Notifications | `/notifications` | Notification management |
+| Images | `/images` | Image upload/management |
+| Tags | `/tags` | Content tagging system |
 | Debug | `/debug` | Development debugging |
 | Admin | `/dev` | Dev-only admin utilities |
 
-#### Backend Data Models
+#### Backend Data Models (8 Mongoose schemas)
 
 - `UserProfile` — User accounts and profile data
 - `Connection` / `FriendRequest` — Social graph
 - `Conversation` / `Message` — Chat system
 - `Post` — Content/journal posts
-- `Onboarding` — Onboarding progress
+- `JournalEntry` — Journal entries
+- `OnboardingAnswers` — Onboarding progress and preferences
 - `VaultItem` — Private vault entries
+
+All models have proper MongoDB indexing for performance (user sub unique, posts by author/visibility, messages by recipient, conversations by members).
 
 #### Frontend Services Layer
 
