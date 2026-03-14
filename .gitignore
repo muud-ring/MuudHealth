@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.dart_tool/
+.packages
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.idea/
+.vscode/
+.Cursor/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Flutter
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+
+# iOS
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+
+# Android
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/key.properties
+*.jks
+*.keystore
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Secrets
+*.pem
+!Backend/global-bundle.pem
