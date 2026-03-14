@@ -2,6 +2,7 @@
 
 const cognito = require("../config/cognito");
 const UserProfile = require("../models/UserProfile");
+const logger = require("../utils/logger");
 
 const {
   SignUpCommand,
@@ -9,6 +10,7 @@ const {
   InitiateAuthCommand,
   ForgotPasswordCommand,
   ConfirmForgotPasswordCommand,
+  CognitoIdentityProviderClient,
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 function normalizeUsername(identifier) {
@@ -188,5 +190,39 @@ exports.confirmForgotPassword = async (req, res) => {
   } catch (err) {
     const msg = err?.message || "Confirm forgot password failed";
     return res.status(400).json({ message: msg, code: err?.name });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Refresh token required' });
+    }
+
+    const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || 'us-west-2' });
+
+    const command = new InitiateAuthCommand({
+      AuthFlow: 'REFRESH_TOKEN_AUTH',
+      ClientId: process.env.COGNITO_CLIENT_ID,
+      AuthParameters: {
+        REFRESH_TOKEN: refreshToken,
+      },
+    });
+
+    const result = await client.send(command);
+    const authResult = result.AuthenticationResult;
+
+    if (!authResult || !authResult.AccessToken) {
+      return res.status(401).json({ error: 'Token refresh failed' });
+    }
+
+    res.json({
+      accessToken: authResult.AccessToken,
+      idToken: authResult.IdToken,
+      expiresIn: authResult.ExpiresIn,
+    });
+  } catch (err) {
+    res.status(401).json({ error: 'Token refresh failed' });
   }
 };

@@ -15,7 +15,7 @@ async function connectDB() {
       retryWrites: false,
     });
 
-    console.log("✅ DocumentDB connected");
+    // DocumentDB connected
 
     // 2️⃣ Get native MongoDB db object from mongoose
     const db = mongoose.connection.db;
@@ -24,7 +24,7 @@ async function connectDB() {
     const { ensureIndexes } = require("../db/collections");
     await ensureIndexes(db);
 
-    console.log("✅ DB indexes ensured");
+    // DB indexes ensured
   } catch (err) {
     console.error("❌ DB connection error:", err.message);
     process.exit(1);

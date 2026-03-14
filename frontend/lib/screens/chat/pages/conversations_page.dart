@@ -86,21 +86,15 @@ class _ConversationsPageState extends State<ConversationsPage> {
       });
 
       socket.on('connect', (_) {
-        // ignore: avoid_print
-        print('✅ Inbox socket connected');
         if (mounted) setState(() => _socketReady = true);
       });
 
       socket.on('disconnect', (_) {
-        // ignore: avoid_print
-        print('⚠️ Inbox socket disconnected');
         if (mounted) setState(() => _socketReady = false);
       });
 
       if (mounted) setState(() => _socketReady = socket.connected == true);
-    } catch (e) {
-      // ignore: avoid_print
-      print('❌ Inbox socket error: $e');
+    } catch (_) {
       if (mounted) setState(() => _socketReady = false);
     }
   }

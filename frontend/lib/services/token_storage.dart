@@ -60,4 +60,26 @@ class TokenStorage {
   }
 
   static Future<void> clearTokens() => clear();
+
+  static Future<bool> isTokenExpired() async {
+    final token = await getAccessToken();
+    if (token == null || token.isEmpty) return true;
+    try {
+      return JwtDecoder.isExpired(token);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  static Future<Duration?> tokenTimeToLive() async {
+    final token = await getAccessToken();
+    if (token == null || token.isEmpty) return null;
+    try {
+      final expDate = JwtDecoder.getExpirationDate(token);
+      final remaining = expDate.difference(DateTime.now());
+      return remaining.isNegative ? Duration.zero : remaining;
+    } catch (_) {
+      return null;
+    }
+  }
 }

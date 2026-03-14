@@ -4,11 +4,14 @@ require("dotenv").config(); // MUST be first
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const http = require("http");
 const { Server } = require("socket.io");
 const { createRemoteJWKSet, jwtVerify } = require("jose");
 
 const connectDB = require("./config/db");
+const { apiLimiter } = require("./middleware/rateLimiter");
+const logger = require("./utils/logger");
 
 const onboardingRoute = require("./routes/onboardingRoute");
 const debugRoute = require("./routes/debugRoute");
@@ -21,14 +24,29 @@ const postRoute = require("./routes/postRoute");
 const postReadRoute = require("./routes/postReadRoute");
 const feedRoute = require("./routes/feedRoute");
 const vaultRoute = require("./routes/vaultRoute");
+const biometricsRoute = require("./routes/biometricsRoute");
 
 // ✅ NEW (DEV ONLY)
 const adminDevRoute = require("./routes/adminDevRoute");
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim());
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(helmet());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(apiLimiter);
 
 app.use("/auth", cognitoAuthRoute);
 app.use("/debug", debugRoute);
@@ -54,7 +72,7 @@ const PORT = process.env.PORT || 4000;
 // ✅ Create HTTP server + Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: corsOptions,
 });
 
 // ✅ Cognito token verification setup
@@ -62,7 +80,7 @@ const region = process.env.AWS_REGION || "us-west-2";
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
 if (!userPoolId) {
-  console.warn("⚠️ COGNITO_USER_POOL_ID is missing in env");
+  logger.warn("COGNITO_USER_POOL_ID is missing in env");
 }
 
 const issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
@@ -92,7 +110,6 @@ io.on("connection", (socket) => {
 
   if (sub) {
     socket.join(`user:${sub}`);
-    console.log("🔌 socket connected sub:", sub);
   }
 
   socket.on("joinConversation", (conversationId) => {
@@ -106,7 +123,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    if (sub) console.log("🔌 socket disconnected sub:", sub);
+    // socket disconnected
   });
 });
 
@@ -117,10 +134,10 @@ app.set("io", io);
 connectDB()
   .then(() => {
     server.listen(PORT, () => {
-      console.log(`🚀 MUUD backend running on port ${PORT}`);
+      // server started on PORT
     });
   })
   .catch((err) => {
-    console.error("❌ DB connection error:", err.message);
+    logger.error({ err }, "DB connection error");
     process.exit(1);
   });

@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import 'token_storage.dart';
 
 class FeedApi {
-  static const String _baseUrl = "http://127.0.0.1:4000";
+  static const String _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:4000',
+  );
 
   static Future<Map<String, String>> _authHeaders() async {
     final access = await TokenStorage.getAccessToken();

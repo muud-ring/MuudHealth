@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 
 import 'services/token_storage.dart';
+import 'theme/app_theme.dart';
 import 'services/onboarding_api.dart';
 
 import 'screens/login_screen.dart';
@@ -35,7 +37,7 @@ import 'shell/app_shell.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MuudApp());
+  runApp(const ProviderScope(child: MuudApp()));
 }
 
 class MuudApp extends StatefulWidget {
@@ -89,7 +91,7 @@ class _MuudAppState extends State<MuudApp> {
     return MaterialApp(
       title: 'MUUD',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
+      theme: AppTheme.lightTheme,
 
       // ✅ Splash → Redirect happens here
       home: const Boot(),

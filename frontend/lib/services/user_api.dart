@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import 'token_storage.dart';
 
 class UserApi {
-  static const String _baseUrl = 'http://localhost:4000';
+  static const String _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:4000',
+  );
 
   // ---------- Profile ----------
   static Future<Map<String, dynamic>> getMe() async {

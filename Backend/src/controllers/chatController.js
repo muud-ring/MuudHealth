@@ -1,5 +1,6 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
+const logger = require("../utils/logger");
 
 // helper for conversation uniqueness
 function keyFor(subA, subB) {
@@ -20,7 +21,7 @@ exports.getUnreadCount = async (req, res) => {
 
     return res.status(200).json({ unread });
   } catch (err) {
-    console.error("getUnreadCount error:", err);
+    logger.error({ err }, "getUnreadCount failed");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -87,7 +88,7 @@ exports.getConversations = async (req, res) => {
 
     return res.status(200).json({ conversations });
   } catch (err) {
-    console.error("getConversations error:", err);
+    logger.error({ err }, "getConversations failed");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -110,7 +111,7 @@ exports.getOrCreateConversation = async (req, res) => {
 
     return res.status(200).json({ conversation: convo });
   } catch (err) {
-    console.error("getOrCreateConversation error:", err);
+    logger.error({ err }, "getOrCreateConversation failed");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -145,7 +146,7 @@ exports.getMessages = async (req, res) => {
 
     return res.status(200).json({ messages });
   } catch (err) {
-    console.error("getMessages error:", err);
+    logger.error({ err }, "getMessages failed");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -196,7 +197,7 @@ exports.sendMessage = async (req, res) => {
 
     return res.status(201).json({ message: msg });
   } catch (err) {
-    console.error("sendMessage error:", err);
+    logger.error({ err }, "sendMessage failed");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -213,7 +214,7 @@ exports.getInbox = async (req, res) => {
 
     return res.status(200).json({ conversations: convos });
   } catch (err) {
-    console.error("getInbox error:", err);
+    logger.error({ err }, "getInbox failed");
     return res.status(500).json({ message: "Server error" });
   }
 };

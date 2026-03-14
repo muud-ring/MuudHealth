@@ -26,15 +26,6 @@ class PeopleApi {
   static Future<Map<String, String>> _headers() async {
     final accessToken = await TokenStorage.getAccessToken();
 
-    if (accessToken == null || accessToken.isEmpty) {
-      print("🔐 PeopleApi access token: NULL/EMPTY");
-    } else {
-      final head = accessToken.length > 15
-          ? accessToken.substring(0, 15)
-          : accessToken;
-      print("🔐 PeopleApi access token: $head...");
-    }
-
     return {
       'Content-Type': 'application/json',
       if (accessToken != null && accessToken.isNotEmpty)

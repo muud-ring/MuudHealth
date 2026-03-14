@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import 'token_storage.dart';
 
 class OnboardingApi {
-  // ✅ Use same base url as ApiService
-  static const String _baseUrl = 'http://localhost:4000';
+  static const String _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:4000',
+  );
 
   // GET /onboarding/status  -> { "completed": true/false }
   static Future<bool> isCompleted() async {
