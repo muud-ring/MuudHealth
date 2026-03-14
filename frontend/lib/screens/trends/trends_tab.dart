@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/biometric_reading.dart';
 import '../../providers/biometrics_provider.dart';
 import '../../theme/app_theme.dart';
 import 'widgets/wellness_score_card.dart';
