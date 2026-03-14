@@ -25,7 +25,7 @@ class BiometricReading {
       unit: json['unit'] ?? '',
       source: json['source'] ?? 'smart_ring',
       recordedAt: DateTime.parse(json['recordedAt']),
-      metadata: json['metadata'] ?? {},
+      metadata: json['metadata'] != null ? Map<String, dynamic>.from(json['metadata']) : {},
     );
   }
 

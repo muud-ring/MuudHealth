@@ -86,7 +86,7 @@ void main() {
     });
   });
 
-  group('DailySummary', () => {
+  group('DailySummary', () {
     test('fromJson with all sub-summaries', () {
       final json = {
         'date': '2026-03-14',
