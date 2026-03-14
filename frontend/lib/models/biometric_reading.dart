@@ -75,6 +75,18 @@ class DailySummary {
       wellnessScore: (json['wellnessScore'] as num?)?.toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'date': date,
+    if (heartRate != null) 'heartRate': heartRate!.toJson(),
+    if (hrv != null) 'hrv': hrv!.toJson(),
+    if (spo2 != null) 'spo2': spo2!.toJson(),
+    if (temperature != null) 'temperature': temperature!.toJson(),
+    if (sleep != null) 'sleep': sleep!.toJson(),
+    if (steps != null) 'steps': steps!.toJson(),
+    if (stress != null) 'stress': stress!.toJson(),
+    if (wellnessScore != null) 'wellnessScore': wellnessScore,
+  };
 }
 
 class HeartRateSummary {
@@ -82,6 +94,7 @@ class HeartRateSummary {
   HeartRateSummary({this.avg, this.min, this.max, this.resting});
   factory HeartRateSummary.fromJson(Map<String, dynamic> j) =>
     HeartRateSummary(avg: j['avg'], min: j['min'], max: j['max'], resting: j['resting']);
+  Map<String, dynamic> toJson() => {'avg': avg, 'min': min, 'max': max, 'resting': resting};
 }
 
 class HrvSummary {
@@ -89,6 +102,7 @@ class HrvSummary {
   HrvSummary({this.avg, this.min, this.max});
   factory HrvSummary.fromJson(Map<String, dynamic> j) =>
     HrvSummary(avg: j['avg'], min: j['min'], max: j['max']);
+  Map<String, dynamic> toJson() => {'avg': avg, 'min': min, 'max': max};
 }
 
 class Spo2Summary {
@@ -97,6 +111,7 @@ class Spo2Summary {
   Spo2Summary({this.avg, this.min});
   factory Spo2Summary.fromJson(Map<String, dynamic> j) =>
     Spo2Summary(avg: (j['avg'] as num?)?.toDouble(), min: (j['min'] as num?)?.toDouble());
+  Map<String, dynamic> toJson() => {'avg': avg, 'min': min};
 }
 
 class TemperatureSummary {
@@ -104,6 +119,7 @@ class TemperatureSummary {
   TemperatureSummary({this.avg, this.min, this.max});
   factory TemperatureSummary.fromJson(Map<String, dynamic> j) =>
     TemperatureSummary(avg: (j['avg'] as num?)?.toDouble(), min: (j['min'] as num?)?.toDouble(), max: (j['max'] as num?)?.toDouble());
+  Map<String, dynamic> toJson() => {'avg': avg, 'min': min, 'max': max};
 }
 
 class SleepSummary {
@@ -114,6 +130,11 @@ class SleepSummary {
     lightMinutes: j['lightMinutes'], remMinutes: j['remMinutes'],
     awakeMinutes: j['awakeMinutes'], score: j['score'],
   );
+  Map<String, dynamic> toJson() => {
+    'totalMinutes': totalMinutes, 'deepMinutes': deepMinutes,
+    'lightMinutes': lightMinutes, 'remMinutes': remMinutes,
+    'awakeMinutes': awakeMinutes, 'score': score,
+  };
 }
 
 class StepsSummary {
@@ -121,6 +142,7 @@ class StepsSummary {
   StepsSummary({this.total, this.goal});
   factory StepsSummary.fromJson(Map<String, dynamic> j) =>
     StepsSummary(total: j['total'], goal: j['goal']);
+  Map<String, dynamic> toJson() => {'total': total, 'goal': goal};
 }
 
 class StressSummary {
@@ -128,4 +150,5 @@ class StressSummary {
   StressSummary({this.avg, this.max});
   factory StressSummary.fromJson(Map<String, dynamic> j) =>
     StressSummary(avg: j['avg'], max: j['max']);
+  Map<String, dynamic> toJson() => {'avg': avg, 'max': max};
 }

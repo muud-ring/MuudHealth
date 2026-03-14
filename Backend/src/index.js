@@ -11,6 +11,7 @@ const { createRemoteJWKSet, jwtVerify } = require("jose");
 
 const connectDB = require("./config/db");
 const { apiLimiter } = require("./middleware/rateLimiter");
+const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
 
 const onboardingRoute = require("./routes/onboardingRoute");
@@ -59,6 +60,7 @@ app.use("/posts", postRoute);
 app.use("/posts", postReadRoute);
 app.use("/feed", feedRoute);
 app.use("/vault", vaultRoute);
+app.use("/biometrics", biometricsRoute);
 
 // ✅ NEW (DEV ONLY)
 app.use("/dev", adminDevRoute);
@@ -66,6 +68,9 @@ app.use("/dev", adminDevRoute);
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "MUUD Backend" });
 });
+
+// Global error handler (must be after all routes)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 
