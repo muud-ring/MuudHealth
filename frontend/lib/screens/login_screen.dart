@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
-import '../services/social_auth_service.dart';
 import '../services/cognito_oauth.dart';
 import '../services/post_auth_redirect.dart';
 
@@ -21,8 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _identifier = TextEditingController();
   final _password = TextEditingController();
-
-  final _socialAuth = SocialAuthService();
 
   bool _loading = false;
   String? _error;
