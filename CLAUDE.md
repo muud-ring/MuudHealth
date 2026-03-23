@@ -695,7 +695,7 @@ The elected build (`muud-ring/MuudHealth`) has this structure:
 
 ```
 MuudHealth/
-├── Backend/
+├── backend/
 │   ├── package.json                    # Node.js dependencies
 │   └── src/
 │       ├── index.js                    # Express + Socket.IO server entry
@@ -800,7 +800,7 @@ flutter run
 ### Backend Setup
 
 ```bash
-cd Backend
+cd backend
 npm install
 # Create .env with required variables (see below)
 npm start        # or: npm run dev
@@ -809,7 +809,7 @@ npm start        # or: npm run dev
 ### Required Environment Variables (Backend)
 
 ```bash
-# .env (Backend/)
+# .env (backend/)
 PORT=4000
 MONGODB_URI=<your-mongodb-connection-string>
 AWS_REGION=us-west-2
@@ -866,7 +866,7 @@ flutter test             # Run tests (currently broken)
 ### Backend (Node.js)
 
 ```bash
-cd Backend
+cd backend
 npm install              # Install dependencies
 npm start                # Start server (production)
 npm run dev              # Start server (development)

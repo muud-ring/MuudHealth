@@ -6,14 +6,17 @@ async function connectDB() {
     const uri = process.env.MONGO_URI;
     if (!uri) throw new Error("MONGO_URI is missing in .env");
 
-    const caFile = path.join(process.cwd(), "global-bundle.pem");
+    const isLocal = uri.includes("localhost") || uri.includes("127.0.0.1");
 
-    // 1️⃣ Connect to DocumentDB first
-    await mongoose.connect(uri, {
-      tls: true,
-      tlsCAFile: caFile,
-      retryWrites: false,
-    });
+    const opts = isLocal
+      ? {}
+      : {
+          tls: true,
+          tlsCAFile: path.join(process.cwd(), "global-bundle.pem"),
+          retryWrites: false,
+        };
+
+    await mongoose.connect(uri, opts);
 
     // DocumentDB connected
 
