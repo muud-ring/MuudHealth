@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/prototype.js",
+    "start:production": "node src/index.js",
     "dev": "node src/index.js",
     "prototype": "node src/prototype.js",
     "lint": "eslint src/",
