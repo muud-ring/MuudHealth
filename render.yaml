@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: muud-prototype
+    name: muud-health
     runtime: node
     rootDir: Backend
     buildCommand: npm install
