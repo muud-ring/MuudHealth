@@ -12,11 +12,11 @@ let Message = null;
 
 try {
   Conversation = require("../models/Conversation");
-} catch (_) {}
+} catch (_) { /* optional model */ }
 
 try {
   Message = require("../models/Message");
-} catch (_) {}
+} catch (_) { /* optional model */ }
 
 // ⚠️ DEV ONLY: wipe People + Chat data from DocumentDB
 router.post("/wipe-people", async (req, res) => {
