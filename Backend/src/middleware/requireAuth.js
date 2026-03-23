@@ -4,12 +4,15 @@ const UserProfile = require("../models/UserProfile");
 const region = process.env.AWS_REGION || "us-west-2";
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
-if (!userPoolId) {
-  console.warn("⚠️ COGNITO_USER_POOL_ID is missing in env");
+if (!userPoolId && !process.env.DEV_AUTH) {
+  console.warn("COGNITO_USER_POOL_ID is missing in env");
 }
 
-const issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
-const JWKS = createRemoteJWKSet(new URL(`${issuer}/.well-known/jwks.json`));
+let issuer, JWKS;
+if (userPoolId && userPoolId !== 'dev-pool') {
+  issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+  JWKS = createRemoteJWKSet(new URL(`${issuer}/.well-known/jwks.json`));
+}
 
 function getBearerToken(req) {
   const auth = req.headers.authorization || "";
@@ -27,6 +30,31 @@ async function requireAuth(req, res, next) {
         .json({ message: "Missing Authorization Bearer token" });
     }
 
+    // Dev auth mode — token format: "dev-<sub>"
+    if (process.env.DEV_AUTH === 'true' && token.startsWith('dev-')) {
+      const sub = token.slice(4);
+      req.user = {
+        sub,
+        username: sub,
+        scope: 'openid profile',
+        client_id: 'dev-client',
+        token_use: 'access',
+        claims: { sub, preferred_username: sub },
+      };
+
+      await UserProfile.updateOne(
+        { sub },
+        { $setOnInsert: { sub, name: '', username: sub, bio: '', location: '', phone: '', avatarKey: '' } },
+        { upsert: true },
+      );
+
+      return next();
+    }
+
+    if (!JWKS) {
+      return res.status(500).json({ message: "Auth not configured" });
+    }
+
     const { payload } = await jwtVerify(token, JWKS, { issuer });
 
     const clientId = process.env.COGNITO_CLIENT_ID;
@@ -42,14 +70,14 @@ async function requireAuth(req, res, next) {
         .json({ message: "Please use access token for API calls" });
     }
 
-    // ✅ Extract username correctly
+    // Extract username correctly
     const usernameFromToken =
       payload["custom:username"] ||
       payload.preferred_username ||
       payload.username ||
       "";
 
-    // ✅ Ensure profile exists AND hydrate username if missing
+    // Ensure profile exists AND hydrate username if missing
     await UserProfile.updateOne(
       { sub: payload.sub },
       {
