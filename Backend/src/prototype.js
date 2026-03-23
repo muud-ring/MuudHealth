@@ -555,7 +555,7 @@ io.on('connection', (socket) => {
 
 app.set('io', io);
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('  ========================================');
   console.log('   MUUD HEALTH PROTOTYPE');
