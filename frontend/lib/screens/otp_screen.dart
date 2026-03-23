@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../services/user_api.dart';
-import '../services/post_auth_redirect.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});

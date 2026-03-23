@@ -60,7 +60,7 @@ class _ChatPageState extends State<ChatPage> {
         if (data is Map &&
             data['conversationId']?.toString() == conversationId) {
           setState(() {
-            messages.add((data as Map).cast<String, dynamic>());
+            messages.add(data.cast<String, dynamic>());
           });
         }
       });
@@ -100,7 +100,7 @@ class _ChatPageState extends State<ChatPage> {
     _text.clear();
 
     try {
-      final msg = await ChatApi.sendMessage(
+      await ChatApi.sendMessage(
         conversationId: conversationId!,
         text: text,
       );

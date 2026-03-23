@@ -26,8 +26,6 @@ class PreviewScreen extends StatefulWidget {
 }
 
 class _PreviewScreenState extends State<PreviewScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   final _captionCtrl = TextEditingController();
   final _player = AudioPlayer();
 

@@ -17,7 +17,6 @@ class _VaultScreenState extends State<VaultScreen> {
   static const Color kPurple = Color(0xFF5B288E);
   static const Color kGrey = Color(0xFF898384);
   static const Color kBorder = Color(0xFFE7E1EF);
-  static const Color kFieldFill = Color(0xFFF6F3FA);
 
   final TextEditingController _searchCtrl = TextEditingController();
 
