@@ -2,11 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY Backend/package.json Backend/package-lock.json ./
+COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev
 
-COPY Backend/src ./src
-COPY Backend/prototype ./prototype
+COPY backend/src ./src
+COPY backend/prototype ./prototype
 
 ENV PORT=4000
 EXPOSE 4000

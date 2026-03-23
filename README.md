@@ -9,7 +9,7 @@ The prototype runs fully in-memory (no database required). Includes seeded demo 
 ### Run Locally
 
 ```bash
-cd Backend
+cd backend
 npm install
 node src/prototype.js
 # Open http://localhost:4000
@@ -23,7 +23,7 @@ node src/prototype.js
 4. Render reads `render.yaml` and deploys automatically
 5. Your app will be live at `https://muud-prototype.onrender.com`
 
-Or manually: **New > Web Service** → connect repo → set root directory to `Backend`, build command `npm install`, start command `node src/prototype.js`.
+Or manually: **New > Web Service** → connect repo → set root directory to `backend`, build command `npm install`, start command `node src/prototype.js`.
 
 ### Deploy to Fly.io (Free Tier)
 

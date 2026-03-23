@@ -2,7 +2,7 @@ services:
   - type: web
     name: muud-health
     runtime: node
-    rootDir: Backend
+    rootDir: backend
     buildCommand: npm install
     startCommand: node src/prototype.js
     envVars:
@@ -10,5 +10,28 @@ services:
         value: 10000
       - key: NODE_ENV
         value: production
+      # Database
+      - key: MONGO_URI
+        sync: false    # Set in Render dashboard
+      # AWS General
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      # AWS Cognito (Authentication)
+      - key: COGNITO_USER_POOL_ID
+        sync: false
+      - key: COGNITO_CLIENT_ID
+        sync: false
+      - key: COGNITO_DOMAIN
+        sync: false
+      # AWS S3 (File Storage)
+      - key: S3_BUCKET_NAME
+        sync: false
+      # CORS
+      - key: ALLOWED_ORIGINS
+        sync: false
     plan: free
     autoDeploy: true
