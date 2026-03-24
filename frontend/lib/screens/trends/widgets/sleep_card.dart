@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 import '../../../models/biometric_reading.dart';
 
 class SleepCard extends StatelessWidget {
@@ -55,7 +56,7 @@ class SleepCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2D2D2D),
+                  color: AppTheme.darkText,
                 ),
               ),
               const Spacer(),

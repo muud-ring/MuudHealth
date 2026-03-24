@@ -5,7 +5,7 @@ const region = process.env.AWS_REGION || "us-west-2";
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
 if (!userPoolId && !process.env.DEV_AUTH) {
-  console.warn("COGNITO_USER_POOL_ID is missing in env");
+  require("../utils/logger").warn("COGNITO_USER_POOL_ID is missing in env");
 }
 
 let issuer, JWKS;

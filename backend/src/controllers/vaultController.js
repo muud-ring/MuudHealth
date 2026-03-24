@@ -1,5 +1,6 @@
 // backend/src/controllers/vaultController.js
 const VaultItem = require("../models/VaultItem");
+const logger = require("../utils/logger");
 const Post = require("../models/Post");
 const UserProfile = require("../models/UserProfile");
 
@@ -115,7 +116,7 @@ exports.save = async (req, res) => {
 
     return res.status(200).json({ ok: true, item: doc });
   } catch (err) {
-    console.error("vault.save error:", err);
+    logger.error({ err }, "vault.save error");
     return res.status(500).json({ message: "Failed to save to vault" });
   }
 };
@@ -131,7 +132,7 @@ exports.unsave = async (req, res) => {
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("vault.unsave error:", err);
+    logger.error({ err }, "vault.unsave error");
     return res.status(500).json({ message: "Failed to remove from vault" });
   }
 };
@@ -247,7 +248,7 @@ const vaultItems = await VaultItem.find(q)
 
     return res.status(200).json({ items: cleaned, nextCursor });
   } catch (err) {
-    console.error("vault.items error:", err);
+    logger.error({ err }, "vault.items error");
     return res.status(500).json({ message: "Failed to load vault items" });
   }
 };
@@ -331,7 +332,7 @@ exports.landing = async (req, res) => {
 
     return res.status(200).json({ sections });
   } catch (err) {
-    console.error("vault.landing error:", err);
+    logger.error({ err }, "vault.landing error");
     return res.status(500).json({ message: "Failed to load vault landing" });
   }
 };

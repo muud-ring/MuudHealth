@@ -78,11 +78,31 @@ jobs:
         run: npm audit --audit-level=high || true
       - name: Check for secrets in code
         run: |
-          # Fail if hardcoded AWS keys or passwords are found in source
+          FOUND=0
+          # AWS access keys
           if grep -rn 'AKIA[0-9A-Z]\{16\}' --include='*.js' --include='*.dart' --include='*.ts' .; then
             echo "::error::Possible AWS access key found in source code"
-            exit 1
+            FOUND=1
           fi
+          # Private keys
+          if grep -rn 'BEGIN.*PRIVATE KEY' --include='*.js' --include='*.dart' --include='*.ts' .; then
+            echo "::error::Possible private key found in source code"
+            FOUND=1
+          fi
+          # Hardcoded passwords/tokens in assignments
+          if grep -rn 'password\s*=\s*["\x27][^"\x27]\{8,\}' --include='*.js' --include='*.ts' . | grep -v node_modules | grep -v '.test.' | grep -v '.spec.'; then
+            echo "::warning::Possible hardcoded password found — review manually"
+          fi
+          exit $FOUND
+
+  docker-build:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    needs: [backend-lint-test]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build Docker image
+        run: docker build -t muud-health-backend:ci .
 
   frontend-build-android:
     name: Build Android APK

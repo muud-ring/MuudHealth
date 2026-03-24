@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 
-import 'services/token_storage.dart';
+import 'services/error_reporting.dart';
 import 'theme/app_theme.dart';
-import 'services/onboarding_api.dart';
+import 'providers/auth_provider.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
@@ -62,20 +62,17 @@ class _MuudAppState extends State<MuudApp> {
       final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) _handleUri(initialUri);
     } catch (e) {
-      debugPrint("❌ getInitialLink error: $e");
+      ErrorReporting.captureException(e);
     }
 
     _sub = _appLinks.uriLinkStream.listen(
       (Uri uri) => _handleUri(uri),
-      onError: (err) => debugPrint("❌ link stream error: $err"),
+      onError: (err) => ErrorReporting.captureException(err),
     );
   }
 
   void _handleUri(Uri uri) {
-    debugPrint("🔗 Deep link received: $uri");
     if (uri.host == 'auth' && uri.path == '/callback') {
-      final code = uri.queryParameters['code'];
-      debugPrint("✅ OAuth code: $code");
       // OAuth exchange stays in your service layer
     }
   }
@@ -142,14 +139,14 @@ class _MuudAppState extends State<MuudApp> {
   }
 }
 
-class Boot extends StatefulWidget {
+class Boot extends ConsumerStatefulWidget {
   const Boot({super.key});
 
   @override
-  State<Boot> createState() => _BootState();
+  ConsumerState<Boot> createState() => _BootState();
 }
 
-class _BootState extends State<Boot> {
+class _BootState extends ConsumerState<Boot> {
   @override
   void initState() {
     super.initState();
@@ -157,37 +154,26 @@ class _BootState extends State<Boot> {
   }
 
   Future<void> _go() async {
-    // ⏳ Small delay so splash feels intentional
     await Future.delayed(const Duration(milliseconds: 300));
 
-    final accessToken = await TokenStorage.getAccessToken();
+    final auth = ref.read(authProvider.notifier);
+    await auth.checkAuth();
     if (!mounted) return;
 
-    // 1️⃣ No token → Login
-    if (accessToken == null || accessToken.isEmpty) {
-      Navigator.of(context).pushReplacementNamed('/login');
-      return;
-    }
-
-    // 2️⃣ Token exists → Check onboarding
-    try {
-      final completed = await OnboardingApi.isCompleted();
-      if (!mounted) return;
-
-      Navigator.of(
-        context,
-      ).pushReplacementNamed(completed ? '/home' : '/onboarding/01');
-    } catch (_) {
-      // Token invalid → reset
-      await TokenStorage.clearTokens();
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/login');
+    final status = ref.read(authProvider).status;
+    switch (status) {
+      case AuthStatus.authenticated:
+        Navigator.of(context).pushReplacementNamed('/home');
+      case AuthStatus.onboarding:
+        Navigator.of(context).pushReplacementNamed('/onboarding/01');
+      case AuthStatus.unauthenticated:
+      case AuthStatus.unknown:
+        Navigator.of(context).pushReplacementNamed('/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🟣 Flutter splash bridge (same as native splash)
     return const Scaffold(
       body: SizedBox.expand(
         child: Image(

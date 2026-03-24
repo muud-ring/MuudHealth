@@ -5,21 +5,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SocialAuthService {
   // Cognito Hosted UI domain
-  // Override via: --dart-define=SOCIAL_AUTH_COGNITO_DOMAIN=https://your-domain.auth.region.amazoncognito.com
-  static const String domain = String.fromEnvironment(
-    'SOCIAL_AUTH_COGNITO_DOMAIN',
-    defaultValue: 'https://us-west-2kl77r4jwp.auth.us-west-2.amazoncognito.com',
-  );
+  // Required: --dart-define=SOCIAL_AUTH_COGNITO_DOMAIN=https://your-domain.auth.region.amazoncognito.com
+  static const String domain = String.fromEnvironment('SOCIAL_AUTH_COGNITO_DOMAIN');
 
   // Cognito App Client ID for social auth
-  // Override via: --dart-define=SOCIAL_AUTH_CLIENT_ID=your-client-id
-  static const String clientId = String.fromEnvironment(
-    'SOCIAL_AUTH_CLIENT_ID',
-    defaultValue: '754pdur7oaaqe0a5vtupvfp464',
-  );
+  // Required: --dart-define=SOCIAL_AUTH_CLIENT_ID=your-client-id
+  static const String clientId = String.fromEnvironment('SOCIAL_AUTH_CLIENT_ID');
 
   // Deep link callback URI
-  // Override via: --dart-define=SOCIAL_AUTH_REDIRECT_URI=your-redirect-uri
+  // Required: --dart-define=SOCIAL_AUTH_REDIRECT_URI=your-redirect-uri
   static const String redirectUri = String.fromEnvironment(
     'SOCIAL_AUTH_REDIRECT_URI',
     defaultValue: 'muud://auth/callback',

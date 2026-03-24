@@ -1,5 +1,6 @@
 // backend/src/controllers/feedController.js
 const Post = require("../models/Post");
+const logger = require("../utils/logger");
 const Connection = require("../models/Connection");
 const UserProfile = require("../models/UserProfile");
 
@@ -121,7 +122,7 @@ exports.getHomeFeed = async (req, res) => {
 
     return res.status(200).json({ posts: out });
   } catch (err) {
-    console.error("getHomeFeed error:", err);
+    logger.error({ err }, "getHomeFeed error");
     return res.status(500).json({ message: "Failed to load feed" });
   }
 };
