@@ -1,5 +1,6 @@
 // backend/src/controllers/uploadController.js
 const crypto = require("crypto");
+const logger = require("../utils/logger");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
@@ -62,7 +63,7 @@ exports.presignUpload = async (req, res) => {
       bucket: BUCKET,
     });
   } catch (err) {
-    console.error("presignUpload error:", err);
+    logger.error({ err }, "presignUpload error");
     return res.status(500).json({ message: "Failed to create upload url" });
   }
 };

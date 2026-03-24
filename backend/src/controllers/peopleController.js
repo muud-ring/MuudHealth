@@ -1,6 +1,7 @@
 // backend/src/controllers/peopleController.js
 
 const mongoose = require("mongoose");
+const logger = require("../utils/logger");
 
 const Connection = require("../models/Connection");
 const FriendRequest = require("../models/FriendRequest");
@@ -163,7 +164,7 @@ exports.getMe = async (req, res) => {
 
     return res.status(200).json({ me: profile });
   } catch (err) {
-    console.error("getMe error:", err);
+    logger.error({ err }, "getMe error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -193,7 +194,7 @@ exports.getConnections = async (req, res) => {
 
     return res.status(200).json({ connections: profiles });
   } catch (err) {
-    console.error("getConnections error:", err);
+    logger.error({ err }, "getConnections error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -223,7 +224,7 @@ exports.getInnerCircle = async (req, res) => {
 
     return res.status(200).json({ innerCircle: profiles });
   } catch (err) {
-    console.error("getInnerCircle error:", err);
+    logger.error({ err }, "getInnerCircle error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -283,7 +284,7 @@ exports.getSuggestions = async (req, res) => {
 
     return res.status(200).json({ suggestions });
   } catch (err) {
-    console.error("getSuggestions error:", err);
+    logger.error({ err }, "getSuggestions error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -322,7 +323,7 @@ exports.getRequests = async (req, res) => {
 
     return res.status(200).json({ requests });
   } catch (err) {
-    console.error("getRequests error:", err);
+    logger.error({ err }, "getRequests error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -369,7 +370,7 @@ exports.sendRequest = async (req, res) => {
     if (err?.code === 11000) {
       return res.status(400).json({ message: "Request already exists" });
     }
-    console.error("sendRequest error:", err);
+    logger.error({ err }, "sendRequest error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -419,7 +420,7 @@ exports.acceptRequest = async (req, res) => {
 
     return res.status(200).json({ message: "Request accepted" });
   } catch (err) {
-    console.error("acceptRequest error:", err);
+    logger.error({ err }, "acceptRequest error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -450,7 +451,7 @@ exports.declineRequest = async (req, res) => {
 
     return res.status(200).json({ message: "Request declined" });
   } catch (err) {
-    console.error("declineRequest error:", err);
+    logger.error({ err }, "declineRequest error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -489,7 +490,7 @@ exports.updateTier = async (req, res) => {
 
     return res.status(200).json({ message: "Tier updated", tier: updated.tier });
   } catch (err) {
-    console.error("updateTier error:", err);
+    logger.error({ err }, "updateTier error");
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -525,7 +526,7 @@ exports.removeConnection = async (req, res) => {
       deletedCount: result.deletedCount || 0,
     });
   } catch (err) {
-    console.error("removeConnection error:", err);
+    logger.error({ err }, "removeConnection error");
     return res.status(500).json({ message: "Server error" });
   }
 };

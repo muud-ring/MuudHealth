@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/token_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
+import '../providers/people_provider.dart';
 
 // Screens (content-only)
 import '../screens/home/home_tab.dart';
@@ -13,48 +15,42 @@ import '../screens/top_nav/notifications_screen.dart';
 
 // People events (to refresh badge)
 import '../screens/people/state/people_events.dart';
-import '../services/people_api.dart';
 
-// ✅ NEW: chat badge
+// Chat badge (still uses ValueNotifier for Socket.IO real-time)
 import '../screens/chat/state/chat_badge.dart';
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   static const Color kPurple = Color(0xFF5B288E);
 
   int _selectedIndex = 0;
-
-  // ✅ forces PeopleTab to rebuild when user taps People
   int _peopleReloadTick = 0;
-
-  // ✅ badge count for bell
-  int _requestCount = 0;
 
   @override
   void initState() {
     super.initState();
 
-    // Load initial badge count
-    _refreshRequestCount();
+    // Load people data (includes requests for badge count)
+    ref.read(peopleProvider.notifier).loadAll();
 
-    // Whenever PeopleEvents says "reload", refresh badge too
+    // Whenever PeopleEvents says "reload", refresh via provider
     PeopleEvents.reload.addListener(_onPeopleReloadSignal);
 
-    // ✅ start chat badge socket + initial unread fetch
+    // Start chat badge socket + initial unread fetch
     ChatBadge.start();
   }
 
   void _onPeopleReloadSignal() {
-    _refreshRequestCount();
+    ref.read(peopleProvider.notifier).loadAll();
   }
 
   @override
@@ -64,28 +60,14 @@ class _AppShellState extends State<AppShell> {
     super.dispose();
   }
 
-  Future<void> _refreshRequestCount() async {
-    try {
-      final list = await PeopleApi.fetchRequests();
-      if (!mounted) return;
-      setState(() => _requestCount = list.length);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _requestCount = 0);
-    }
-  }
-
   Future<void> _logout() async {
-    // ✅ reset badge + disconnect socket so no stale UI
     ChatBadge.reset();
-
-    await TokenStorage.clearTokens();
+    await ref.read(authProvider.notifier).logout();
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
   }
 
   void _onNavTap(int index) {
-    // ✅ "+" should open Creator Tool instead of switching tabs
     if (index == 2) {
       Navigator.of(
         context,
@@ -97,7 +79,7 @@ class _AppShellState extends State<AppShell> {
       _selectedIndex = index;
       if (index == 3) {
         _peopleReloadTick++;
-        _refreshRequestCount();
+        ref.read(peopleProvider.notifier).loadAll();
       }
     });
   }
@@ -120,7 +102,8 @@ class _AppShellState extends State<AppShell> {
   }
 
   List<Widget> _rightActionsForIndex() {
-    // ✅ only People page shows bell + messages
+    final requestCount = ref.watch(peopleProvider).requests.length;
+
     if (_selectedIndex == 3) {
       return [
         IconButton(
@@ -134,14 +117,13 @@ class _AppShellState extends State<AppShell> {
             await Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             );
-            _refreshRequestCount();
+            ref.read(peopleProvider.notifier).loadAll();
           },
-          icon: _BellWithBadge(count: _requestCount),
+          icon: _BellWithBadge(count: requestCount),
         ),
       ];
     }
 
-    // Default: chat + logout
     return [
       IconButton(
         onPressed: () {

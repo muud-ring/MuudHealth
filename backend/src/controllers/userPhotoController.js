@@ -1,5 +1,6 @@
 // backend/src/controllers/userPhotoController.js
 const crypto = require("crypto");
+const logger = require("../utils/logger");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
@@ -48,7 +49,7 @@ exports.presignAvatarUpload = async (req, res) => {
       bucket: BUCKET,
     });
   } catch (err) {
-    console.error("presignAvatarUpload error:", err);
+    logger.error({ err }, "presignAvatarUpload error");
     return res.status(500).json({ message: "Failed to create upload url" });
   }
 };
@@ -76,7 +77,7 @@ exports.confirmAvatarUpload = async (req, res) => {
 
     return res.status(200).json({ message: "Avatar saved", profile });
   } catch (err) {
-    console.error("confirmAvatarUpload error:", err);
+    logger.error({ err }, "confirmAvatarUpload error");
     return res.status(500).json({ message: "Failed to save avatar" });
   }
 };
@@ -105,7 +106,7 @@ exports.getAvatarUrl = async (req, res) => {
 
     return res.status(200).json({ url });
   } catch (err) {
-    console.error("getAvatarUrl error:", err);
+    logger.error({ err }, "getAvatarUrl error");
     return res.status(500).json({ message: "Failed to generate avatar url" });
   }
 };

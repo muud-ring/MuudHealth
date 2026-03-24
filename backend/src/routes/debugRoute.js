@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const logger = require("../utils/logger");
 const { STSClient, GetCallerIdentityCommand } = require("@aws-sdk/client-sts");
 const FriendRequest = require("../models/FriendRequest"); // ✅ ADD
 
@@ -52,7 +53,7 @@ router.post("/cleanup-friend-requests", async (req, res) => {
       deleted: toDelete.length,
     });
   } catch (err) {
-    console.error("cleanup-friend-requests error:", err);
+    logger.error({ err }, "cleanup-friend-requests error");
     return res.status(500).json({ message: "Server error" });
   }
 });

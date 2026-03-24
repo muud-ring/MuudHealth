@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import '../services/token_storage.dart';
 import '../services/onboarding_api.dart';
+import '../services/api_client.dart';
 
 enum AuthStatus { unknown, unauthenticated, authenticated, onboarding }
 
@@ -33,17 +36,62 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.unauthenticated);
       return;
     }
+
+    // If token is expired, attempt refresh before giving up
+    final expired = await TokenStorage.isTokenExpired();
+    if (expired) {
+      final refreshed = await _tryRefresh();
+      if (!refreshed) {
+        await TokenStorage.clearTokens();
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+        return;
+      }
+    }
+
     try {
+      final currentToken = await TokenStorage.getAccessToken();
       final completed = await OnboardingApi.isCompleted();
       final name = await TokenStorage.getDisplayName();
       state = state.copyWith(
         status: completed ? AuthStatus.authenticated : AuthStatus.onboarding,
-        accessToken: token,
+        accessToken: currentToken,
         displayName: name,
       );
     } catch (_) {
       await TokenStorage.clearTokens();
       state = state.copyWith(status: AuthStatus.unauthenticated);
+    }
+  }
+
+  /// Attempts to refresh the access token using the stored refresh token.
+  /// Returns true if refresh succeeded, false otherwise.
+  Future<bool> _tryRefresh() async {
+    final refreshToken = await TokenStorage.getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) return false;
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiClient.baseUrl}/auth/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final newAccessToken = data['accessToken'] as String?;
+        final newIdToken = data['idToken'] as String?;
+        if (newAccessToken != null && newIdToken != null) {
+          await TokenStorage.saveTokens(
+            idToken: newIdToken,
+            accessToken: newAccessToken,
+            refreshToken: refreshToken,
+          );
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 

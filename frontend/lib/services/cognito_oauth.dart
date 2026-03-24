@@ -7,28 +7,22 @@ class CognitoOAuthService {
   final FlutterAppAuth _appAuth = const FlutterAppAuth();
 
   // Cognito Hosted UI domain (NO trailing slash)
-  // Override via: --dart-define=COGNITO_DOMAIN=https://your-domain.auth.region.amazoncognito.com
-  static const String cognitoDomain = String.fromEnvironment(
-    'COGNITO_DOMAIN',
-    defaultValue: 'https://us-west-2vrtcZ20k3.auth.us-west-2.amazoncognito.com',
-  );
+  // Required: --dart-define=COGNITO_DOMAIN=https://your-domain.auth.region.amazoncognito.com
+  static const String cognitoDomain = String.fromEnvironment('COGNITO_DOMAIN');
 
   // Cognito App Client ID
-  // Override via: --dart-define=COGNITO_CLIENT_ID=your-client-id
-  static const String clientId = String.fromEnvironment(
-    'COGNITO_CLIENT_ID',
-    defaultValue: '6j8cleke98rr4kq3nskumptqcm',
-  );
+  // Required: --dart-define=COGNITO_CLIENT_ID=your-client-id
+  static const String clientId = String.fromEnvironment('COGNITO_CLIENT_ID');
 
   // Custom scheme for mobile redirect
-  // Override via: --dart-define=COGNITO_REDIRECT_URI=your-redirect-uri
+  // Required: --dart-define=COGNITO_REDIRECT_URI=your-redirect-uri
   static const String redirectUri = String.fromEnvironment(
     'COGNITO_REDIRECT_URI',
     defaultValue: 'muudhealth://callback',
   );
 
   // Post-logout redirect URI
-  // Override via: --dart-define=COGNITO_LOGOUT_URI=your-logout-uri
+  // Required: --dart-define=COGNITO_LOGOUT_URI=your-logout-uri
   static const String postLogoutRedirectUri = String.fromEnvironment(
     'COGNITO_LOGOUT_URI',
     defaultValue: 'muudhealth://signout',

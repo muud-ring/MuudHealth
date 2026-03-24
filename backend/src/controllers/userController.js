@@ -1,5 +1,6 @@
 // backend/src/controllers/userController.js
 const UserProfile = require("../models/UserProfile");
+const logger = require("../utils/logger");
 
 // GET /user/me
 exports.getMe = async (req, res) => {
@@ -20,7 +21,7 @@ exports.getMe = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error("getMe error:", err);
+    logger.error({ err }, "getMe error");
     return res.status(500).json({ message: "Failed to fetch profile" });
   }
 };
@@ -46,7 +47,7 @@ exports.upsertMe = async (req, res) => {
 
     return res.status(200).json({ message: "Profile saved", profile });
   } catch (err) {
-    console.error("upsertMe error:", err);
+    logger.error({ err }, "upsertMe error");
     return res.status(500).json({ message: "Failed to save profile" });
   }
 };
