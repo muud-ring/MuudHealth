@@ -52,7 +52,7 @@ coverage/
 
 # Secrets
 *.pem
-!Backend/global-bundle.pem
+!backend/global-bundle.pem
 
 # MCP config (contains credentials)
 .mcp.json
