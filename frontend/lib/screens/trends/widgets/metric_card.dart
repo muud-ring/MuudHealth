@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
 enum MetricTrend { up, down, stable }
 
@@ -95,7 +96,7 @@ class MetricCard extends StatelessWidget {
               subtitle!,
               style: const TextStyle(
                 fontSize: 11,
-                color: Color(0xFFB7B1B3),
+                color: AppTheme.lightGrey,
               ),
             ),
           ],
@@ -125,7 +126,7 @@ class _TrendIndicator extends StatelessWidget {
         trendColor = const Color(0xFFE74C3C);
       case MetricTrend.stable:
         trendIcon = Icons.trending_flat_rounded;
-        trendColor = const Color(0xFFB7B1B3);
+        trendColor = const AppTheme.lightGrey;
     }
 
     return Container(

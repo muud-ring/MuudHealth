@@ -1,5 +1,6 @@
 // backend/src/controllers/postController.js
 const Post = require("../models/Post");
+const logger = require("../utils/logger");
 
 function normalizeVisibility(v) {
   const s = (v || "").toString().toLowerCase().trim();
@@ -39,7 +40,7 @@ exports.createPost = async (req, res) => {
 
     return res.status(201).json({ post });
   } catch (err) {
-    console.error("createPost error:", err);
+    logger.error({ err }, "createPost error");
     return res.status(500).json({ message: "Failed to create post" });
   }
 };
@@ -79,7 +80,7 @@ exports.updatePost = async (req, res) => {
 
     return res.status(200).json({ post });
   } catch (err) {
-    console.error("updatePost error:", err);
+    logger.error({ err }, "updatePost error");
     return res.status(500).json({ message: "Failed to update post" });
   }
 };
@@ -102,7 +103,7 @@ exports.deletePost = async (req, res) => {
     // NOTE: Later we can also delete from S3 (mediaKeys/audioKey) safely.
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("deletePost error:", err);
+    logger.error({ err }, "deletePost error");
     return res.status(500).json({ message: "Failed to delete post" });
   }
 };

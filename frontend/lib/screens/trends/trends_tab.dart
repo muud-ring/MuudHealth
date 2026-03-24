@@ -7,6 +7,8 @@ import 'widgets/wellness_score_card.dart';
 import 'widgets/metric_card.dart';
 import 'widgets/sleep_card.dart';
 import 'widgets/steps_card.dart';
+import 'widgets/daily_snapshot_card.dart';
+import 'widgets/stress_breakdown_card.dart';
 
 class TrendsTab extends ConsumerWidget {
   const TrendsTab({super.key});
@@ -130,7 +132,7 @@ class _DateSelector extends ConsumerWidget {
               primary: AppTheme.purple,
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: Color(0xFF2D2D2D),
+              onSurface: AppTheme.darkText,
             ),
           ),
           child: child!,
@@ -347,6 +349,19 @@ class _BiometricsDashboard extends StatelessWidget {
       ));
     }
 
+    if (summary.stress != null) {
+      cards.add(Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: StressBreakdownCard(stress: summary.stress!),
+      ));
+    }
+
+    // Daily snapshot — compact view of all metrics
+    cards.add(Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: DailySnapshotCard(summary: summary),
+    ));
+
     return cards;
   }
 }
@@ -358,7 +373,7 @@ class _EmptyState extends StatelessWidget {
 
   static const Color _kPurple = AppTheme.purple;
   static const Color _kGreyText = AppTheme.greyText;
-  static const Color _kLightPurple = Color(0xFFC9B7E6);
+  static const Color _kLightPurple = AppTheme.lightPurple;
 
   @override
   Widget build(BuildContext context) {

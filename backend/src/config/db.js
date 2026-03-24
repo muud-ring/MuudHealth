@@ -29,7 +29,7 @@ async function connectDB() {
 
     // DB indexes ensured
   } catch (err) {
-    console.error("❌ DB connection error:", err.message);
+    require("../utils/logger").error({ err }, "DB connection error");
     process.exit(1);
   }
 }

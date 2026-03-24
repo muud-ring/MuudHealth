@@ -2,6 +2,7 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const { s3, S3_BUCKET } = require("../config/s3");
+const logger = require("./logger");
 
 // Return empty string if no avatar or misconfigured S3
 async function avatarUrlFromKey(key) {
@@ -17,7 +18,7 @@ async function avatarUrlFromKey(key) {
     // 1 hour signed URL
     return await getSignedUrl(s3, command, { expiresIn: 3600 });
   } catch (err) {
-    console.error("avatarUrlFromKey error:", err);
+    logger.error({ err }, "avatarUrlFromKey error");
     return "";
   }
 }

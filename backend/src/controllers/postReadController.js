@@ -1,5 +1,6 @@
 // backend/src/controllers/postReadController.js
 const Post = require("../models/Post");
+const logger = require("../utils/logger");
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { s3 } = require("../config/s3");
@@ -41,7 +42,7 @@ exports.getMyPosts = async (req, res) => {
 
     return res.status(200).json({ posts: out });
   } catch (err) {
-    console.error("getMyPosts error:", err);
+    logger.error({ err }, "getMyPosts error");
     return res.status(500).json({ message: "Failed to fetch posts" });
   }
 };
