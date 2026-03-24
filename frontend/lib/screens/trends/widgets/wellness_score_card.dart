@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
 class WellnessScoreCard extends StatelessWidget {
   const WellnessScoreCard({super.key, required this.score});
@@ -58,7 +59,7 @@ class WellnessScoreCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF2D2D2D),
+                    color: AppTheme.darkText,
                   ),
                 ),
                 const SizedBox(height: 6),

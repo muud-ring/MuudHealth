@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'token_storage.dart';
-import 'cognito_oauth.dart';
 
 class ApiClient {
   static const String baseUrl = String.fromEnvironment(

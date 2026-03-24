@@ -21,7 +21,6 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
   final List<FocusNode> _focus = List.generate(6, (_) => FocusNode());
 
   bool _loading = false;
-  String? _error;
 
   String get _code => _ctrl.map((c) => c.text).join();
   bool get _complete => _code.length == 6 && !_code.contains(RegExp(r'[^0-9]'));

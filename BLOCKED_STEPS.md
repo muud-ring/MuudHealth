@@ -24,7 +24,7 @@ Each blocked step lists:
   1. Sign up at [twilio.com](https://www.twilio.com)
   2. Get Account SID + Auth Token from the Twilio Console dashboard
   3. Purchase or provision a phone number for sending SMS
-  4. Add to Backend `.env`:
+  4. Add to backend `.env`:
      ```
      TWILIO_ACCOUNT_SID=<your-sid>
      TWILIO_AUTH_TOKEN=<your-token>
@@ -39,7 +39,7 @@ Each blocked step lists:
   1. Sign up at [mailgun.com](https://www.mailgun.com)
   2. Verify a sending domain (e.g., `mail.muudhealth.com`)
   3. Get API key from Mailgun dashboard
-  4. Add to Backend `.env`:
+  4. Add to backend `.env`:
      ```
      MAILGUN_API_KEY=<your-key>
      MAILGUN_DOMAIN=<your-domain>
@@ -63,7 +63,7 @@ Each blocked step lists:
 - **Resolution**:
   1. Log into AWS Console → S3
   2. Identify the bucket(s) used for avatars and media uploads
-  3. Add to Backend `.env`:
+  3. Add to backend `.env`:
      ```
      S3_BUCKET_NAME=<your-bucket>
      S3_REGION=us-west-2
@@ -77,7 +77,7 @@ Each blocked step lists:
 - **Resolution**:
   1. If using MongoDB Atlas: Get connection string from Atlas dashboard → Connect → Drivers
   2. If using AWS DocumentDB: Get endpoint from AWS Console (note: Build #8 used DocumentDB with TLS)
-  3. Add to Backend `.env`:
+  3. Add to backend `.env`:
      ```
      MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/muud?retryWrites=true
      ```
@@ -195,7 +195,7 @@ Each blocked step lists:
      - **Option B: AWS SageMaker** — Custom ML models for biometric prediction. Higher cost, more control. Already in AWS ecosystem.
      - **Option C: Hybrid** — Claude for NLP tasks (journal analysis, recommendations) + lightweight statistical models (running on-server) for biometric trends. Best balance.
   2. Provide the chosen approach + any required API keys
-  3. Add to Backend `.env`:
+  3. Add to backend `.env`:
      ```
      # If using Claude API
      ANTHROPIC_API_KEY=<your-key>
