@@ -2,26 +2,36 @@ const express = require("express");
 const router = express.Router();
 
 const requireAuth = require("../middleware/requireAuth");
+const validate = require("../middleware/validate");
+const rules = require("../validators/chatValidators");
 const chatController = require("../controllers/chatController");
 
-// ✅ NEW: badge count
 router.get("/unread-count", requireAuth, chatController.getUnreadCount);
-
-// ✅ Inbox list (UI-ready)
 router.get("/conversations", requireAuth, chatController.getConversations);
-
-// ✅ Optional: raw Conversation docs (if you still want it)
 router.get("/inbox", requireAuth, chatController.getInbox);
 
-// ✅ Chat thread
 router.post(
   "/conversation/:otherSub",
   requireAuth,
+  rules.getOrCreateConversation,
+  validate,
   chatController.getOrCreateConversation
 );
 
-router.get("/messages/:conversationId", requireAuth, chatController.getMessages);
+router.get(
+  "/messages/:conversationId",
+  requireAuth,
+  rules.getMessages,
+  validate,
+  chatController.getMessages
+);
 
-router.post("/messages/:conversationId", requireAuth, chatController.sendMessage);
+router.post(
+  "/messages/:conversationId",
+  requireAuth,
+  rules.sendMessage,
+  validate,
+  chatController.sendMessage
+);
 
 module.exports = router;

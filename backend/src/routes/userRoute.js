@@ -3,6 +3,9 @@ const express = require("express");
 const router = express.Router();
 
 const requireAuth = require("../middleware/requireAuth");
+const validate = require("../middleware/validate");
+const userRules = require("../validators/userValidators");
+const uploadRules = require("../validators/uploadValidators");
 const userCtrl = require("../controllers/userController");
 const photoCtrl = require("../controllers/userPhotoController");
 
@@ -22,13 +25,12 @@ router.get("/claims", requireAuth, (req, res) => {
 
 // 2) Profile (stored in DocumentDB)
 router.get("/me", requireAuth, userCtrl.getMe);
-router.put("/me", requireAuth, userCtrl.upsertMe); // ✅ uses controller I gave you
+router.put("/me", requireAuth, userRules.upsertMe, validate, userCtrl.upsertMe);
 
 // 3) Avatar upload (PRIVATE S3 presigned flow)
-router.post("/avatar/presign", requireAuth, photoCtrl.presignAvatarUpload);
-router.post("/avatar/confirm", requireAuth, photoCtrl.confirmAvatarUpload);
+router.post("/avatar/presign", requireAuth, uploadRules.presignAvatarUpload, validate, photoCtrl.presignAvatarUpload);
+router.post("/avatar/confirm", requireAuth, uploadRules.confirmAvatarUpload, validate, photoCtrl.confirmAvatarUpload);
 
 router.get("/avatar/url", requireAuth, photoCtrl.getAvatarUrl);
-
 
 module.exports = router;

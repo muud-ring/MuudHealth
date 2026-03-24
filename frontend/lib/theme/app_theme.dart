@@ -8,6 +8,9 @@ class AppTheme {
   static const Color greyText = Color(0xFF898384);
   static const Color white = Colors.white;
   static const Color error = Colors.red;
+  static const Color darkText = Color(0xFF2D2D2D);
+  static const Color lightGrey = Color(0xFFB7B1B3);
+  static const Color lightPurple = Color(0xFFC9B7E6);
 
   // Text styles
   static const TextStyle headingLarge = TextStyle(
