@@ -1,0 +1,41 @@
+# docker-compose.yml — Muud Health local development
+# Usage: docker compose up -d
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: muud-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - muud-mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: muud
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: muud-backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    env_file:
+      - backend/.env
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://mongodb:27017/muud
+      PORT: 4000
+    volumes:
+      - ./backend/src:/app/src
+
+volumes:
+  muud-mongo-data:
