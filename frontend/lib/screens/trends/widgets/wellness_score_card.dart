@@ -76,7 +76,7 @@ class WellnessScoreCard extends StatelessWidget {
                   _scoreDescription(clampedScore),
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF898384),
+                    color: AppTheme.greyText,
                   ),
                 ),
               ],

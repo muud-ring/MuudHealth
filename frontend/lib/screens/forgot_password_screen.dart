@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -14,9 +15,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _identifier = TextEditingController();
   bool _loading = false;
   String? _error;
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   Future<void> _sendResetCode() async {
     setState(() {
       _loading = true;
@@ -55,14 +53,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           'Trouble Logging In',
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontWeight: FontWeight.w800,
             fontSize: 20,
           ),
@@ -79,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
-                color: kPurple,
+                color: AppTheme.purple,
               ),
             ),
             const SizedBox(height: 10),
@@ -116,7 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: kPurple, width: 1.8),
+                  borderSide: const BorderSide(color: AppTheme.purple, width: 1.8),
                 ),
               ),
             ),
@@ -138,7 +136,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _sendResetCode,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: AppTheme.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
@@ -168,7 +166,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: const Text(
                   'Back to login',
                   style: TextStyle(
-                    color: kPurple,
+                    color: AppTheme.purple,
                     fontSize: 15.5,
                     fontWeight: FontWeight.w800,
                     decoration: TextDecoration.underline,

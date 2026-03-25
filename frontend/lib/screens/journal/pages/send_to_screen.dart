@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../services/journal_api.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class SendToScreen extends StatefulWidget {
   final File imageFile;
@@ -19,9 +20,6 @@ class SendToScreen extends StatefulWidget {
 }
 
 class _SendToScreenState extends State<SendToScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
-
   final _searchCtrl = TextEditingController();
 
   // Step 3: dummy data (Step 4 will wire real connections)
@@ -205,10 +203,10 @@ class _SendToScreenState extends State<SendToScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kPurple),
+        iconTheme: const IconThemeData(color: AppTheme.purple),
         title: const Text(
           "Send to",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
         ),
       ),
       body: Column(
@@ -220,7 +218,7 @@ class _SendToScreenState extends State<SendToScreen> {
               children: [
                 const Text(
                   "Visibility:",
-                  style: TextStyle(color: kGrey, fontWeight: FontWeight.w700),
+                  style: TextStyle(color: AppTheme.greyText, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(width: 10),
                 GestureDetector(
@@ -240,12 +238,12 @@ class _SendToScreenState extends State<SendToScreen> {
                         Text(
                           _visibility,
                           style: const TextStyle(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.keyboard_arrow_down, color: kPurple),
+                        const Icon(Icons.keyboard_arrow_down, color: AppTheme.purple),
                       ],
                     ),
                   ),
@@ -288,7 +286,7 @@ class _SendToScreenState extends State<SendToScreen> {
                           child: Text(
                             p.name.isNotEmpty ? p.name[0] : "?",
                             style: const TextStyle(
-                              color: kPurple,
+                              color: AppTheme.purple,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -296,21 +294,21 @@ class _SendToScreenState extends State<SendToScreen> {
                         title: Text(
                           p.name,
                           style: const TextStyle(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         subtitle: Text(
                           p.username,
                           style: const TextStyle(
-                            color: kGrey,
+                            color: AppTheme.greyText,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         trailing: Checkbox(
                           value: selected,
                           onChanged: (_) => _togglePerson(p.id),
-                          activeColor: kPurple,
+                          activeColor: AppTheme.purple,
                         ),
                         onTap: () => _togglePerson(p.id),
                       );
@@ -322,7 +320,7 @@ class _SendToScreenState extends State<SendToScreen> {
                       child: Text(
                         "Public post — no recipients needed.",
                         style: TextStyle(
-                          color: kGrey,
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -341,7 +339,7 @@ class _SendToScreenState extends State<SendToScreen> {
           height: 54,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _canPost ? kPurple : const Color(0xFFB9A9C9),
+              backgroundColor: _canPost ? AppTheme.purple : const Color(0xFFB9A9C9),
               shape: const StadiumBorder(),
               elevation: 0,
             ),
@@ -373,10 +371,6 @@ class _SendToScreenState extends State<SendToScreen> {
 class _VisibilitySheet extends StatelessWidget {
   final String current;
   const _VisibilitySheet({required this.current});
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     final options = const ["Public", "Inner Circle", "Connections"];
@@ -390,7 +384,7 @@ class _VisibilitySheet extends StatelessWidget {
           const Text(
             "Choose who your post is visible to",
             style: TextStyle(
-              color: kPurple,
+              color: AppTheme.purple,
               fontSize: 16,
               fontWeight: FontWeight.w900,
             ),
@@ -403,7 +397,7 @@ class _VisibilitySheet extends StatelessWidget {
               title: Text(
                 o,
                 style: const TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -414,12 +408,12 @@ class _VisibilitySheet extends StatelessWidget {
                     ? "Only your inner circle can see."
                     : "Only your connections can see.",
                 style: const TextStyle(
-                  color: kGrey,
+                  color: AppTheme.greyText,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               trailing: selected
-                  ? const Icon(Icons.check_circle, color: kPurple)
+                  ? const Icon(Icons.check_circle, color: AppTheme.purple)
                   : const Icon(Icons.circle_outlined, color: Color(0xFFB8A9C9)),
               onTap: () => Navigator.pop(context, o),
             );

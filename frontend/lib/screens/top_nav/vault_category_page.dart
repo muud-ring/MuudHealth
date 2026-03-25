@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/vault_api.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class VaultCategoryPage extends StatefulWidget {
   final String categoryKey; // friends | family | holidays | etc
@@ -20,8 +21,6 @@ class VaultCategoryPage extends StatefulWidget {
 }
 
 class _VaultCategoryPageState extends State<VaultCategoryPage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
   static const Color kBorder = Color(0xFFE7E1EF);
 
   bool loading = true;
@@ -134,14 +133,14 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: Text(
           widget.categoryTitle,
           style: const TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w900,
           ),
@@ -169,7 +168,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                     ElevatedButton(
                       onPressed: _loadFirst,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: AppTheme.purple,
                         shape: const StadiumBorder(),
                         elevation: 0,
                       ),
@@ -201,7 +200,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                     Text(
                       "Nothing saved here yet",
                       style: TextStyle(
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                       ),
@@ -211,7 +210,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                       "Save a journal to see it in this category.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: kGrey,
+                        color: AppTheme.greyText,
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -266,7 +265,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                                     child: const Center(
                                       child: Icon(
                                         Icons.image_not_supported,
-                                        color: kGrey,
+                                        color: AppTheme.greyText,
                                       ),
                                     ),
                                   )
@@ -282,7 +281,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                                 Text(
                                   p.caption,
                                   style: const TextStyle(
-                                    color: kPurple,
+                                    color: AppTheme.purple,
                                     fontSize: 14.5,
                                     fontWeight: FontWeight.w900,
                                   ),
@@ -294,7 +293,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                                   Text(
                                     _formatTime(p.createdAt),
                                     style: const TextStyle(
-                                      color: kGrey,
+                                      color: AppTheme.greyText,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 12.5,
                                     ),
@@ -303,7 +302,7 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
                                   Text(
                                     p.visibilityLabel,
                                     style: const TextStyle(
-                                      color: kGrey,
+                                      color: AppTheme.greyText,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 12.5,
                                     ),

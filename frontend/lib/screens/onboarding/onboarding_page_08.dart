@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
 import '../../services/post_auth_redirect.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage08 extends StatefulWidget {
   const OnboardingPage08({super.key});
@@ -11,8 +12,6 @@ class OnboardingPage08 extends StatefulWidget {
 }
 
 class _OnboardingPage08State extends State<OnboardingPage08> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   bool loading = false;
   String? error;
 
@@ -82,7 +81,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 constraints: const BoxConstraints(),
                 icon: const Icon(
                   Icons.arrow_back_ios,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   size: 22,
                 ),
                 onPressed: loading ? null : () => Navigator.pop(context),
@@ -96,7 +95,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.2,
                 ),
               ),
@@ -109,7 +108,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 style: TextStyle(
                   fontSize: 18,
                   height: 1.4,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -147,7 +146,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(
+                    backgroundColor: AppTheme.purple.withOpacity(
                       hasSelection ? 1 : 0.5,
                     ),
                     foregroundColor: Colors.white,
@@ -194,8 +193,6 @@ class _CheckRow extends StatelessWidget {
     required this.text,
     required this.onTap,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kSelectedBg = Color(0xFFF5E6FA);
   static const Color kSelectedBorder = Color(0xFFE8B4F8);
 
@@ -220,8 +217,8 @@ class _CheckRow extends StatelessWidget {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: kPurple, width: 2),
-                color: checked ? kPurple : Colors.transparent,
+                border: Border.all(color: AppTheme.purple, width: 2),
+                color: checked ? AppTheme.purple : Colors.transparent,
               ),
               child: checked
                   ? const Icon(Icons.check, color: Colors.white, size: 18)

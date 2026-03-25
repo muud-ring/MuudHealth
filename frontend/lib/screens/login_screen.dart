@@ -7,6 +7,7 @@ import '../services/post_auth_redirect.dart';
 // ✅ Legal popup imports
 import 'legal/legal_modal_page.dart';
 import 'legal/legal_texts.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,9 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _loading = false;
   String? _error;
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   // ✅ Open legal popup
   void _openLegal({required String title, required String body}) {
     Navigator.of(context).push(
@@ -122,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text(
                     'Forgot username or password?',
                     style: TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       decoration: TextDecoration.underline,
@@ -151,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     shape: const StadiumBorder(),
                     elevation: 0,
                   ),
@@ -256,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pushNamed(context, '/signup'),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 2),
+                    side: const BorderSide(color: AppTheme.purple, width: 2),
                     shape: const StadiumBorder(),
                   ),
                   child: const Text(
@@ -264,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),
@@ -344,7 +342,7 @@ class _RoundedInput extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
-            color: _LoginScreenState.kPurple,
+            color: AppTheme.purple,
             width: 2,
           ),
         ),
@@ -397,7 +395,7 @@ class _FooterLink extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: _LoginScreenState.kPurple,
+          color: AppTheme.purple,
           fontWeight: FontWeight.w700,
           fontSize: 13,
         ),

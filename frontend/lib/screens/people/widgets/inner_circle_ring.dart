@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class InnerCircleRing extends StatelessWidget {
   final bool isEmpty;
@@ -18,10 +19,6 @@ class InnerCircleRing extends StatelessWidget {
     this.onTapPerson,
     this.centerPerson,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     final items = people.take(6).toList();
@@ -74,7 +71,7 @@ class InnerCircleRing extends StatelessWidget {
                       Text(
                         "No Inner Circle",
                         style: TextStyle(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -84,7 +81,7 @@ class InnerCircleRing extends StatelessWidget {
                         "Your inner circles will show up here.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: kGreyText,
+                          color: AppTheme.greyText,
                           fontSize: 13.5,
                           height: 1.25,
                           fontWeight: FontWeight.w600,
@@ -104,7 +101,7 @@ class InnerCircleRing extends StatelessWidget {
               height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: AppTheme.purple,
                   elevation: 0,
                   shape: const StadiumBorder(),
                 ),
@@ -170,7 +167,7 @@ class InnerCircleRing extends StatelessWidget {
       case "yellow":
         return const Color(0xFFB88700);
       default:
-        return kPurple;
+        return AppTheme.purple;
     }
   }
 }
@@ -178,9 +175,6 @@ class InnerCircleRing extends StatelessWidget {
 class _CenterAvatar extends StatelessWidget {
   final Person? person;
   const _CenterAvatar({required this.person});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     final name = person?.name ?? "You";
@@ -200,7 +194,7 @@ class _CenterAvatar extends StatelessWidget {
             offset: const Offset(0, 10),
           ),
         ],
-        border: Border.all(color: kPurple, width: 6),
+        border: Border.all(color: AppTheme.purple, width: 6),
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isNotEmpty
@@ -221,7 +215,7 @@ class _CenterAvatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: kPurple,
+          color: AppTheme.purple,
           fontWeight: FontWeight.w900,
           fontSize: 36,
         ),
@@ -271,7 +265,7 @@ class _RingAvatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: Color(0xFF5B288E),
+          color: AppTheme.purple,
           fontWeight: FontWeight.w900,
           fontSize: 18,
         ),

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class MessagesScreen extends StatelessWidget {
   const MessagesScreen({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,14 +12,14 @@ class MessagesScreen extends StatelessWidget {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           "Messages",
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),

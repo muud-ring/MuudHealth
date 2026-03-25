@@ -6,6 +6,7 @@ import '../../../services/chat_socket.dart';
 import '../../people/pages/chat_page.dart';
 import '../data/conversation_models.dart';
 import '../state/chat_badge.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ConversationsPage extends StatefulWidget {
   const ConversationsPage({super.key});
@@ -15,8 +16,8 @@ class ConversationsPage extends StatefulWidget {
 }
 
 class _ConversationsPageState extends State<ConversationsPage> {
-  static const kPurple = Color(0xFF5B288E);
-  static const kGrey = Color(0xFF898384);
+  static const AppTheme.purple = AppTheme.purple;
+  static const AppTheme.greyText = AppTheme.greyText;
 
   bool loading = true;
   bool _socketReady = false;
@@ -127,10 +128,10 @@ class _ConversationsPageState extends State<ConversationsPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const BackButton(color: kPurple),
+        leading: const BackButton(color: AppTheme.purple),
         title: const Text(
           "Messages",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w900),
         ),
         actions: [
           // tiny indicator for socket (optional)
@@ -153,12 +154,12 @@ class _ConversationsPageState extends State<ConversationsPage> {
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                border: Border.all(color: kPurple.withOpacity(0.5), width: 1.2),
+                border: Border.all(color: AppTheme.purple.withOpacity(0.5), width: 1.2),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search, color: kPurple),
+                  const Icon(Icons.search, color: AppTheme.purple),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
@@ -183,20 +184,20 @@ class _ConversationsPageState extends State<ConversationsPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 40, color: kPurple),
+                      const Icon(Icons.error_outline, size: 40, color: AppTheme.purple),
                       const SizedBox(height: 10),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: kGrey,
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 14),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPurple,
+                          backgroundColor: AppTheme.purple,
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
@@ -218,7 +219,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
                 child: Center(
                   child: Text(
                     "No conversations yet.",
-                    style: TextStyle(color: kGrey, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: AppTheme.greyText, fontWeight: FontWeight.w600),
                   ),
                 ),
               )
@@ -275,8 +276,8 @@ class _ConversationRow extends StatelessWidget {
 
   const _ConversationRow({required this.item, required this.onTap});
 
-  static const kPurple = Color(0xFF5B288E);
-  static const kGrey = Color(0xFF898384);
+  static const AppTheme.purple = AppTheme.purple;
+  static const AppTheme.greyText = AppTheme.greyText;
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +307,7 @@ class _ConversationRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: kGrey,
+                    color: AppTheme.greyText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -321,7 +322,7 @@ class _ConversationRow extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: const BoxDecoration(
-                color: kPurple,
+                color: AppTheme.purple,
                 shape: BoxShape.circle,
               ),
             ),
@@ -337,7 +338,7 @@ class _Avatar extends StatelessWidget {
 
   const _Avatar({required this.url, required this.label});
 
-  static const kPurple = Color(0xFF5B288E);
+  static const AppTheme.purple = AppTheme.purple;
 
   @override
   Widget build(BuildContext context) {
@@ -363,13 +364,13 @@ class _Avatar extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: kPurple, width: 2),
+        border: Border.all(color: AppTheme.purple, width: 2),
       ),
       child: Center(
         child: Text(
           letter,
           style: const TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontWeight: FontWeight.w900,
             fontSize: 18,
           ),

@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 
 import '../../services/journal_feed_api.dart';
 import '../../services/vault_api.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class JournalTab extends StatefulWidget {
   const JournalTab({super.key});
@@ -12,9 +13,6 @@ class JournalTab extends StatefulWidget {
 }
 
 class _JournalTabState extends State<JournalTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
-
   bool loading = true;
   String? error;
 
@@ -103,8 +101,8 @@ class _JournalTabState extends State<JournalTab> {
       ),
       builder: (_) => _VaultCategorySheet(
         categories: _vaultCategories,
-        purple: kPurple,
-        grey: kGrey,
+        purple: AppTheme.purple,
+        grey: AppTheme.greyText,
       ),
     );
 
@@ -150,7 +148,7 @@ class _JournalTabState extends State<JournalTab> {
               ElevatedButton(
                 onPressed: _load,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: AppTheme.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
@@ -181,7 +179,7 @@ class _JournalTabState extends State<JournalTab> {
               "No journal entries yet",
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: kPurple,
+                color: AppTheme.purple,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -226,7 +224,7 @@ class _JournalTabState extends State<JournalTab> {
                     child: p.imageUrl == null || p.imageUrl!.isEmpty
                         ? Container(
                             color: const Color(0xFFF2EEF6),
-                            child: const Icon(Icons.image, color: kGrey),
+                            child: const Icon(Icons.image, color: AppTheme.greyText),
                           )
                         : Image.network(p.imageUrl!, fit: BoxFit.cover),
                   ),
@@ -240,7 +238,7 @@ class _JournalTabState extends State<JournalTab> {
                         Text(
                           p.caption,
                           style: const TextStyle(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -254,7 +252,7 @@ class _JournalTabState extends State<JournalTab> {
                                 isThisPlaying
                                     ? Icons.pause_circle
                                     : Icons.play_circle,
-                                color: kPurple,
+                                color: AppTheme.purple,
                                 size: 34,
                               ),
                             ),
@@ -267,7 +265,7 @@ class _JournalTabState extends State<JournalTab> {
                           Text(
                             _formatTime(p.createdAt),
                             style: const TextStyle(
-                              color: kGrey,
+                              color: AppTheme.greyText,
                               fontWeight: FontWeight.w700,
                               fontSize: 12.5,
                             ),
@@ -277,13 +275,13 @@ class _JournalTabState extends State<JournalTab> {
                             onPressed: () => _openSaveToVaultSheet(p),
                             icon: const Icon(
                               Icons.bookmark_border,
-                              color: kPurple,
+                              color: AppTheme.purple,
                             ),
                           ),
                           Text(
                             p.visibilityLabel,
                             style: const TextStyle(
-                              color: kGrey,
+                              color: AppTheme.greyText,
                               fontWeight: FontWeight.w700,
                               fontSize: 12.5,
                             ),

@@ -1,3 +1,4 @@
+import 'package:muud_health_app/theme/app_theme.dart';
 // import 'package:flutter/material.dart';
 // import '../data/people_dummy_data.dart';
 
@@ -17,10 +18,6 @@
 
 // class _RequestsSheetBody extends StatelessWidget {
 //   const _RequestsSheetBody();
-
-//   static const Color kPurple = Color(0xFF5B288E);
-//   static const Color kGreyText = Color(0xFF898384);
-
 //   void _toast(BuildContext context, String msg) {
 //     ScaffoldMessenger.of(context).showSnackBar(
 //       SnackBar(content: Text(msg), duration: const Duration(seconds: 1)),
@@ -50,7 +47,7 @@
 //             const Text(
 //               "Connection Requests",
 //               style: TextStyle(
-//                 color: kPurple,
+//                 color: AppTheme.purple,
 //                 fontSize: 18,
 //                 fontWeight: FontWeight.w900,
 //               ),
@@ -59,7 +56,7 @@
 //             Text(
 //               "${reqs.length} people want to connect.",
 //               style: const TextStyle(
-//                 color: kGreyText,
+//                 color: AppTheme.greyText,
 //                 fontSize: 12.5,
 //                 fontWeight: FontWeight.w600,
 //               ),
@@ -90,7 +87,7 @@
 //                               Text(
 //                                 p.name,
 //                                 style: const TextStyle(
-//                                   color: kPurple,
+//                                   color: AppTheme.purple,
 //                                   fontSize: 14.5,
 //                                   fontWeight: FontWeight.w900,
 //                                 ),
@@ -99,7 +96,7 @@
 //                               Text(
 //                                 p.handle,
 //                                 style: const TextStyle(
-//                                   color: kGreyText,
+//                                   color: AppTheme.greyText,
 //                                   fontSize: 12,
 //                                   fontWeight: FontWeight.w600,
 //                                 ),
@@ -115,7 +112,7 @@
 //                           child: const Text(
 //                             "Accept",
 //                             style: TextStyle(
-//                               color: kPurple,
+//                               color: AppTheme.purple,
 //                               fontWeight: FontWeight.w900,
 //                             ),
 //                           ),
@@ -127,7 +124,7 @@
 //                           child: const Text(
 //                             "Decline",
 //                             style: TextStyle(
-//                               color: kGreyText,
+//                               color: AppTheme.greyText,
 //                               fontWeight: FontWeight.w800,
 //                             ),
 //                           ),

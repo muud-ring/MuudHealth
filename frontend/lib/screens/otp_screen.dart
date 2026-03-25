@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../services/user_api.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
@@ -13,8 +14,6 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final _api = ApiService();
-
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kBorderGrey = Color(0xFFCCCCCC);
 
   final List<TextEditingController> _ctrl = List.generate(
@@ -169,7 +168,7 @@ class _OtpScreenState extends State<OtpScreen> {
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: kPurple, size: 28),
+                  icon: const Icon(Icons.close, color: AppTheme.purple, size: 28),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -180,7 +179,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: kPurple,
+                  color: AppTheme.purple,
                 ),
               ),
               const SizedBox(height: 14),
@@ -277,7 +276,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           username: username,
                         ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     shape: const StadiumBorder(),
                     elevation: 0,
                   ),
@@ -320,7 +319,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       "Resend",
                       style: TextStyle(
                         fontSize: 16,
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontWeight: FontWeight.w800,
                         decoration: TextDecoration.underline,
                       ),

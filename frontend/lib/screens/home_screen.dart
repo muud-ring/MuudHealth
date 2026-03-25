@@ -1,3 +1,4 @@
+import 'package:muud_health_app/theme/app_theme.dart';
 // import 'package:flutter/material.dart';
 // import '../services/token_storage.dart';
 // import '../services/user_api.dart';
@@ -10,9 +11,6 @@
 // }
 
 // class _HomeScreenState extends State<HomeScreen> {
-//   static const Color kPurple = Color(0xFF5B288E);
-//   static const Color kGreyText = Color(0xFF898384);
-
 //   int _selectedIndex = 0;
 
 //   // Temporary placeholders until we wire real profile/user data
@@ -97,12 +95,12 @@
 //                         onPressed: () {},
 //                         icon: const Icon(
 //                           Icons.settings_outlined,
-//                           color: kPurple,
+//                           color: AppTheme.purple,
 //                         ),
 //                       ),
 //                       IconButton(
 //                         onPressed: () {},
-//                         icon: const Icon(Icons.lock_outline, color: kPurple),
+//                         icon: const Icon(Icons.lock_outline, color: AppTheme.purple),
 //                       ),
 //                     ],
 //                   ),
@@ -110,7 +108,7 @@
 //                   const Text(
 //                     "Home",
 //                     style: TextStyle(
-//                       color: kPurple,
+//                       color: AppTheme.purple,
 //                       fontSize: 18,
 //                       fontWeight: FontWeight.w700,
 //                     ),
@@ -122,12 +120,12 @@
 //                         onPressed: () {},
 //                         icon: const Icon(
 //                           Icons.chat_bubble_outline,
-//                           color: kPurple,
+//                           color: AppTheme.purple,
 //                         ),
 //                       ),
 //                       IconButton(
 //                         onPressed: _logout,
-//                         icon: const Icon(Icons.logout, color: kPurple),
+//                         icon: const Icon(Icons.logout, color: AppTheme.purple),
 //                       ),
 //                     ],
 //                   ),
@@ -150,7 +148,7 @@
 //                           fontSize: 28,
 //                           height: 1.1,
 //                           fontWeight: FontWeight.w800,
-//                           color: kPurple,
+//                           color: AppTheme.purple,
 //                         ),
 //                       ),
 //                       const SizedBox(height: 18),
@@ -187,7 +185,7 @@
 //                                 child: const Text(
 //                                   "Edit",
 //                                   style: TextStyle(
-//                                     color: kPurple,
+//                                     color: AppTheme.purple,
 //                                     fontWeight: FontWeight.w700,
 //                                     fontSize: 14,
 //                                   ),
@@ -202,7 +200,7 @@
 //                             Text(
 //                               firstName,
 //                               style: const TextStyle(
-//                                 color: kPurple,
+//                                 color: AppTheme.purple,
 //                                 fontSize: 18,
 //                                 fontWeight: FontWeight.w800,
 //                               ),
@@ -211,7 +209,7 @@
 //                             Text(
 //                               location,
 //                               style: const TextStyle(
-//                                 color: kGreyText,
+//                                 color: AppTheme.greyText,
 //                                 fontSize: 13.5,
 //                                 fontWeight: FontWeight.w600,
 //                               ),
@@ -234,7 +232,7 @@
 //                             const Text(
 //                               "No Data",
 //                               style: TextStyle(
-//                                 color: kPurple,
+//                                 color: AppTheme.purple,
 //                                 fontSize: 18,
 //                                 fontWeight: FontWeight.w800,
 //                               ),
@@ -243,7 +241,7 @@
 //                             Text(
 //                               "Your trends will show up here.",
 //                               style: TextStyle(
-//                                 color: kGreyText,
+//                                 color: AppTheme.greyText,
 //                                 fontSize: 13.5,
 //                                 fontWeight: FontWeight.w600,
 //                               ),
@@ -259,7 +257,7 @@
 //                         height: 56,
 //                         child: ElevatedButton(
 //                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: kPurple,
+//                             backgroundColor: AppTheme.purple,
 //                             shape: const StadiumBorder(),
 //                             elevation: 0,
 //                           ),
@@ -307,10 +305,6 @@
 //   final ValueChanged<int> onTap;
 
 //   const _BottomNav({required this.selectedIndex, required this.onTap});
-
-//   static const Color kPurple = Color(0xFF5B288E);
-//   static const Color kGreyText = Color(0xFF898384);
-
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
@@ -329,8 +323,8 @@
 //         currentIndex: selectedIndex,
 //         onTap: onTap,
 //         type: BottomNavigationBarType.fixed,
-//         selectedItemColor: kPurple,
-//         unselectedItemColor: kGreyText,
+//         selectedItemColor: AppTheme.purple,
+//         unselectedItemColor: AppTheme.greyText,
 //         items: const [
 //           BottomNavigationBarItem(
 //             icon: Icon(Icons.home_outlined),
@@ -354,15 +348,13 @@
 
 // class _PlusIcon extends StatelessWidget {
 //   const _PlusIcon();
-//   static const Color kPurple = Color(0xFF5B288E);
-
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
 //       width: 44,
 //       height: 44,
 //       decoration: BoxDecoration(
-//         color: kPurple,
+//         color: AppTheme.purple,
 //         borderRadius: BorderRadius.circular(14),
 //       ),
 //       child: const Icon(Icons.add, color: Colors.white, size: 26),

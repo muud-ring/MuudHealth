@@ -4,6 +4,7 @@ import '../../services/vault_api.dart';
 import '../journal/pages/creator_tool_screen.dart';
 import 'vault_category_page.dart';
 import 'vault_filter_page.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class VaultScreen extends StatefulWidget {
   const VaultScreen({super.key});
@@ -14,8 +15,6 @@ class VaultScreen extends StatefulWidget {
 
 class _VaultScreenState extends State<VaultScreen> {
   // Figma-ish tokens
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
   static const Color kBorder = Color(0xFFE7E1EF);
 
   final TextEditingController _searchCtrl = TextEditingController();
@@ -121,14 +120,14 @@ class _VaultScreenState extends State<VaultScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           "Vault",
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 20,
             fontWeight: FontWeight.w800,
           ),
@@ -192,7 +191,7 @@ class _VaultScreenState extends State<VaultScreen> {
                     ),
                   ),
                 ),
-                const Icon(Icons.search, color: kGrey, size: 20),
+                const Icon(Icons.search, color: AppTheme.greyText, size: 20),
               ],
             ),
           ),
@@ -208,7 +207,7 @@ class _VaultScreenState extends State<VaultScreen> {
           ),
           child: IconButton(
             onPressed: _openFilter,
-            icon: const Icon(Icons.tune, color: kPurple),
+            icon: const Icon(Icons.tune, color: AppTheme.purple),
           ),
         ),
       ],
@@ -233,14 +232,14 @@ class _VaultScreenState extends State<VaultScreen> {
                   vertical: 9,
                 ),
                 decoration: BoxDecoration(
-                  color: selected ? kPurple : Colors.white,
+                  color: selected ? AppTheme.purple : Colors.white,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: kPurple, width: 1.4),
+                  border: Border.all(color: AppTheme.purple, width: 1.4),
                 ),
                 child: Text(
                   c,
                   style: TextStyle(
-                    color: selected ? Colors.white : kPurple,
+                    color: selected ? Colors.white : AppTheme.purple,
                     fontWeight: FontWeight.w800,
                     fontSize: 13,
                   ),
@@ -290,7 +289,7 @@ class _VaultScreenState extends State<VaultScreen> {
             child: ElevatedButton(
               onPressed: _load,
               style: ElevatedButton.styleFrom(
-                backgroundColor: kPurple,
+                backgroundColor: AppTheme.purple,
                 shape: const StadiumBorder(),
                 elevation: 0,
               ),
@@ -321,7 +320,7 @@ class _VaultScreenState extends State<VaultScreen> {
         const Text(
           "Empty Posts",
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w900,
           ),
@@ -330,7 +329,7 @@ class _VaultScreenState extends State<VaultScreen> {
         const Text(
           "Your posts will show up here.",
           style: TextStyle(
-            color: kGrey,
+            color: AppTheme.greyText,
             fontSize: 14.5,
             fontWeight: FontWeight.w600,
           ),
@@ -342,7 +341,7 @@ class _VaultScreenState extends State<VaultScreen> {
           child: ElevatedButton(
             onPressed: _openCreatorTool,
             style: ElevatedButton.styleFrom(
-              backgroundColor: kPurple,
+              backgroundColor: AppTheme.purple,
               shape: const StadiumBorder(),
               elevation: 0,
             ),
@@ -369,9 +368,6 @@ class _SectionHeader extends StatelessWidget {
   final VoidCallback onSeeAll;
 
   const _SectionHeader({required this.title, required this.onSeeAll});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -379,7 +375,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w900,
           ),
@@ -389,7 +385,7 @@ class _SectionHeader extends StatelessWidget {
           onTap: onSeeAll,
           child: const Text(
             "See All",
-            style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+            style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
           ),
         ),
       ],
@@ -456,8 +452,6 @@ class _EmptySectionCard extends StatelessWidget {
   const _EmptySectionCard({required this.onTap});
 
   static const Color kBorder = Color(0xFFE7E1EF);
-  static const Color kGrey = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -472,7 +466,7 @@ class _EmptySectionCard extends StatelessWidget {
         ),
         child: const Text(
           "No previews yet",
-          style: TextStyle(color: kGrey, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppTheme.greyText, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -489,9 +483,6 @@ class _BigCard extends StatelessWidget {
     required this.sectionCount,
     required this.onTap,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
   static const Color kBorder = Color(0xFFE7E1EF);
 
   @override
@@ -542,7 +533,7 @@ class _BigCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                           ),
@@ -552,7 +543,7 @@ class _BigCard extends StatelessWidget {
                           Text(
                             item.authorLocation,
                             style: const TextStyle(
-                              color: kGrey,
+                              color: AppTheme.greyText,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -563,7 +554,7 @@ class _BigCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: kGrey,
+                              color: AppTheme.greyText,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -585,7 +576,7 @@ class _BigCard extends StatelessWidget {
                         const CircleAvatar(
                           radius: 14,
                           backgroundColor: Color(0xFFEFEAF6),
-                          child: Icon(Icons.person, size: 16, color: kGrey),
+                          child: Icon(Icons.person, size: 16, color: AppTheme.greyText),
                         ),
                       if (extra > 0) ...[
                         const SizedBox(height: 6),
@@ -602,7 +593,7 @@ class _BigCard extends StatelessWidget {
                           child: Text(
                             "+$extra",
                             style: const TextStyle(
-                              color: kGrey,
+                              color: AppTheme.greyText,
                               fontWeight: FontWeight.w800,
                               fontSize: 11,
                             ),
@@ -631,9 +622,6 @@ class _SmallCard extends StatelessWidget {
     required this.sectionCount,
     required this.onTap,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
   static const Color kBorder = Color(0xFFE7E1EF);
 
   @override
@@ -679,7 +667,7 @@ class _SmallCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontSize: 14.5,
                         fontWeight: FontWeight.w900,
                       ),
@@ -691,7 +679,7 @@ class _SmallCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: kGrey,
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -711,10 +699,10 @@ class _SmallCard extends StatelessWidget {
                           const CircleAvatar(
                             radius: 12,
                             backgroundColor: Color(0xFFEFEAF6),
-                            child: Icon(Icons.person, size: 14, color: kGrey),
+                            child: Icon(Icons.person, size: 14, color: AppTheme.greyText),
                           ),
                         const Spacer(),
-                        const Icon(Icons.chevron_right, color: kGrey),
+                        const Icon(Icons.chevron_right, color: AppTheme.greyText),
                       ],
                     ),
                   ],

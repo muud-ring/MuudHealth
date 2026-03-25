@@ -21,6 +21,7 @@ import '../screens/chat/state/chat_badge.dart';
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -30,8 +31,6 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   int _selectedIndex = 0;
   int _peopleReloadTick = 0;
 
@@ -133,7 +132,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       IconButton(
         onPressed: _logout,
-        icon: const Icon(Icons.logout, color: kPurple),
+        icon: const Icon(Icons.logout, color: AppTheme.purple),
       ),
     ];
   }
@@ -195,9 +194,6 @@ class _TopBar extends StatelessWidget {
     required this.onTapLeft2,
     required this.rightActions,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -208,11 +204,11 @@ class _TopBar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onTapLeft1,
-                icon: const Icon(Icons.settings_outlined, color: kPurple),
+                icon: const Icon(Icons.settings_outlined, color: AppTheme.purple),
               ),
               IconButton(
                 onPressed: onTapLeft2,
-                icon: const Icon(Icons.lock_outline, color: kPurple),
+                icon: const Icon(Icons.lock_outline, color: AppTheme.purple),
               ),
             ],
           ),
@@ -220,7 +216,7 @@ class _TopBar extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: kPurple,
+              color: AppTheme.purple,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -237,9 +233,6 @@ class _TopBar extends StatelessWidget {
 
 class _MessageWithBadge extends StatelessWidget {
   const _MessageWithBadge();
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -248,7 +241,7 @@ class _MessageWithBadge extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            const Icon(Icons.chat_bubble_outline, color: kPurple),
+            const Icon(Icons.chat_bubble_outline, color: AppTheme.purple),
             if (count > 0)
               Positioned(
                 right: -4,
@@ -290,15 +283,12 @@ class _MessageWithBadge extends StatelessWidget {
 class _BellWithBadge extends StatelessWidget {
   final int count;
   const _BellWithBadge({required this.count});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const Icon(Icons.notifications_none, color: kPurple),
+        const Icon(Icons.notifications_none, color: AppTheme.purple),
         if (count > 0)
           Positioned(
             right: -4,
@@ -334,10 +324,6 @@ class _BottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   const _BottomNav({required this.selectedIndex, required this.onTap});
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -356,8 +342,8 @@ class _BottomNav extends StatelessWidget {
         currentIndex: selectedIndex,
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: kPurple,
-        unselectedItemColor: kGreyText,
+        selectedItemColor: AppTheme.purple,
+        unselectedItemColor: AppTheme.greyText,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -381,15 +367,13 @@ class _BottomNav extends StatelessWidget {
 
 class _PlusIcon extends StatelessWidget {
   const _PlusIcon();
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: kPurple,
+        color: AppTheme.purple,
         borderRadius: BorderRadius.circular(14),
       ),
       child: const Icon(Icons.add, color: Colors.white, size: 26),

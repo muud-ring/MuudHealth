@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class VaultFilterPage extends StatefulWidget {
   const VaultFilterPage({super.key});
@@ -8,10 +9,7 @@ class VaultFilterPage extends StatefulWidget {
 }
 
 class _VaultFilterPageState extends State<VaultFilterPage> {
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kBorder = Color(0xFFE7E1EF);
-  static const Color kGrey = Color(0xFF898384);
-
   // selections (MVP UI only)
   String tag = "All"; // All / Theme / Feeling / Location / Person
   String experience = "All"; // All / Group / Solo / Yoga / Shopping
@@ -84,14 +82,14 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           "Filter",
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w900,
           ),
@@ -201,7 +199,7 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
                     },
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: kPurple,
+                      backgroundColor: AppTheme.purple,
                       shape: const StadiumBorder(),
                       elevation: 0,
                     ),
@@ -227,7 +225,7 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
     return Text(
       t,
       style: const TextStyle(
-        color: kPurple,
+        color: AppTheme.purple,
         fontSize: 20,
         fontWeight: FontWeight.w900,
       ),
@@ -254,14 +252,14 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isOn ? kPurple : Colors.white,
+                  color: isOn ? AppTheme.purple : Colors.white,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: kPurple, width: 2),
+                  border: Border.all(color: AppTheme.purple, width: 2),
                 ),
                 child: Text(
                   t,
                   style: TextStyle(
-                    color: isOn ? Colors.white : kPurple,
+                    color: isOn ? Colors.white : AppTheme.purple,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -304,7 +302,7 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
             Text(
               value.isEmpty ? " " : value,
               style: const TextStyle(
-                color: kGrey,
+                color: AppTheme.greyText,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),

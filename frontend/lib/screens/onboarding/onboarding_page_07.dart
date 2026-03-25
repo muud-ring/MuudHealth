@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage07 extends StatefulWidget {
   const OnboardingPage07({super.key});
@@ -9,7 +10,6 @@ class OnboardingPage07 extends StatefulWidget {
 }
 
 class _OnboardingPage07State extends State<OnboardingPage07> {
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kPink = Color(0xFFD946EF);
 
   String? mood;
@@ -42,7 +42,7 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 constraints: const BoxConstraints(),
                 icon: const Icon(
                   Icons.arrow_back_ios,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   size: 22,
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -59,7 +59,7 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.2,
                 ),
               ),
@@ -171,7 +171,7 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(
+                    backgroundColor: AppTheme.purple.withOpacity(
                       mood == null ? 0.5 : 1,
                     ),
                     foregroundColor: Colors.white,
@@ -230,7 +230,7 @@ class _MoodButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: circleColor,
               border: isSelected
-                  ? Border.all(color: const Color(0xFF5B288E), width: 3)
+                  ? Border.all(color: const AppTheme.purple, width: 3)
                   : null,
             ),
             child: Center(

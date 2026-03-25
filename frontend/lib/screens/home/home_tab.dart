@@ -3,6 +3,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../../services/user_api.dart';
 import '../../services/token_storage.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -12,9 +13,6 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   String _displayName = "there";
   String _location = "";
   String? _avatarUrl;
@@ -132,7 +130,7 @@ class _HomeTabState extends State<HomeTab> {
                 fontSize: 28,
                 height: 1.1,
                 fontWeight: FontWeight.w800,
-                color: kPurple,
+                color: AppTheme.purple,
               ),
             ),
             const SizedBox(height: 18),
@@ -180,7 +178,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: const Text(
                         "Edit",
                         style: TextStyle(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -193,7 +191,7 @@ class _HomeTabState extends State<HomeTab> {
                   Text(
                     _displayName,
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -202,7 +200,7 @@ class _HomeTabState extends State<HomeTab> {
                   Text(
                     _location.isNotEmpty ? _location : " ",
                     style: const TextStyle(
-                      color: kGreyText,
+                      color: AppTheme.greyText,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -225,7 +223,7 @@ class _HomeTabState extends State<HomeTab> {
                     child: Icon(
                       Icons.pie_chart_outline,
                       size: 54,
-                      color: kPurple.withOpacity(0.25),
+                      color: AppTheme.purple.withOpacity(0.25),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -233,7 +231,7 @@ class _HomeTabState extends State<HomeTab> {
                   const Text(
                     "No Data",
                     style: TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                     ),
@@ -266,8 +264,8 @@ class _HomeTabState extends State<HomeTab> {
                         // Navigator.pushNamed(context, '/journal/create');
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
-                  disabledBackgroundColor: kPurple.withOpacity(0.35),
+                  backgroundColor: AppTheme.purple,
+                  disabledBackgroundColor: AppTheme.purple.withOpacity(0.35),
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),

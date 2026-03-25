@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/journal_api.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class EditJournalScreen extends StatefulWidget {
   final String postId;
@@ -16,8 +17,6 @@ class EditJournalScreen extends StatefulWidget {
 }
 
 class _EditJournalScreenState extends State<EditJournalScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   late final TextEditingController _captionCtrl;
   bool _saving = false;
   String? _error;
@@ -65,10 +64,10 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kPurple),
+        iconTheme: const IconThemeData(color: AppTheme.purple),
         title: const Text(
           "Edit Journal",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w900),
         ),
         actions: [
           TextButton(
@@ -82,7 +81,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
                 : const Text(
                     "Save",
                     style: TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -114,7 +113,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
             if (_error != null) const SizedBox(height: 12),
             const Text(
               "Caption",
-              style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+              style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             TextField(
