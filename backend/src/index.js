@@ -10,6 +10,7 @@ const { Server } = require("socket.io");
 const { createRemoteJWKSet, jwtVerify } = require("jose");
 
 const connectDB = require("./config/db");
+const { initFirebase } = require("./config/firebase");
 const { apiLimiter } = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
@@ -26,6 +27,7 @@ const postReadRoute = require("./routes/postReadRoute");
 const feedRoute = require("./routes/feedRoute");
 const vaultRoute = require("./routes/vaultRoute");
 const biometricsRoute = require("./routes/biometricsRoute");
+const notificationRoute = require("./routes/notificationRoute");
 
 // ✅ NEW (DEV ONLY)
 const adminDevRoute = require("./routes/adminDevRoute");
@@ -61,6 +63,7 @@ app.use("/posts", postReadRoute);
 app.use("/feed", feedRoute);
 app.use("/vault", vaultRoute);
 app.use("/biometrics", biometricsRoute);
+app.use("/notifications", notificationRoute);
 
 // ✅ NEW (DEV ONLY)
 app.use("/dev", adminDevRoute);
@@ -134,6 +137,9 @@ io.on("connection", (socket) => {
 
 // ✅ Let controllers emit real-time events
 app.set("io", io);
+
+// Initialize Firebase for push notifications
+initFirebase();
 
 // ✅ Keep your DB connect flow
 connectDB()

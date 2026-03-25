@@ -13,6 +13,15 @@ const UserProfileSchema = new mongoose.Schema(
 
     // S3
     avatarKey: { type: String, default: "" }, // users/<sub>/profile/avatar.jpg
+
+    // Push notification tokens
+    fcmTokens: [
+      {
+        token: { type: String, required: true },
+        platform: { type: String, enum: ["ios", "android", "web", "unknown"], default: "unknown" },
+        registeredAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );
