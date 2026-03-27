@@ -126,7 +126,7 @@ class _TrendIndicator extends StatelessWidget {
         trendColor = const Color(0xFFE74C3C);
       case MetricTrend.stable:
         trendIcon = Icons.trending_flat_rounded;
-        trendColor = const AppTheme.lightGrey;
+        trendColor = AppTheme.lightGrey;
     }
 
     return Container(

@@ -16,9 +16,6 @@ class ConversationsPage extends StatefulWidget {
 }
 
 class _ConversationsPageState extends State<ConversationsPage> {
-  static const AppTheme.purple = AppTheme.purple;
-  static const AppTheme.greyText = AppTheme.greyText;
-
   bool loading = true;
   bool _socketReady = false;
   String? error;
@@ -276,9 +273,6 @@ class _ConversationRow extends StatelessWidget {
 
   const _ConversationRow({required this.item, required this.onTap});
 
-  static const AppTheme.purple = AppTheme.purple;
-  static const AppTheme.greyText = AppTheme.greyText;
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -337,8 +331,6 @@ class _Avatar extends StatelessWidget {
   final String label;
 
   const _Avatar({required this.url, required this.label});
-
-  static const AppTheme.purple = AppTheme.purple;
 
   @override
   Widget build(BuildContext context) {

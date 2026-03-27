@@ -230,7 +230,7 @@ class _MoodButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: circleColor,
               border: isSelected
-                  ? Border.all(color: const AppTheme.purple, width: 3)
+                  ? Border.all(color: AppTheme.purple, width: 3)
                   : null,
             ),
             child: Center(
