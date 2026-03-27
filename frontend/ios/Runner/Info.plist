@@ -65,10 +65,20 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>MUUD needs microphone access to record voice notes.</string>
 
-	<!-- Keep (if you previously used it) -->
+	<!-- Deep linking for OAuth callbacks -->
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
+	<!-- Background modes for push notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+
+	<!-- Encryption compliance: app uses HTTPS only (exempt) -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
