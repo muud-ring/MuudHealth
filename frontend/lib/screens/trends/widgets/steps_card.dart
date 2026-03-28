@@ -104,7 +104,7 @@ class StepsCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF898384),
+                  color: AppTheme.greyText,
                 ),
               ),
             ],
@@ -144,7 +144,7 @@ class StepsCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF898384),
+              color: AppTheme.greyText,
             ),
           ),
         ],

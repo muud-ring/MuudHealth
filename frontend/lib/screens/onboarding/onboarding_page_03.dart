@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage03 extends StatefulWidget {
   const OnboardingPage03({super.key});
@@ -10,8 +11,6 @@ class OnboardingPage03 extends StatefulWidget {
 }
 
 class _OnboardingPage03State extends State<OnboardingPage03> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   String? selectedGoal;
 
   final List<String> goalOptions = const [
@@ -66,7 +65,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     size: 22,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -81,7 +80,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.2,
                 ),
               ),
@@ -94,7 +93,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 style: TextStyle(
                   fontSize: 18,
                   height: 1.4,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -132,7 +131,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                               height: 28,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: kPurple, width: 2),
+                                border: Border.all(color: AppTheme.purple, width: 2),
                                 color: selected
                                     ? Colors.white
                                     : Colors.transparent,
@@ -143,7 +142,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                                         width: 14,
                                         height: 14,
                                         decoration: const BoxDecoration(
-                                          color: kPurple,
+                                          color: AppTheme.purple,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -177,7 +176,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(canContinue ? 1 : 0.5),
+                    backgroundColor: AppTheme.purple.withOpacity(canContinue ? 1 : 0.5),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -206,7 +205,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                     ),
@@ -217,7 +216,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),

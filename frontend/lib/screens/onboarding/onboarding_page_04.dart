@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage04 extends StatefulWidget {
   const OnboardingPage04({super.key});
@@ -10,8 +11,6 @@ class OnboardingPage04 extends StatefulWidget {
 }
 
 class _OnboardingPage04State extends State<OnboardingPage04> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   final List<_ActivityItem> items = const [
     _ActivityItem("Meditation", "🧘"),
     _ActivityItem("Exercise", "🏃‍♀️"),
@@ -66,7 +65,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     size: 22,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -81,7 +80,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.2,
                 ),
               ),
@@ -94,7 +93,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                 style: TextStyle(
                   fontSize: 18,
                   height: 1.4,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -134,7 +133,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                           color: const Color(0xFFF5F5F5),
                           borderRadius: BorderRadius.circular(16),
                           border: isSelected
-                              ? Border.all(color: kPurple, width: 2)
+                              ? Border.all(color: AppTheme.purple, width: 2)
                               : null,
                         ),
                         padding: const EdgeInsets.all(16),
@@ -170,7 +169,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(canContinue ? 1 : 0.5),
+                    backgroundColor: AppTheme.purple.withOpacity(canContinue ? 1 : 0.5),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -198,7 +197,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                     ),
@@ -209,7 +208,7 @@ class _OnboardingPage04State extends State<OnboardingPage04> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),

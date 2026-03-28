@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/token_storage.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kDivider = Color(0xFFE8E8E8);
 
   Future<void> _confirmAndLogout(BuildContext context) async {
@@ -54,7 +53,7 @@ class SettingsScreen extends StatelessWidget {
                     constraints: const BoxConstraints(),
                     icon: const Icon(
                       Icons.arrow_back_ios,
-                      color: kPurple,
+                      color: AppTheme.purple,
                       size: 22,
                     ),
                     onPressed: () => Navigator.pop(context),
@@ -64,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Text(
                         "Settings",
                         style: TextStyle(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -85,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
               child: const Text(
                 "Account Settings",
                 style: TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -170,8 +169,6 @@ class _SettingsRow extends StatelessWidget {
     this.iconColor,
     this.trailingColor,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kGray = Color(0xFF9E9E9E);
 
   final IconData icon;
@@ -198,13 +195,13 @@ class _SettingsRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? kPurple, size: 24),
+            Icon(icon, color: iconColor ?? AppTheme.purple, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
-                  color: titleColor ?? kPurple,
+                  color: titleColor ?? AppTheme.purple,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),

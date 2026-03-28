@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage06 extends StatefulWidget {
   const OnboardingPage06({super.key});
@@ -10,8 +11,6 @@ class OnboardingPage06 extends StatefulWidget {
 }
 
 class _OnboardingPage06State extends State<OnboardingPage06> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   final List<_SupportOption> options = const [
     _SupportOption(
       id: 'emotions',
@@ -69,7 +68,7 @@ class _OnboardingPage06State extends State<OnboardingPage06> {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     size: 22,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -84,7 +83,7 @@ class _OnboardingPage06State extends State<OnboardingPage06> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.2,
                 ),
               ),
@@ -126,7 +125,7 @@ class _OnboardingPage06State extends State<OnboardingPage06> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -154,7 +153,7 @@ class _OnboardingPage06State extends State<OnboardingPage06> {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                     ),
@@ -165,7 +164,7 @@ class _OnboardingPage06State extends State<OnboardingPage06> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),
@@ -202,9 +201,6 @@ class _SupportCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -215,7 +211,7 @@ class _SupportCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(16),
-          border: isSelected ? Border.all(color: kPurple, width: 2) : null,
+          border: isSelected ? Border.all(color: AppTheme.purple, width: 2) : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

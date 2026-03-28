@@ -6,9 +6,13 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY backend/src ./src
-COPY backend/prototype ./prototype
+COPY backend/global-bundle.pem ./global-bundle.pem
 
 ENV PORT=4000
+ENV NODE_ENV=production
 EXPOSE 4000
 
-CMD ["node", "src/prototype.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:4000/health || exit 1
+
+CMD ["node", "src/index.js"]

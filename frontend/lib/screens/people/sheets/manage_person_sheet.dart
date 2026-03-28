@@ -4,6 +4,7 @@ import '../../../services/people_api.dart';
 import '../data/people_models.dart';
 import '../state/people_events.dart';
 import '../pages/chat_page.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ManagePersonSheet {
   static Future<void> open(
@@ -30,7 +31,6 @@ class _ManagePersonBody extends StatefulWidget {
 }
 
 class _ManagePersonBodyState extends State<_ManagePersonBody> {
-  static const Color kPurple = Color(0xFF5B288E);
   bool working = false;
 
   Future<void> _setTier(String tier) async {
@@ -122,7 +122,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                   child: Text(
                     (p.name.isNotEmpty ? p.name[0] : "?").toUpperCase(),
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -135,7 +135,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                       Text(
                         p.name,
                         style: const TextStyle(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                         ),
@@ -144,7 +144,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
                       Text(
                         p.handle,
                         style: const TextStyle(
-                          color: Color(0xFF898384),
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -159,7 +159,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.chat_bubble_outline, color: kPurple),
+              leading: const Icon(Icons.chat_bubble_outline, color: AppTheme.purple),
               title: const Text(
                 "Message",
                 style: TextStyle(fontWeight: FontWeight.w800),
@@ -182,7 +182,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.group_outlined, color: kPurple),
+              leading: const Icon(Icons.group_outlined, color: AppTheme.purple),
               title: const Text(
                 "Move to Connections",
                 style: TextStyle(fontWeight: FontWeight.w800),
@@ -192,7 +192,7 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.star_outline, color: kPurple),
+              leading: const Icon(Icons.star_outline, color: AppTheme.purple),
               title: const Text(
                 "Move to Inner Circle",
                 style: TextStyle(fontWeight: FontWeight.w800),

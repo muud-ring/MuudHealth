@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class VerifyResetCodeScreen extends StatefulWidget {
   const VerifyResetCodeScreen({super.key});
@@ -9,7 +10,6 @@ class VerifyResetCodeScreen extends StatefulWidget {
 }
 
 class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kDisabledPurple = Color(0xFFB7A6C8);
 
   final _api = ApiService();
@@ -101,7 +101,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                 'We sent you a\ncode',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   height: 1.1,
@@ -166,14 +166,14 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(
-                            color: hasValue ? kPurple : Colors.black38,
+                            color: hasValue ? AppTheme.purple : Colors.black38,
                             width: 1.4,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: const BorderSide(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             width: 2,
                           ),
                         ),
@@ -194,7 +194,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                       ? () => _continue(identifier)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     disabledBackgroundColor: kDisabledPurple,
                     shape: const StadiumBorder(),
                   ),
@@ -228,7 +228,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                     child: const Text(
                       'Resend',
                       style: TextStyle(
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         decoration: TextDecoration.underline,

@@ -7,6 +7,7 @@ import '../../services/journal_api.dart';
 import '../../services/token_storage.dart';
 import '../../services/vault_api.dart';
 import '../journal/pages/edit_journal_screen.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ExploreTab extends StatefulWidget {
   const ExploreTab({super.key});
@@ -16,9 +17,6 @@ class ExploreTab extends StatefulWidget {
 }
 
 class _ExploreTabState extends State<ExploreTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   bool _feedLoading = true;
   String? _feedError;
   List<_FeedPost> _posts = [];
@@ -149,10 +147,10 @@ class _ExploreTabState extends State<ExploreTab> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.edit_outlined, color: kPurple),
+                leading: const Icon(Icons.edit_outlined, color: AppTheme.purple),
                 title: const Text(
                   "Edit",
-                  style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+                  style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w900),
                 ),
                 onTap: () => Navigator.pop(context, "edit"),
               ),
@@ -259,8 +257,8 @@ class _ExploreTabState extends State<ExploreTab> {
       ),
       builder: (_) => _VaultCategorySheet(
         categories: _vaultCategories,
-        purple: kPurple,
-        grey: kGreyText,
+        purple: AppTheme.purple,
+        grey: AppTheme.greyText,
       ),
     );
 
@@ -291,7 +289,7 @@ class _ExploreTabState extends State<ExploreTab> {
             const Text(
               "Explore",
               style: TextStyle(
-                color: kPurple,
+                color: AppTheme.purple,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -301,7 +299,7 @@ class _ExploreTabState extends State<ExploreTab> {
             const Text(
               "Your Journals",
               style: TextStyle(
-                color: kPurple,
+                color: AppTheme.purple,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -331,7 +329,7 @@ class _ExploreTabState extends State<ExploreTab> {
                     ElevatedButton(
                       onPressed: _loadFeed,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: AppTheme.purple,
                         shape: const StadiumBorder(),
                         elevation: 0,
                       ),
@@ -357,7 +355,7 @@ class _ExploreTabState extends State<ExploreTab> {
                       Text(
                         "No journals yet",
                         style: TextStyle(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -366,7 +364,7 @@ class _ExploreTabState extends State<ExploreTab> {
                       Text(
                         "Tap + to create your first post.",
                         style: TextStyle(
-                          color: kGreyText,
+                          color: AppTheme.greyText,
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -414,7 +412,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                           child: const Center(
                                             child: Icon(
                                               Icons.image_not_supported,
-                                              color: kGreyText,
+                                              color: AppTheme.greyText,
                                             ),
                                           ),
                                         )
@@ -455,7 +453,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                   Text(
                                     p.caption,
                                     style: const TextStyle(
-                                      color: kPurple,
+                                      color: AppTheme.purple,
                                       fontSize: 14.5,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -483,7 +481,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                             isThisPlaying
                                                 ? Icons.pause_circle
                                                 : Icons.play_circle,
-                                            color: kPurple,
+                                            color: AppTheme.purple,
                                             size: 34,
                                           ),
                                         ),
@@ -492,7 +490,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                           child: Text(
                                             "Voice note",
                                             style: TextStyle(
-                                              color: kPurple,
+                                              color: AppTheme.purple,
                                               fontWeight: FontWeight.w900,
                                             ),
                                           ),
@@ -506,7 +504,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                     Text(
                                       _formatTime(p.createdAt),
                                       style: const TextStyle(
-                                        color: kGreyText,
+                                        color: AppTheme.greyText,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 12.5,
                                       ),
@@ -516,14 +514,14 @@ class _ExploreTabState extends State<ExploreTab> {
                                       onPressed: () => _openSaveToVaultSheet(p),
                                       icon: const Icon(
                                         Icons.bookmark_border,
-                                        color: kPurple,
+                                        color: AppTheme.purple,
                                       ),
                                       tooltip: "Save to Vault",
                                     ),
                                     Text(
                                       p.visibilityLabel,
                                       style: const TextStyle(
-                                        color: kGreyText,
+                                        color: AppTheme.greyText,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 12.5,
                                       ),
@@ -547,7 +545,7 @@ class _ExploreTabState extends State<ExploreTab> {
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: AppTheme.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),

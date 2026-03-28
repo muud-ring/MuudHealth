@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import 'preview_screen.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class CreatorToolScreen extends StatefulWidget {
   const CreatorToolScreen({super.key});
@@ -15,8 +16,6 @@ class CreatorToolScreen extends StatefulWidget {
 }
 
 class _CreatorToolScreenState extends State<CreatorToolScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   final _picker = ImagePicker();
   final _recorder = AudioRecorder();
 
@@ -277,7 +276,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: active ? kPurple : Colors.white.withOpacity(0.15),
+          color: active ? AppTheme.purple : Colors.white.withOpacity(0.15),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white),
@@ -291,7 +290,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
-          color: kPurple,
+          color: AppTheme.purple,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Text(

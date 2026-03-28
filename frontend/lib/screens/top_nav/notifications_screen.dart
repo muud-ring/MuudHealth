@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../people/sheets/connection_requests_sheet.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,14 +14,14 @@ class NotificationsScreen extends StatelessWidget {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           "Notifications",
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -38,7 +35,7 @@ class NotificationsScreen extends StatelessWidget {
             const Text(
               "Friend Requests",
               style: TextStyle(
-                color: kPurple,
+                color: AppTheme.purple,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -49,14 +46,14 @@ class NotificationsScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
-              leading: const Icon(Icons.group_outlined, color: kPurple),
+              leading: const Icon(Icons.group_outlined, color: AppTheme.purple),
               title: const Text(
                 "Connection Requests",
                 style: TextStyle(fontWeight: FontWeight.w900),
               ),
               subtitle: const Text(
                 "Tap to view and manage requests",
-                style: TextStyle(color: kGreyText, fontWeight: FontWeight.w600),
+                style: TextStyle(color: AppTheme.greyText, fontWeight: FontWeight.w600),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () async {
@@ -66,7 +63,7 @@ class NotificationsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text(
               "More notifications coming soon",
-              style: TextStyle(color: kGreyText, fontWeight: FontWeight.w600),
+              style: TextStyle(color: AppTheme.greyText, fontWeight: FontWeight.w600),
             ),
           ],
         ),

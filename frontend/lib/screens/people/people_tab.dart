@@ -10,6 +10,7 @@ import 'widgets/primary_button.dart';
 import 'sheets/manage_person_sheet.dart';
 import 'pages/profile_page.dart';
 import 'state/people_events.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -19,9 +20,6 @@ class PeopleTab extends StatefulWidget {
 }
 
 class _PeopleTabState extends State<PeopleTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   final PeopleController controller = PeopleController();
 
   @override
@@ -69,12 +67,12 @@ class _PeopleTabState extends State<PeopleTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 44, color: kPurple),
+              const Icon(Icons.error_outline, size: 44, color: AppTheme.purple),
               const SizedBox(height: 10),
               const Text(
                 "Could not load People",
                 style: TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                 ),
@@ -84,7 +82,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 controller.error!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: kGreyText,
+                  color: AppTheme.greyText,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -95,7 +93,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 height: 44,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     elevation: 0,
                     shape: const StadiumBorder(),
                   ),
@@ -180,7 +178,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     Text(
                       "No Connections",
                       style: TextStyle(
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                       ),
@@ -190,7 +188,7 @@ class _PeopleTabState extends State<PeopleTab> {
                       "Your connections will show up here.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: kGreyText,
+                        color: AppTheme.greyText,
                         fontSize: 13.5,
                         height: 1.25,
                         fontWeight: FontWeight.w600,
@@ -231,7 +229,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 height: 44,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
                     shape: const StadiumBorder(),
                   ),
                   onPressed: () =>
@@ -239,7 +237,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   child: const Text(
                     "Show more",
                     style: TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -262,7 +260,7 @@ class _PeopleTabState extends State<PeopleTab> {
               const Text(
                 "No suggestions right now.",
                 style: TextStyle(
-                  color: kGreyText,
+                  color: AppTheme.greyText,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                 ),

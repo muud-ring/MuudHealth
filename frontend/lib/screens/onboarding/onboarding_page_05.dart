@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage05 extends StatelessWidget {
   const OnboardingPage05({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +22,7 @@ class OnboardingPage05 extends StatelessWidget {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     size: 22,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -52,7 +50,7 @@ class OnboardingPage05 extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     height: 1.2,
                   ),
                 ),
@@ -68,7 +66,7 @@ class OnboardingPage05 extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     height: 1.4,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -82,7 +80,7 @@ class OnboardingPage05 extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -114,7 +112,7 @@ class OnboardingPage05 extends StatelessWidget {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                     ),
@@ -129,7 +127,7 @@ class OnboardingPage05 extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),

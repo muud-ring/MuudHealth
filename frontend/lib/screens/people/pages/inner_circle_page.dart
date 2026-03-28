@@ -7,6 +7,7 @@ import '../widgets/person_tile.dart';
 import '../sheets/manage_person_sheet.dart';
 import '../pages/profile_page.dart';
 import '../state/people_events.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class InnerCirclePage extends StatefulWidget {
   const InnerCirclePage({super.key});
@@ -16,9 +17,6 @@ class InnerCirclePage extends StatefulWidget {
 }
 
 class _InnerCirclePageState extends State<InnerCirclePage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   String q = "";
   bool loading = true;
   String? error;
@@ -128,7 +126,7 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
         elevation: 0,
         title: const Text(
           "Inner Circle",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
         ),
       ),
       body: Padding(
@@ -149,20 +147,20 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 44, color: kPurple),
+                      const Icon(Icons.error_outline, size: 44, color: AppTheme.purple),
                       const SizedBox(height: 8),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: kGreyText,
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 12),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPurple,
+                          backgroundColor: AppTheme.purple,
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
@@ -182,7 +180,7 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
                   child: Text(
                     "No Inner Circle people yet.",
                     style: TextStyle(
-                      color: kGreyText,
+                      color: AppTheme.greyText,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                     ),

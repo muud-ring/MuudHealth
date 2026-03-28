@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/chat_api.dart';
 import '../../../services/chat_socket.dart';
 import '../../chat/state/chat_badge.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ChatPage extends StatefulWidget {
   final String otherSub;
@@ -14,9 +15,6 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGrey = Color(0xFF898384);
-
   bool loading = true;
   String? error;
 
@@ -126,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
         elevation: 0,
         title: Text(
           widget.title,
-          style: const TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: const TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
         ),
       ),
       body: loading
@@ -138,7 +136,7 @@ class _ChatPageState extends State<ChatPage> {
                 child: Text(
                   error!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: kGrey),
+                  style: const TextStyle(color: AppTheme.greyText),
                 ),
               ),
             )
@@ -165,13 +163,13 @@ class _ChatPageState extends State<ChatPage> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: mine ? kPurple : const Color(0xFFEFEAF6),
+                            color: mine ? AppTheme.purple : const Color(0xFFEFEAF6),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Text(
                             text,
                             style: TextStyle(
-                              color: mine ? Colors.white : kPurple,
+                              color: mine ? Colors.white : AppTheme.purple,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -202,7 +200,7 @@ class _ChatPageState extends State<ChatPage> {
                           height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: kPurple,
+                              backgroundColor: AppTheme.purple,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),

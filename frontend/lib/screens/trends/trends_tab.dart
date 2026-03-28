@@ -371,10 +371,6 @@ class _BiometricsDashboard extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
-  static const Color _kPurple = AppTheme.purple;
-  static const Color _kGreyText = AppTheme.greyText;
-  static const Color _kLightPurple = AppTheme.lightPurple;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -400,7 +396,7 @@ class _EmptyState extends StatelessWidget {
                           Icon(
                             Icons.storage_rounded,
                             size: 64,
-                            color: _kLightPurple.withOpacity(0.75),
+                            color: AppTheme.lightPurple.withOpacity(0.75),
                           ),
                           Positioned(
                             right: 6,
@@ -408,7 +404,7 @@ class _EmptyState extends StatelessWidget {
                             child: Icon(
                               Icons.search_rounded,
                               size: 34,
-                              color: _kLightPurple.withOpacity(0.85),
+                              color: AppTheme.lightPurple.withOpacity(0.85),
                             ),
                           ),
                         ],
@@ -418,7 +414,7 @@ class _EmptyState extends StatelessWidget {
                     const Text(
                       'No Data',
                       style: TextStyle(
-                        color: _kPurple,
+                        color: AppTheme.purple,
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                       ),
@@ -427,7 +423,7 @@ class _EmptyState extends StatelessWidget {
                     Text(
                       'Your trends will show up here.',
                       style: TextStyle(
-                        color: _kGreyText.withOpacity(0.9),
+                        color: AppTheme.greyText.withOpacity(0.9),
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -439,7 +435,7 @@ class _EmptyState extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _kPurple,
+                          backgroundColor: AppTheme.purple,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(

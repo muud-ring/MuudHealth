@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class PersonTile extends StatelessWidget {
   final Person person;
@@ -12,10 +13,6 @@ class PersonTile extends StatelessWidget {
     this.onTap,
     this.onTapMenu,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   Color _bgForTint(String tint) {
     switch (tint) {
       case "purple":
@@ -85,7 +82,7 @@ class PersonTile extends StatelessWidget {
                   Text(
                     person.name,
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontSize: 15.5,
                       fontWeight: FontWeight.w900,
                     ),
@@ -96,7 +93,7 @@ class PersonTile extends StatelessWidget {
                     Text(
                       person.lastActive,
                       style: const TextStyle(
-                        color: kGreyText,
+                        color: AppTheme.greyText,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -130,7 +127,7 @@ class PersonTile extends StatelessWidget {
 
             IconButton(
               onPressed: onTapMenu,
-              icon: const Icon(Icons.more_vert, color: kPurple),
+              icon: const Icon(Icons.more_vert, color: AppTheme.purple),
               splashRadius: 18,
             ),
           ],
@@ -183,7 +180,7 @@ class _Avatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: Color(0xFF5B288E),
+          color: AppTheme.purple,
           fontWeight: FontWeight.w900,
           fontSize: 18,
         ),

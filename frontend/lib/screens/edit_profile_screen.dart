@@ -5,6 +5,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../services/user_api.dart';
 import '../services/token_storage.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -14,7 +15,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kBorder = Color(0xFFD7CDE3);
 
   final _name = TextEditingController();
@@ -223,20 +223,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: saving ? null : () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           "Edit your profile",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w700),
         ),
         actions: [
           TextButton(
             onPressed: saving ? null : _save,
             child: const Text(
               "Save",
-              style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+              style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -276,7 +276,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         width: 38,
                         height: 38,
                         decoration: const BoxDecoration(
-                          color: kPurple,
+                          color: AppTheme.purple,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -338,9 +338,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 class _Label extends StatelessWidget {
   final String text;
   const _Label(this.text);
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -348,7 +345,7 @@ class _Label extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: kPurple,
+          color: AppTheme.purple,
           fontWeight: FontWeight.w700,
           fontSize: 16,
         ),

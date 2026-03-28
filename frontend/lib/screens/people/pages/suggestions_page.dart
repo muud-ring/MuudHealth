@@ -6,6 +6,7 @@ import '../data/people_models.dart';
 import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
 import '../state/people_events.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class SuggestionsPage extends StatefulWidget {
   const SuggestionsPage({super.key});
@@ -15,9 +16,6 @@ class SuggestionsPage extends StatefulWidget {
 }
 
 class _SuggestionsPageState extends State<SuggestionsPage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   bool loading = true;
   String? error;
 
@@ -180,7 +178,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                 ),
                 const SizedBox(height: 14),
                 ListTile(
-                  leading: const Icon(Icons.person_add_alt_1, color: kPurple),
+                  leading: const Icon(Icons.person_add_alt_1, color: AppTheme.purple),
                   title: const Text(
                     "Send request",
                     style: TextStyle(fontWeight: FontWeight.w800),
@@ -208,7 +206,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         elevation: 0,
         title: const Text(
           "Suggested Friends",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
         ),
       ),
       body: Padding(
@@ -226,20 +224,20 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 44, color: kPurple),
+                      const Icon(Icons.error_outline, size: 44, color: AppTheme.purple),
                       const SizedBox(height: 8),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: kGreyText,
+                          color: AppTheme.greyText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 12),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPurple,
+                          backgroundColor: AppTheme.purple,
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
@@ -259,7 +257,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                   child: Text(
                     "No suggestions right now.",
                     style: TextStyle(
-                      color: kGreyText,
+                      color: AppTheme.greyText,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                     ),

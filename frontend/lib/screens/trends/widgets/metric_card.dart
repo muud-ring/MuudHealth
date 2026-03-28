@@ -87,7 +87,7 @@ class MetricCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF898384),
+              color: AppTheme.greyText,
             ),
           ),
           if (subtitle != null) ...[
@@ -126,7 +126,7 @@ class _TrendIndicator extends StatelessWidget {
         trendColor = const Color(0xFFE74C3C);
       case MetricTrend.stable:
         trendIcon = Icons.trending_flat_rounded;
-        trendColor = const AppTheme.lightGrey;
+        trendColor = AppTheme.lightGrey;
     }
 
     return Container(

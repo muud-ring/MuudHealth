@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -9,7 +10,6 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
   static const Color kDisabledPurple = Color(0xFFB7A6C8);
 
   final _api = ApiService();
@@ -106,7 +106,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -121,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 'Update Password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
                 ),
@@ -163,7 +163,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: showPwError ? Colors.red : kPurple,
+                      color: showPwError ? Colors.red : AppTheme.purple,
                       width: 1.8,
                     ),
                   ),
@@ -218,7 +218,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: showConfirmError ? Colors.red : kPurple,
+                      color: showConfirmError ? Colors.red : AppTheme.purple,
                       width: 1.8,
                     ),
                   ),
@@ -254,7 +254,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ? () => _save(identifier: identifier, code: code)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     disabledBackgroundColor: kDisabledPurple,
                     shape: const StadiumBorder(),
                     elevation: 0,

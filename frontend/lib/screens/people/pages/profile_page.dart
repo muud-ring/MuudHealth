@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
 import '../pages/chat_page.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class ProfilePage extends StatelessWidget {
-  static const Color kPurple = Color(0xFF5B288E);
   final Person person;
 
   const ProfilePage({super.key, required this.person});
@@ -18,12 +18,12 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           title,
-          style: const TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: const TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
         ),
       ),
       body: Padding(
@@ -46,7 +46,7 @@ class ProfilePage extends StatelessWidget {
                       (person.name.isNotEmpty ? person.name[0] : "?")
                           .toUpperCase(),
                       style: const TextStyle(
-                        color: kPurple,
+                        color: AppTheme.purple,
                         fontWeight: FontWeight.w900,
                         fontSize: 22,
                       ),
@@ -56,7 +56,7 @@ class ProfilePage extends StatelessWidget {
                   Text(
                     person.name,
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                     ),
@@ -66,7 +66,7 @@ class ProfilePage extends StatelessWidget {
                     Text(
                       person.handle,
                       style: const TextStyle(
-                        color: Color(0xFF898384),
+                        color: AppTheme.greyText,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -76,7 +76,7 @@ class ProfilePage extends StatelessWidget {
                     Text(
                       person.location,
                       style: const TextStyle(
-                        color: Color(0xFF898384),
+                        color: AppTheme.greyText,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -87,7 +87,7 @@ class ProfilePage extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: AppTheme.purple,
                         elevation: 0,
                         shape: const StadiumBorder(),
                       ),
@@ -124,7 +124,7 @@ class ProfilePage extends StatelessWidget {
               child: Text(
                 "Posts",
                 style: TextStyle(
-                  color: kPurple,
+                  color: AppTheme.purple,
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
@@ -161,13 +161,13 @@ class ProfilePage extends StatelessWidget {
         children: [
           Text(
             text,
-            style: const TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+            style: const TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
             time,
             style: const TextStyle(
-              color: Color(0xFF898384),
+              color: AppTheme.greyText,
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),

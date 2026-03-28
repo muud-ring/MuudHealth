@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class OnboardingPage01 extends StatelessWidget {
   const OnboardingPage01({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kSubtitlePurple = Color(0xFF5B288E);
+  static const Color kSubtitlePurple = AppTheme.purple;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +24,7 @@ class OnboardingPage01 extends StatelessWidget {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: AppTheme.purple,
                     size: 22,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -40,7 +39,7 @@ class OnboardingPage01 extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: AppTheme.purple,
                   height: 1.1,
                   letterSpacing: 0.2,
                 ),
@@ -79,7 +78,7 @@ class OnboardingPage01 extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: AppTheme.purple,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

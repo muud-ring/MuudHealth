@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 // ✅ Legal popup imports
 import 'legal/legal_modal_page.dart';
 import 'legal/legal_texts.dart';
+import 'package:muud_health_app/theme/app_theme.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -27,9 +28,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _loading = false;
   String? _error;
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   // ✅ Figma-like disabled button color (light grey-purple)
   static const Color kDisabledPurple = Color(0xFFB7A6C8);
 
@@ -93,7 +91,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         TextSpan(
                           text: 'Privacy Policy.',
                           style: const TextStyle(
-                            color: kPurple,
+                            color: AppTheme.purple,
                             fontWeight: FontWeight.w800,
                             decoration: TextDecoration.underline,
                           ),
@@ -116,7 +114,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: AppTheme.purple,
                         shape: const StadiumBorder(),
                         elevation: 0,
                       ),
@@ -255,14 +253,14 @@ class _SignupScreenState extends State<SignupScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           'Sign Up',
           style: TextStyle(
-            color: kPurple,
+            color: AppTheme.purple,
             fontWeight: FontWeight.w800,
             fontSize: 22,
           ),
@@ -313,7 +311,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   _obscure
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: kPurple,
+                  color: AppTheme.purple,
                 ),
               ),
             ),
@@ -348,7 +346,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: _pickDob,
                     icon: const Icon(
                       Icons.calendar_today_outlined,
-                      color: kPurple,
+                      color: AppTheme.purple,
                     ),
                   ),
                 ),
@@ -373,7 +371,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Learn More',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -400,7 +398,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Terms of Service',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -415,7 +413,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Privacy Policy',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: AppTheme.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -453,7 +451,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: ElevatedButton(
                 onPressed: enabled ? _signup : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: AppTheme.purple,
                   disabledBackgroundColor: kDisabledPurple,
                   shape: const StadiumBorder(),
                   elevation: 0,
@@ -540,7 +538,7 @@ class _Field extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
-            color: _SignupScreenState.kPurple,
+            color: AppTheme.purple,
             width: 1.6,
           ),
         ),
