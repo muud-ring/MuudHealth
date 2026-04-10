@@ -155,8 +155,8 @@ class ApiClient {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return body is Map<String, dynamic> ? body : {'data': body};
     }
-    final msg = (body is Map && body['message'] != null)
-        ? body['message']
+    final msg = (body is Map && (body['message'] ?? body['error']) != null)
+        ? (body['message'] ?? body['error'])
         : 'Request failed (${res.statusCode})';
     throw Exception(msg);
   }

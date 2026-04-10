@@ -37,7 +37,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/auth/confirm-signup'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'identifier': identifier, 'code': code}),
+      body: jsonEncode({'email': identifier, 'code': code}),
     );
     return _handle(res);
   }
@@ -49,7 +49,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/auth/login'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'identifier': identifier, 'password': password}),
+      body: jsonEncode({'email': identifier, 'password': password}),
     );
     return _handle(res);
   }
@@ -60,7 +60,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/auth/forgot-password'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'identifier': identifier}),
+      body: jsonEncode({'email': identifier}),
     );
     return _handle(res);
   }
@@ -74,7 +74,7 @@ class ApiService {
       Uri.parse('$baseUrl/auth/confirm-forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'identifier': identifier,
+        'email': identifier,
         'code': code,
         'newPassword': newPassword,
       }),
@@ -87,9 +87,9 @@ class ApiService {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return body is Map<String, dynamic> ? body : {'data': body};
     }
-    final msg = (body is Map && body['message'] != null)
-        ? body['message']
-        : 'Request failed';
+    final msg = (body is Map && (body['message'] ?? body['error']) != null)
+        ? (body['message'] ?? body['error'])
+        : 'Request failed (${res.statusCode})';
     throw Exception(msg);
   }
 }

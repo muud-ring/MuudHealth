@@ -30,8 +30,8 @@ class ChatApi {
 
     if (res.statusCode != 200) {
       throw Exception(
-        body is Map && body['message'] != null
-            ? body['message'].toString()
+        body is Map && (body['message'] ?? body['error']) != null
+            ? (body['message'] ?? body['error']).toString()
             : 'Failed to create conversation',
       );
     }
@@ -58,8 +58,8 @@ class ChatApi {
 
     if (res.statusCode != 200) {
       throw Exception(
-        body is Map && body['message'] != null
-            ? body['message'].toString()
+        body is Map && (body['message'] ?? body['error']) != null
+            ? (body['message'] ?? body['error']).toString()
             : 'Failed to load messages',
       );
     }
@@ -92,8 +92,8 @@ class ChatApi {
 
     if (res.statusCode != 201) {
       throw Exception(
-        body is Map && body['message'] != null
-            ? body['message'].toString()
+        body is Map && (body['message'] ?? body['error']) != null
+            ? (body['message'] ?? body['error']).toString()
             : 'Failed to send',
       );
     }
@@ -118,8 +118,8 @@ class ChatApi {
 
     if (res.statusCode != 200) {
       throw Exception(
-        body is Map && body['message'] != null
-            ? body['message'].toString()
+        body is Map && (body['message'] ?? body['error']) != null
+            ? (body['message'] ?? body['error']).toString()
             : 'Failed to load conversations',
       );
     }
@@ -146,8 +146,8 @@ class ChatApi {
 
     if (res.statusCode != 200) {
       throw Exception(
-        body is Map && body['message'] != null
-            ? body['message'].toString()
+        body is Map && (body['message'] ?? body['error']) != null
+            ? (body['message'] ?? body['error']).toString()
             : 'Failed to load unread count',
       );
     }
