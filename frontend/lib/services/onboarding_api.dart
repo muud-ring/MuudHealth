@@ -5,7 +5,7 @@ import 'token_storage.dart';
 class OnboardingApi {
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:4000',
+    defaultValue: 'https://api.muudhealth.com',
   );
 
   // GET /onboarding/status  -> { "completed": true/false }

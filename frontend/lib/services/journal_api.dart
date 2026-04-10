@@ -8,7 +8,7 @@ import 'token_storage.dart';
 class JournalApi {
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:4000',
+    defaultValue: 'https://api.muudhealth.com',
   );
 
   static Future<Map<String, String>> _authHeaders() async {

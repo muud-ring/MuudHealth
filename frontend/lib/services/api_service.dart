@@ -6,7 +6,7 @@ class ApiService {
   // Use your Mac IP like: http://192.168.x.x:4000
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:4000',
+    defaultValue: 'https://api.muudhealth.com',
   );
 
   Future<Map<String, dynamic>> signup({
