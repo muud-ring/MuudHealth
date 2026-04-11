@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'services/error_reporting.dart';
 import 'theme/app_theme.dart';
@@ -35,8 +36,19 @@ import 'screens/top_nav/vault_screen.dart';
 // ✅ App shell (bottom nav)
 import 'shell/app_shell.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase init — wrapped in try-catch because GoogleService-Info.plist
+  // may not be present yet. Push notifications will be unavailable until
+  // the Firebase config file is added.
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {
+    // Firebase config not found — app continues without push notifications.
+  }
+
+  await ErrorReporting.init();
   runApp(const ProviderScope(child: MuudApp()));
 }
 

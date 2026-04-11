@@ -34,6 +34,29 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _socialLogin(Future<dynamic> Function() provider) async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final result = await provider();
+      await TokenStorage.saveTokens(
+        idToken: result.idToken!,
+        accessToken: result.accessToken!,
+        refreshToken: result.refreshToken,
+      );
+      if (!mounted) return;
+      await PostAuthRedirect.go(context);
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      setState(() => _error = msg == 'Login cancelled' ? null : msg);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _login() async {
     setState(() {
       _loading = true;
@@ -201,47 +224,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   _SocialIconButton(
                     assetPath: 'assets/icons/google.png',
-                    onTap: () async {
-                      final result = await CognitoOAuthService.instance
-                          .signInWithGoogle();
-                      await TokenStorage.saveTokens(
-                        idToken: result.idToken!,
-                        accessToken: result.accessToken!,
-                        refreshToken: result.refreshToken,
-                      );
-                      if (!mounted) return;
-                      await PostAuthRedirect.go(context);
-                    },
+                    onTap: () => _socialLogin(() =>
+                        CognitoOAuthService.instance.signInWithGoogle()),
                   ),
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/apple.png',
-                    onTap: () async {
-                      final result = await CognitoOAuthService.instance
-                          .signInWithApple();
-                      await TokenStorage.saveTokens(
-                        idToken: result.idToken!,
-                        accessToken: result.accessToken!,
-                        refreshToken: result.refreshToken,
-                      );
-                      if (!mounted) return;
-                      await PostAuthRedirect.go(context);
-                    },
+                    onTap: () => _socialLogin(() =>
+                        CognitoOAuthService.instance.signInWithApple()),
                   ),
                   const SizedBox(width: 18),
                   _SocialIconButton(
                     assetPath: 'assets/icons/facebook.png',
-                    onTap: () async {
-                      final result = await CognitoOAuthService.instance
-                          .signInWithFacebook();
-                      await TokenStorage.saveTokens(
-                        idToken: result.idToken!,
-                        accessToken: result.accessToken!,
-                        refreshToken: result.refreshToken,
-                      );
-                      if (!mounted) return;
-                      await PostAuthRedirect.go(context);
-                    },
+                    onTap: () => _socialLogin(() =>
+                        CognitoOAuthService.instance.signInWithFacebook()),
                   ),
                 ],
               ),
