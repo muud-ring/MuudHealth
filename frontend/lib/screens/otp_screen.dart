@@ -142,6 +142,24 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
 
+    // Auto-submit when the last digit is entered
+    if (value.isNotEmpty && index == 5) {
+      FocusScope.of(context).unfocus(); // dismiss keyboard
+      final args =
+          (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+      final identifier = (args['identifier'] ?? '') as String;
+      final password = (args['password'] ?? '') as String;
+      final fullName = (args['fullName'] ?? '') as String;
+      final username = (args['username'] ?? '') as String;
+      _verifyAndLogin(
+        identifier: identifier,
+        password: password,
+        fullName: fullName,
+        username: username,
+      );
+      return;
+    }
+
     if (value.isEmpty && index > 0) {
       _focus[index - 1].requestFocus();
     }
@@ -160,9 +178,10 @@ class _OtpScreenState extends State<OtpScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
           child: Column(
             children: [
               Align(
@@ -334,3 +353,4 @@ class _OtpScreenState extends State<OtpScreen> {
     );
   }
 }
+
