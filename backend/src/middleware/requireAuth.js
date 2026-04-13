@@ -42,12 +42,13 @@ async function requireAuth(req, res, next) {
         claims: { sub, preferred_username: sub },
       };
 
-      await UserProfile.updateOne(
+      const profile = await UserProfile.findOneAndUpdate(
         { sub },
         { $setOnInsert: { sub, name: '', username: sub, bio: '', location: '', phone: '', avatarKey: '' } },
-        { upsert: true },
+        { upsert: true, new: true },
       );
 
+      req.user.role = profile?.role || 'user';
       return next();
     }
 
@@ -78,7 +79,7 @@ async function requireAuth(req, res, next) {
       "";
 
     // Ensure profile exists AND hydrate username if missing
-    await UserProfile.updateOne(
+    const profile = await UserProfile.findOneAndUpdate(
       { sub: payload.sub },
       {
         $setOnInsert: {
@@ -93,7 +94,7 @@ async function requireAuth(req, res, next) {
           ? { $set: { username: usernameFromToken } }
           : {}),
       },
-      { upsert: true }
+      { upsert: true, new: true }
     );
 
     req.user = {
@@ -102,6 +103,7 @@ async function requireAuth(req, res, next) {
       scope: payload.scope,
       client_id: tokenClient,
       token_use: payload.token_use,
+      role: profile?.role || 'user',
       claims: payload,
     };
 

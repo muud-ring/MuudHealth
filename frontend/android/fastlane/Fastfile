@@ -1,0 +1,43 @@
+# Muud Health — Android Fastlane Configuration
+# © Muud Health — Armin Hoes, MD
+
+default_platform(:android)
+
+platform :android do
+  desc "Push a new beta build to Firebase App Distribution"
+  lane :beta do
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "..",
+    )
+
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID_ANDROID"],
+      groups: "internal-testers",
+      release_notes: "Beta build #{Time.now.strftime('%Y-%m-%d %H:%M')}",
+      android_artifact_type: "AAB",
+      android_artifact_path: "../build/app/outputs/bundle/release/app-release.aab",
+    )
+  end
+
+  desc "Deploy a new version to Google Play internal track"
+  lane :release do
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "..",
+    )
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+      package_name: "com.muudhealth.app",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end

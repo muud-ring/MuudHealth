@@ -11,6 +11,14 @@ const UserProfileSchema = new mongoose.Schema(
     location: { type: String, default: "" },
     phone: { type: String, default: "" },
 
+    // Role-based access control
+    role: {
+      type: String,
+      enum: ['user', 'moderator', 'clinician', 'admin'],
+      default: 'user',
+      index: true,
+    },
+
     // S3
     avatarKey: { type: String, default: "" }, // users/<sub>/profile/avatar.jpg
 

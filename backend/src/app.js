@@ -11,6 +11,12 @@ const helmet = require("helmet");
 
 const { apiLimiter } = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorHandler");
+const requestLogger = require("./middleware/requestLogger");
+const { phiLoggingMiddleware } = require("./middleware/phiMasking");
+const { enforceResidency } = require("./config/dataResidency");
+const { metricsMiddleware } = require("./services/monitoringService");
+const { featureFlagMiddleware } = require("./services/featureFlagService");
+const monitoring = require("./services/monitoringService");
 
 // ── Route imports ────────────────────────────────────────────────
 const onboardingRoute = require("./routes/onboardingRoute");
@@ -27,6 +33,7 @@ const vaultRoute = require("./routes/vaultRoute");
 const biometricsRoute = require("./routes/biometricsRoute");
 const notificationRoute = require("./routes/notificationRoute");
 const adminDevRoute = require("./routes/adminDevRoute");
+const complianceRoute = require("./routes/complianceRoute");
 
 // ── App factory ──────────────────────────────────────────────────
 function createApp() {
@@ -55,10 +62,20 @@ function createApp() {
   app.use(cors(corsOptions));
   app.use(express.json());
   app.use(apiLimiter);
+  app.use(requestLogger);
+  app.use(metricsMiddleware);
+  app.use(enforceResidency);
+  app.use(phiLoggingMiddleware);
+  app.use(featureFlagMiddleware);
 
   // ── Health check (root level — no version prefix) ───────────
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok", service: "MUUD Backend", version: "1.1" });
+  app.get("/health", async (_req, res) => {
+    try {
+      const report = await monitoring.getHealthReport();
+      res.json({ status: "ok", service: "MUUD Backend", version: "1.1", ...report });
+    } catch {
+      res.json({ status: "ok", service: "MUUD Backend", version: "1.1" });
+    }
   });
 
   // ── Auth routes (root level for backward compatibility) ─────
@@ -79,6 +96,7 @@ function createApp() {
   v1.use("/vault", vaultRoute);
   v1.use("/biometrics", biometricsRoute);
   v1.use("/notifications", notificationRoute);
+  v1.use("/compliance", complianceRoute);
 
   app.use("/api/v1", v1);
 

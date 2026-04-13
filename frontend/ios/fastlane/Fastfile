@@ -1,0 +1,60 @@
+# Muud Health — iOS Fastlane Configuration
+# © Muud Health — Armin Hoes, MD
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: "com.muudhealth.app",
+    )
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "../build/ios",
+      output_name: "MuudHealth.ipa",
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      apple_id: ENV["APPLE_APP_ID"],
+    )
+
+    clean_build_artifacts
+  end
+
+  desc "Deploy a new version to the App Store"
+  lane :release do
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: "com.muudhealth.app",
+    )
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "../build/ios",
+      output_name: "MuudHealth.ipa",
+    )
+
+    upload_to_app_store(
+      force: true,
+      submit_for_review: false,
+      automatic_release: false,
+      precheck_include_in_app_purchases: false,
+    )
+
+    clean_build_artifacts
+  end
+end
