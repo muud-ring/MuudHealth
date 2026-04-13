@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../router/route_names.dart';
 import '../services/api_service.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -10,7 +13,7 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  static const Color kDisabledPurple = Color(0xFFB7A6C8);
+  static final Color kDisabledPurple = MuudColors.purple.withValues(alpha: 0.4);
 
   final _api = ApiService();
 
@@ -74,7 +77,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+      context.go(Routes.login);
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -91,7 +94,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+    final args = (GoRouterState.of(context).extra as Map?) ?? {};
     final identifier = (args['identifier'] ?? '') as String;
     final code = (args['code'] ?? '') as String;
 
@@ -100,14 +103,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         _confirmPassword.text.isNotEmpty && !_confirmMatches;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple),
-          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back_ios_new, color: MuudColors.purple),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -121,7 +125,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 'Update Password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
                 ),
@@ -141,6 +145,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscure1,
                 decoration: InputDecoration(
                   suffixIcon: IconButton(
+                      tooltip: 'Toggle password visibility',
                     onPressed: () => setState(() => _obscure1 = !_obscure1),
                     icon: Icon(
                       _obscure1
@@ -154,16 +159,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     vertical: 16,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: showPwError ? Colors.red : Colors.black54,
+                      color: showPwError ? MuudColors.error : Colors.black54,
                       width: 1.2,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: showPwError ? Colors.red : AppTheme.purple,
+                      color: showPwError ? MuudColors.error : MuudColors.purple,
                       width: 1.8,
                     ),
                   ),
@@ -175,7 +180,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: Text(
                     'Must be 8 characters or more and include at least\n1 number and 1 special character',
                     style: TextStyle(
-                      color: Colors.red,
+                      color: MuudColors.error,
                       fontWeight: FontWeight.w700,
                       height: 1.3,
                     ),
@@ -196,6 +201,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscure2,
                 decoration: InputDecoration(
                   suffixIcon: IconButton(
+                      tooltip: 'Toggle password visibility',
                     onPressed: () => setState(() => _obscure2 = !_obscure2),
                     icon: Icon(
                       _obscure2
@@ -209,16 +215,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     vertical: 16,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: showConfirmError ? Colors.red : Colors.black54,
+                      color: showConfirmError ? MuudColors.error : Colors.black54,
                       width: 1.2,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: showConfirmError ? Colors.red : AppTheme.purple,
+                      color: showConfirmError ? MuudColors.error : MuudColors.purple,
                       width: 1.8,
                     ),
                   ),
@@ -230,7 +236,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: Text(
                     'Please make sure your passcode match',
                     style: TextStyle(
-                      color: Colors.red,
+                      color: MuudColors.error,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -242,7 +248,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: Text(
                     _error!,
                     style: const TextStyle(
-                      color: Colors.red,
+                      color: MuudColors.error,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -254,7 +260,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ? () => _save(identifier: identifier, code: code)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple,
+                    backgroundColor: MuudColors.purple,
                     disabledBackgroundColor: kDisabledPurple,
                     shape: const StadiumBorder(),
                     elevation: 0,
@@ -265,7 +271,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         )
                       : const Text(
@@ -273,7 +279,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         ),
                 ),

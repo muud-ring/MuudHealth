@@ -1,13 +1,18 @@
+// MUUD Health — Inner Circle Page
+// Displays the user's closest connections (innerCircle tier)
+// © Muud Health — Armin Hoes, MD
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../services/people_api.dart';
+import '../../../router/route_names.dart';
+import '../../../theme/app_theme.dart';
 import '../data/people_models.dart';
 import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
 import '../sheets/manage_person_sheet.dart';
-import '../pages/profile_page.dart';
 import '../state/people_events.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
 
 class InnerCirclePage extends StatefulWidget {
   const InnerCirclePage({super.key});
@@ -20,22 +25,16 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
   String q = "";
   bool loading = true;
   String? error;
-
   List<Person> all = [];
 
   @override
   void initState() {
     super.initState();
-
-    // ✅ reload this page when actions happen (tier move / remove)
     PeopleEvents.reload.addListener(_onExternalReload);
-
     _load();
   }
 
-  void _onExternalReload() {
-    _load();
-  }
+  void _onExternalReload() => _load();
 
   @override
   void dispose() {
@@ -67,43 +66,24 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
         tint: _tintForId(sub),
       );
     }
-
     return const Person(
-      id: "",
-      name: "Unknown",
-      handle: "",
-      avatarUrl: "",
-      location: "",
-      lastActive: "",
-      moodChip: "",
-      tint: "grey",
+      id: "", name: "Unknown", handle: "", avatarUrl: "",
+      location: "", lastActive: "", moodChip: "", tint: "grey",
     );
   }
 
   Future<void> _load() async {
     if (!mounted) return;
-
-    setState(() {
-      loading = true;
-      error = null;
-    });
+    setState(() { loading = true; error = null; });
 
     try {
       final res = await PeopleApi.fetchInnerCircle();
-      final list = res
-          .map(_personFromJson)
-          .where((p) => p.id.isNotEmpty)
-          .toList();
-
+      final list = res.map(_personFromJson).where((p) => p.id.isNotEmpty).toList();
       if (!mounted) return;
-      setState(() {
-        all = list;
-        loading = false;
-      });
+      setState(() { all = list; loading = false; });
     } catch (e) {
       final msg = e.toString();
       if (!mounted) return;
-
       setState(() {
         loading = false;
         error = msg.contains('401') || msg.contains('Unauthorized')
@@ -120,13 +100,13 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
         .toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Inner Circle",
-          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
+          style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
         ),
       ),
       body: Padding(
@@ -137,59 +117,52 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
               hint: "Search...",
               onChanged: (v) => setState(() => q = v),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: MuudSpacing.base),
 
             if (loading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
+              const Expanded(
+                child: Center(child: CircularProgressIndicator(color: MuudColors.purple)),
+              )
             else if (error != null)
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 44, color: AppTheme.purple),
-                      const SizedBox(height: 8),
+                      const Icon(Icons.error_outline, size: 44, color: MuudColors.purple),
+                      const SizedBox(height: MuudSpacing.sm),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppTheme.greyText,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: MuudTypography.caption.copyWith(color: MuudColors.greyText),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: MuudSpacing.md),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.purple,
+                          backgroundColor: MuudColors.purple,
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
                         onPressed: _load,
-                        child: const Text(
-                          "Retry",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: Text("Retry", style: MuudTypography.button.copyWith(color: MuudColors.white)),
                       ),
                     ],
                   ),
                 ),
               )
             else if (filtered.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(
                     "No Inner Circle people yet.",
-                    style: TextStyle(
-                      color: AppTheme.greyText,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText),
                   ),
                 ),
               )
             else
               Expanded(
                 child: RefreshIndicator(
+                  color: MuudColors.purple,
                   onRefresh: _load,
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -198,14 +171,7 @@ class _InnerCirclePageState extends State<InnerCirclePage> {
                       final p = filtered[i];
                       return PersonTile(
                         person: p,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProfilePage(person: p),
-                            ),
-                          );
-                        },
+                        onTap: () => context.push(Routes.profile(p.id)),
                         onTapMenu: () =>
                             ManagePersonSheet.open(context, person: p),
                       );

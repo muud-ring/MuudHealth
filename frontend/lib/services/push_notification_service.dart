@@ -93,7 +93,7 @@ class PushNotificationService {
       if (token == null) return;
 
       final platform = Platform.isIOS ? 'ios' : 'android';
-      await ApiClient.post('/notifications/register-device', body: {
+      await ApiClient.post('/api/v1/notifications/register-device', body: {
         'token': token,
         'platform': platform,
       });
@@ -108,7 +108,7 @@ class PushNotificationService {
       final token = await _messaging.getToken();
       if (token == null) return;
 
-      await ApiClient.delete('/notifications/unregister-device?token=$token');
+      await ApiClient.delete('/api/v1/notifications/unregister-device?token=$token');
     } catch (e) {
       if (kDebugMode) debugPrint('[Push] Token unregister failed: $e');
     }
@@ -116,7 +116,7 @@ class PushNotificationService {
 
   void _onTokenRefresh(String token) {
     final platform = Platform.isIOS ? 'ios' : 'android';
-    ApiClient.post('/notifications/register-device', body: {
+    ApiClient.post('/api/v1/notifications/register-device', body: {
       'token': token,
       'platform': platform,
     });

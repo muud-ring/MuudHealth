@@ -1,32 +1,23 @@
-import 'dart:convert';
+// MUUD Health — User API Service
+// Profile CRUD, avatar management, JWT claims
+// © Muud Health — Armin Hoes, MD
+
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'token_storage.dart';
+import 'api_client.dart';
 
 class UserApi {
-  static const String _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  UserApi._();
 
-  // ---------- Profile ----------
+  // ── Profile ────────────────────────────────────────────────────────────
+
+  /// GET /api/v1/user/me
   static Future<Map<String, dynamic>> getMe() async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.get(
-      Uri.parse('$_baseUrl/user/me'),
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Get profile failed: ${res.statusCode} ${res.body}');
-    }
-    return jsonDecode(res.body) as Map<String, dynamic>;
+    final res = await ApiClient.get('/api/v1/user/me');
+    return ApiClient.handleResponse(res);
   }
 
+  /// PUT /api/v1/user/me
   static Future<void> updateMe({
     required String name,
     required String username,
@@ -34,116 +25,63 @@ class UserApi {
     required String location,
     required String phone,
   }) async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.put(
-      Uri.parse('$_baseUrl/user/me'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'name': name,
-        'username': username,
-        'bio': bio,
-        'location': location,
-        'phone': phone,
-      }),
-    );
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception('Update profile failed: ${res.statusCode} ${res.body}');
-    }
+    final res = await ApiClient.put('/api/v1/user/me', body: {
+      'name': name,
+      'username': username,
+      'bio': bio,
+      'location': location,
+      'phone': phone,
+    });
+    ApiClient.handleResponse(res);
   }
 
-  // ---------- Avatar (S3 presigned upload flow) ----------
-  // POST /user/avatar/presign  -> { uploadUrl, key, bucket }
+  /// GET /api/v1/user/claims — JWT claims inspection
+  static Future<Map<String, dynamic>> getClaims() async {
+    final res = await ApiClient.get('/api/v1/user/claims');
+    return ApiClient.handleResponse(res);
+  }
+
+  // ── Avatar (S3 presigned upload flow) ──────────────────────────────────
+
+  /// POST /api/v1/user/avatar/presign → { uploadUrl, key, bucket }
   static Future<Map<String, dynamic>> presignAvatarUpload({
     required String contentType,
   }) async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.post(
-      Uri.parse('$_baseUrl/user/avatar/presign'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'contentType': contentType}),
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Presign avatar failed: ${res.statusCode} ${res.body}');
-    }
-
-    return jsonDecode(res.body) as Map<String, dynamic>;
+    final res = await ApiClient.post('/api/v1/user/avatar/presign', body: {
+      'contentType': contentType,
+    });
+    return ApiClient.handleResponse(res);
   }
 
-  // PUT directly to S3 using the presigned URL
+  /// PUT directly to S3 using the presigned URL
   static Future<void> uploadToS3Presigned({
     required String uploadUrl,
     required File file,
     required String contentType,
   }) async {
     final bytes = await file.readAsBytes();
-
     final res = await http.put(
       Uri.parse(uploadUrl),
       headers: {'Content-Type': contentType},
       body: bytes,
     );
-
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('S3 upload failed: ${res.statusCode}');
     }
   }
 
-  // POST /user/avatar/confirm  body: { key }
+  /// POST /api/v1/user/avatar/confirm — confirm uploaded avatar
   static Future<void> confirmAvatar({required String key}) async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.post(
-      Uri.parse('$_baseUrl/user/avatar/confirm'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'key': key}),
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Confirm avatar failed: ${res.statusCode} ${res.body}');
-    }
+    final res = await ApiClient.post('/api/v1/user/avatar/confirm', body: {
+      'key': key,
+    });
+    ApiClient.handleResponse(res);
   }
 
-  // GET /user/avatar/url  -> { url }
+  /// GET /api/v1/user/avatar/url → { url }
   static Future<String?> getAvatarUrl() async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.get(
-      Uri.parse('$_baseUrl/user/avatar/url'),
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Avatar url failed: ${res.statusCode} ${res.body}');
-    }
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
-    final url = data['url'];
-    if (url == null) return null;
-    return url.toString();
+    final res = await ApiClient.get('/api/v1/user/avatar/url');
+    final data = ApiClient.handleResponse(res);
+    return data['url']?.toString();
   }
 }

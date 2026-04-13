@@ -29,7 +29,7 @@ const vaultRoute = require("./routes/vaultRoute");
 const biometricsRoute = require("./routes/biometricsRoute");
 const notificationRoute = require("./routes/notificationRoute");
 
-// ✅ NEW (DEV ONLY)
+// ✅ DEV ONLY — admin/debug utilities (gated behind NODE_ENV)
 const adminDevRoute = require("./routes/adminDevRoute");
 
 const app = express();
@@ -65,8 +65,10 @@ app.use("/vault", vaultRoute);
 app.use("/biometrics", biometricsRoute);
 app.use("/notifications", notificationRoute);
 
-// ✅ NEW (DEV ONLY)
-app.use("/dev", adminDevRoute);
+// ✅ DEV ONLY — gated so destructive endpoints are never exposed in production
+if (process.env.NODE_ENV !== "production") {
+  app.use("/dev", adminDevRoute);
+}
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "MUUD Backend" });

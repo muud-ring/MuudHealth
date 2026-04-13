@@ -11,9 +11,7 @@ jest.mock('../../src/utils/logger', () => ({
   error: jest.fn(),
   debug: jest.fn(),
 }));
-jest.mock('@aws-sdk/client-s3', () => ({ GetObjectCommand: jest.fn() }));
-jest.mock('@aws-sdk/s3-request-presigner', () => ({ getSignedUrl: jest.fn() }));
-jest.mock('../../src/config/s3', () => ({ s3: {} }));
+jest.mock('../../src/utils/s3_sign', () => ({ signKey: jest.fn().mockResolvedValue('https://signed-url') }));
 
 describe('vaultController', () => {
   let req, res;

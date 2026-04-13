@@ -1,5 +1,5 @@
 // backend/src/services/smsService.js
-const logger = require("../config/logger");
+const logger = require("../utils/logger");
 
 let twilioClient = null;
 

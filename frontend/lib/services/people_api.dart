@@ -1,149 +1,102 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+// MUUD Health — People API Service
+// Social graph: connections, inner circle, friend requests
+// © Muud Health — Armin Hoes, MD
 
-import '../services/token_storage.dart';
+import 'dart:convert';
+import 'api_client.dart';
 
 class PeopleApi {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  PeopleApi._();
 
-  static const String _connections = '/people/connections';
-  static const String _innerCircle = '/people/inner-circle';
-  static const String _suggestions = '/people/suggestions';
-  static const String _requests = '/people/requests';
-  static const String _me = '/people/me'; // ✅ NEW
+  // ── Fetch endpoints ────────────────────────────────────────────────────
 
-  static Uri _uri(String path, [Map<String, dynamic>? query]) {
-    final u = Uri.parse('$baseUrl$path');
-    if (query == null) return u;
-    return u.replace(
-      queryParameters: query.map((k, v) => MapEntry(k, v.toString())),
-    );
+  /// Fetch current user's people data (center avatar info)
+  static Future<Map<String, dynamic>> fetchMe() async {
+    final res = await ApiClient.get('/api/v1/people/me');
+    return ApiClient.handleResponse(res);
   }
 
-  static Future<Map<String, String>> _headers() async {
-    final accessToken = await TokenStorage.getAccessToken();
-
-    return {
-      'Content-Type': 'application/json',
-      if (accessToken != null && accessToken.isNotEmpty)
-        'Authorization': 'Bearer $accessToken',
-    };
+  /// Fetch all connections
+  static Future<List<dynamic>> fetchConnections() async {
+    final res = await ApiClient.get('/api/v1/people/connections');
+    return _extractList(res, 'connections');
   }
 
-  static Future<List<dynamic>> _getList(
-    String path, {
-    Map<String, dynamic>? query,
-  }) async {
-    final res = await http.get(_uri(path, query), headers: await _headers());
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final decoded = jsonDecode(res.body);
-
-      if (decoded is List) return decoded;
-
-      if (decoded is Map) {
-        for (final key in [
-          'data',
-          'items',
-          'connections',
-          'innerCircle',
-          'suggestions',
-          'requests',
-        ]) {
-          final v = decoded[key];
-          if (v is List) return v;
-        }
-      }
-
-      throw Exception('Unexpected response shape for $path: ${res.body}');
-    }
-
-    throw Exception('GET $path failed: ${res.statusCode} ${res.body}');
+  /// Fetch inner circle
+  static Future<List<dynamic>> fetchInnerCircle() async {
+    final res = await ApiClient.get('/api/v1/people/inner-circle');
+    return _extractList(res, 'innerCircle');
   }
 
-  static Future<Map<String, dynamic>> _getMap(String path) async {
-    final res = await http.get(_uri(path), headers: await _headers());
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final decoded = jsonDecode(res.body);
-      if (decoded is Map<String, dynamic>) return decoded;
-      throw Exception('Unexpected response shape for $path: ${res.body}');
-    }
-
-    throw Exception('GET $path failed: ${res.statusCode} ${res.body}');
+  /// Fetch pending friend requests
+  static Future<List<dynamic>> fetchRequests() async {
+    final res = await ApiClient.get('/api/v1/people/requests');
+    return _extractList(res, 'requests');
   }
 
-  static Future<Map<String, dynamic>> _post(
-    String path, {
-    Map<String, dynamic>? body,
-  }) async {
-    final res = await http.post(
-      _uri(path),
-      headers: await _headers(),
-      body: body == null ? null : jsonEncode(body),
-    );
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final decoded = jsonDecode(res.body);
-      if (decoded is Map<String, dynamic>) return decoded;
-      return {'data': decoded};
-    }
-
-    throw Exception('POST $path failed: ${res.statusCode} ${res.body}');
-  }
-
-  // --------- Public API ----------
-
-  /// ✅ NEW: Fetch current user profile for center avatar
-  static Future<Map<String, dynamic>> fetchMe() => _getMap(_me);
-
-  static Future<List<dynamic>> fetchConnections() => _getList(_connections);
-  static Future<List<dynamic>> fetchInnerCircle() => _getList(_innerCircle);
-  static Future<List<dynamic>> fetchRequests() => _getList(_requests);
-
+  /// Fetch connection suggestions
   static Future<List<dynamic>> fetchSuggestions({
-    String q = "",
+    String q = '',
     int limit = 20,
-  }) {
-    return _getList(
-      _suggestions,
-      query: {if (q.trim().isNotEmpty) 'q': q.trim(), 'limit': limit},
+  }) async {
+    final params = <String>['limit=$limit'];
+    if (q.trim().isNotEmpty) params.add('q=${Uri.encodeComponent(q.trim())}');
+    final res = await ApiClient.get(
+      '/api/v1/people/suggestions?${params.join("&")}',
     );
+    return _extractList(res, 'suggestions');
   }
 
+  // ── Action endpoints ───────────────────────────────────────────────────
+
+  /// Send friend request
   static Future<void> sendRequest({required String sub}) async {
-    await _post('/people/request/$sub');
+    final res = await ApiClient.post('/api/v1/people/request/$sub');
+    ApiClient.handleResponse(res);
   }
 
+  /// Accept friend request
   static Future<void> acceptRequest({required String requestId}) async {
-    await _post('/people/request/$requestId/accept');
+    final res = await ApiClient.put('/api/v1/people/request/$requestId/accept');
+    ApiClient.handleResponse(res);
   }
 
+  /// Decline friend request
   static Future<void> declineRequest({required String requestId}) async {
-    await _post('/people/request/$requestId/decline');
+    final res = await ApiClient.put('/api/v1/people/request/$requestId/decline');
+    ApiClient.handleResponse(res);
   }
 
-  /// ✅ move to inner circle / move back to connections
+  /// Update connection tier (inner_circle, close, standard)
   static Future<void> updateTier({
     required String sub,
-    required String tier, // "connection" | "inner_circle"
+    required String tier,
   }) async {
-    await _post('/people/$sub/tier', body: {'tier': tier});
+    final res = await ApiClient.put(
+      '/api/v1/people/$sub/tier',
+      body: {'tier': tier},
+    );
+    ApiClient.handleResponse(res);
   }
 
+  /// Remove connection
   static Future<void> removeConnection({required String sub}) async {
-    final res = await http.delete(
-      _uri('/people/$sub'),
-      headers: await _headers(),
-    );
+    final res = await ApiClient.delete('/api/v1/people/$sub');
+    ApiClient.handleResponse(res);
+  }
 
-    if (res.statusCode >= 200 && res.statusCode < 300) return;
+  // ── Helpers ────────────────────────────────────────────────────────────
 
-    throw Exception(
-      'DELETE /people/$sub failed: ${res.statusCode} ${res.body}',
-    );
+  static List<dynamic> _extractList(dynamic res, String key) {
+    final data = ApiClient.handleResponse(res);
+    if (data is Map) {
+      for (final k in [key, 'data', 'items']) {
+        final v = data[k];
+        if (v is List) return v;
+      }
+    }
+    final body = jsonDecode(res.body);
+    if (body is List) return body;
+    return [];
   }
 }

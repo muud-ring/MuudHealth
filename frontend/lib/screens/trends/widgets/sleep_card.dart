@@ -28,12 +28,12 @@ class SleepCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _cardColor.withOpacity(0.08),
+            color: _cardColor.withValues(alpha:0.08),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: _cardColor.withOpacity(0.15)),
+        border: Border.all(color: _cardColor.withValues(alpha:0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +44,7 @@ class SleepCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: _cardColor.withOpacity(0.1),
+                  color: _cardColor.withValues(alpha:0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.bedtime_rounded,
@@ -56,7 +56,7 @@ class SleepCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.darkText,
+                  color: MuudColors.darkText,
                 ),
               ),
               const Spacer(),
@@ -65,7 +65,7 @@ class SleepCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _scoreColor(sleep.score!).withOpacity(0.1),
+                    color: _scoreColor(sleep.score!).withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -98,7 +98,7 @@ class SleepCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.greyText,
+                  color: MuudColors.greyText,
                 ),
               ),
             ],
@@ -151,7 +151,7 @@ class SleepCard extends StatelessWidget {
 
   Widget _buildStagesBar(int totalMin) {
     if (totalMin <= 0) {
-      return Container(color: Colors.grey.withOpacity(0.15));
+      return Container(color: Colors.grey.withValues(alpha:0.15));
     }
 
     final deep = sleep.deepMinutes ?? 0;
@@ -215,7 +215,7 @@ class _LegendItem extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: AppTheme.greyText,
+            color: MuudColors.greyText,
           ),
         ),
       ],

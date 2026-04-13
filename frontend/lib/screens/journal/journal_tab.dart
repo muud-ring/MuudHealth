@@ -1,22 +1,26 @@
+// MUUD Health — Journal Tab
+// User's journal feed with audio playback and vault saving
+// Signal Pathway: Signal layer (personal expression)
+// © Muud Health — Armin Hoes, MD
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-import '../../services/journal_feed_api.dart';
-import '../../services/vault_api.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class JournalTab extends StatefulWidget {
+import '../../providers/journal_provider.dart';
+import '../../services/vault_api.dart';
+import '../../theme/app_theme.dart';
+
+class JournalTab extends ConsumerStatefulWidget {
   const JournalTab({super.key});
 
   @override
-  State<JournalTab> createState() => _JournalTabState();
+  ConsumerState<JournalTab> createState() => _JournalTabState();
 }
 
-class _JournalTabState extends State<JournalTab> {
-  bool loading = true;
-  String? error;
-
-  List<_JournalPost> posts = [];
+class _JournalTabState extends ConsumerState<JournalTab> {
 
   final _player = AudioPlayer();
   String? _playingPostId;
@@ -35,7 +39,8 @@ class _JournalTabState extends State<JournalTab> {
   @override
   void initState() {
     super.initState();
-    _load();
+    // Use Riverpod provider for data loading instead of local setState
+    ref.read(journalProvider.notifier).loadPosts();
   }
 
   @override
@@ -44,77 +49,44 @@ class _JournalTabState extends State<JournalTab> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
-
-    try {
-      final raw = await JournalFeedApi.getMyPosts();
-      final mapped = raw.map((m) => _JournalPost.fromMap(m)).toList();
-      if (!mounted) return;
-      setState(() => posts = mapped);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => error = e.toString().replaceFirst("Exception: ", ""));
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
-
   Future<void> _toggleAudio(_JournalPost p) async {
     if (p.audioUrl == null || p.audioUrl!.isEmpty) return;
 
     if (_playingPostId == p.id && _playing) {
       await _player.stop();
-      setState(() {
-        _playing = false;
-        _playingPostId = null;
-      });
+      setState(() { _playing = false; _playingPostId = null; });
       return;
     }
 
     await _player.stop();
     await _player.play(UrlSource(p.audioUrl!));
 
-    setState(() {
-      _playing = true;
-      _playingPostId = p.id;
-    });
+    setState(() { _playing = true; _playingPostId = p.id; });
 
     _player.onPlayerComplete.listen((_) {
       if (!mounted) return;
-      setState(() {
-        _playing = false;
-        _playingPostId = null;
-      });
+      setState(() { _playing = false; _playingPostId = null; });
     });
   }
 
   Future<void> _openSaveToVaultSheet(_JournalPost p) async {
     final chosen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
-      builder: (_) => _VaultCategorySheet(
-        categories: _vaultCategories,
-        purple: AppTheme.purple,
-        grey: AppTheme.greyText,
-      ),
+      builder: (_) => const _VaultCategorySheet(),
     );
 
     if (chosen == null) return;
 
     try {
       await VaultApi.save(sourceId: p.id, category: chosen);
-
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Saved to Vault")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Saved to Vault")),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,40 +97,42 @@ class _JournalTabState extends State<JournalTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
+    // Riverpod-driven state: watch provider instead of local setState
+    final journalState = ref.watch(journalProvider);
+    final posts = journalState.posts.map((m) => _JournalPost.fromMap(m)).toList();
+    final loading = journalState.isLoading;
+    final error = journalState.error;
+
+    if (loading && posts.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: MuudColors.purple),
+      );
     }
 
-    if (error != null) {
+    if (error != null && posts.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(MuudSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                error!,
+                error,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.red,
+                style: MuudTypography.bodyMedium.copyWith(
+                  color: MuudColors.error,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: MuudSpacing.md),
               ElevatedButton(
-                onPressed: _load,
+                onPressed: () => ref.read(journalProvider.notifier).loadPosts(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.purple,
+                  backgroundColor: MuudColors.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
-                child: const Text(
-                  "Retry",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                child: Text("Retry", style: MuudTypography.button.copyWith(color: MuudColors.white)),
               ),
             ],
           ),
@@ -168,21 +142,18 @@ class _JournalTabState extends State<JournalTab> {
 
     if (posts.isEmpty) {
       return RefreshIndicator(
+        color: MuudColors.purple,
         onRefresh: _load,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 50, 20, 24),
-          children: const [
-            Icon(Icons.edit_note, size: 64, color: Color(0xFFD7CDE3)),
-            SizedBox(height: 14),
+          padding: const EdgeInsets.fromLTRB(MuudSpacing.lg, 50, MuudSpacing.lg, MuudSpacing.xl),
+          children: [
+            const Icon(Icons.edit_note, size: 64, color: MuudColors.lightPurple),
+            const SizedBox(height: MuudSpacing.md),
             Text(
               "No journal entries yet",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppTheme.purple,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
             ),
           ],
         ),
@@ -190,101 +161,81 @@ class _JournalTabState extends State<JournalTab> {
     }
 
     return RefreshIndicator(
+      color: MuudColors.purple,
       onRefresh: _load,
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(MuudSpacing.base, MuudSpacing.md, MuudSpacing.base, MuudSpacing.xl),
         itemCount: posts.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 14),
+        separatorBuilder: (_, __) => const SizedBox(height: MuudSpacing.md),
         itemBuilder: (_, i) {
           final p = posts[i];
           final isThisPlaying = _playing && _playingPostId == p.id;
 
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              color: MuudColors.white,
+              borderRadius: MuudRadius.lgAll,
+              boxShadow: MuudShadows.card,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: AspectRatio(
                     aspectRatio: 1.1,
                     child: p.imageUrl == null || p.imageUrl!.isEmpty
                         ? Container(
-                            color: const Color(0xFFF2EEF6),
-                            child: const Icon(Icons.image, color: AppTheme.greyText),
+                            color: MuudColors.lightPurple.withValues(alpha: 0.3),
+                            child: const Icon(Icons.image, color: MuudColors.greyText),
                           )
-                        : Image.network(p.imageUrl!, fit: BoxFit.cover),
+                        : CachedNetworkImage(imageUrl: p.imageUrl!, fit: BoxFit.cover),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                  padding: const EdgeInsets.fromLTRB(MuudSpacing.md, MuudSpacing.md, MuudSpacing.md, MuudSpacing.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (p.caption.isNotEmpty)
                         Text(
                           p.caption,
-                          style: const TextStyle(
-                            color: AppTheme.purple,
+                          style: MuudTypography.bodyMedium.copyWith(
+                            color: MuudColors.purple,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: MuudSpacing.sm),
                       if (p.audioUrl != null && p.audioUrl!.isNotEmpty)
                         Row(
                           children: [
                             IconButton(
                               onPressed: () => _toggleAudio(p),
                               icon: Icon(
-                                isThisPlaying
-                                    ? Icons.pause_circle
-                                    : Icons.play_circle,
-                                color: AppTheme.purple,
+                                isThisPlaying ? Icons.pause_circle : Icons.play_circle,
+                                color: MuudColors.purple,
                                 size: 34,
                               ),
                             ),
-                            const Text("Voice note"),
+                            Text("Voice note", style: MuudTypography.caption),
                           ],
                         ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: MuudSpacing.sm),
                       Row(
                         children: [
                           Text(
                             _formatTime(p.createdAt),
-                            style: const TextStyle(
-                              color: AppTheme.greyText,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                            ),
+                            style: MuudTypography.caption.copyWith(color: MuudColors.greyText),
                           ),
                           const Spacer(),
                           IconButton(
                             onPressed: () => _openSaveToVaultSheet(p),
-                            icon: const Icon(
-                              Icons.bookmark_border,
-                              color: AppTheme.purple,
-                            ),
+                            icon: const Icon(Icons.bookmark_border, color: MuudColors.purple),
                           ),
                           Text(
                             p.visibilityLabel,
-                            style: const TextStyle(
-                              color: AppTheme.greyText,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                            ),
+                            style: MuudTypography.caption.copyWith(color: MuudColors.greyText),
                           ),
                         ],
                       ),
@@ -303,6 +254,8 @@ class _JournalTabState extends State<JournalTab> {
     return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
   }
 }
+
+/* ── Models ─────────────────────────────────────────────────────────── */
 
 class _JournalPost {
   final String id;
@@ -339,16 +292,10 @@ class _JournalPost {
   }
 }
 
-class _VaultCategorySheet extends StatefulWidget {
-  final List<Map<String, String>> categories;
-  final Color purple;
-  final Color grey;
+/* ── Vault Category Sheet ──────────────────────────────────────────── */
 
-  const _VaultCategorySheet({
-    required this.categories,
-    required this.purple,
-    required this.grey,
-  });
+class _VaultCategorySheet extends StatefulWidget {
+  const _VaultCategorySheet();
 
   @override
   State<_VaultCategorySheet> createState() => _VaultCategorySheetState();
@@ -357,26 +304,32 @@ class _VaultCategorySheet extends StatefulWidget {
 class _VaultCategorySheetState extends State<_VaultCategorySheet> {
   String selected = "other";
 
+  static const List<Map<String, String>> _categories = [
+    {"key": "family", "label": "Family"},
+    {"key": "friends", "label": "Friends"},
+    {"key": "events", "label": "Events"},
+    {"key": "holidays", "label": "Holidays"},
+    {"key": "work", "label": "Work"},
+    {"key": "school", "label": "School"},
+    {"key": "other", "label": "Other"},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(MuudSpacing.base),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             "Save to Vault",
-            style: TextStyle(
-              color: widget.purple,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: MuudSpacing.md),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: widget.categories.map((c) {
+            spacing: MuudSpacing.sm,
+            runSpacing: MuudSpacing.sm,
+            children: _categories.map((c) {
               final key = c["key"]!;
               final label = c["label"]!;
               final selectedNow = selected == key;
@@ -384,28 +337,25 @@ class _VaultCategorySheetState extends State<_VaultCategorySheet> {
               return ChoiceChip(
                 label: Text(label),
                 selected: selectedNow,
-                selectedColor: widget.purple,
+                selectedColor: MuudColors.purple,
                 labelStyle: TextStyle(
-                  color: selectedNow ? Colors.white : widget.purple,
+                  color: selectedNow ? MuudColors.white : MuudColors.purple,
                   fontWeight: FontWeight.w800,
                 ),
                 onSelected: (_) => setState(() => selected = key),
               );
             }).toList(),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: MuudSpacing.lg),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, selected),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.purple,
+              backgroundColor: MuudColors.purple,
               shape: const StadiumBorder(),
             ),
-            child: const Text(
+            child: Text(
               "Save",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
+              style: MuudTypography.button.copyWith(color: MuudColors.white),
             ),
           ),
         ],

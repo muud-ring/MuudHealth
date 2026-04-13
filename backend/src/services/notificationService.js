@@ -5,7 +5,7 @@
 
 const emailService = require("./emailService");
 const smsService = require("./smsService");
-const logger = require("../config/logger");
+const logger = require("../utils/logger");
 
 /**
  * Send an OTP code to a user via the appropriate channel.

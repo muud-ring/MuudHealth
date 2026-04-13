@@ -1,6 +1,15 @@
+// MUUD Health — People Tab
+// Social graph: inner circle, connections, suggestions
+// Signal Pathway: Learn + Grow layers
+// © Muud Health — Armin Hoes, MD
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../services/token_storage.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 import 'state/people_controller.dart';
 import 'widgets/section_title.dart';
 import 'widgets/inner_circle_ring.dart';
@@ -8,18 +17,16 @@ import 'widgets/person_tile.dart';
 import 'widgets/suggested_avatar.dart';
 import 'widgets/primary_button.dart';
 import 'sheets/manage_person_sheet.dart';
-import 'pages/profile_page.dart';
 import 'state/people_events.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
 
-class PeopleTab extends StatefulWidget {
+class PeopleTab extends ConsumerStatefulWidget {
   const PeopleTab({super.key});
 
   @override
-  State<PeopleTab> createState() => _PeopleTabState();
+  ConsumerState<PeopleTab> createState() => _PeopleTabState();
 }
 
-class _PeopleTabState extends State<PeopleTab> {
+class _PeopleTabState extends ConsumerState<PeopleTab> {
   final PeopleController controller = PeopleController();
 
   @override
@@ -31,7 +38,6 @@ class _PeopleTabState extends State<PeopleTab> {
   }
 
   void _onExternalReload() => controller.loadAll();
-
   void _onUpdate() {
     if (mounted) setState(() {});
   }
@@ -47,53 +53,50 @@ class _PeopleTabState extends State<PeopleTab> {
   Future<void> _forceLogout() async {
     await TokenStorage.clearTokens();
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    context.go(Routes.login);
   }
 
   @override
   Widget build(BuildContext context) {
     if (controller.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: MuudColors.purple),
+      );
     }
 
     if (controller.error != null) {
-      final isExpired = controller.error!.toLowerCase().contains(
-        "session expired",
-      );
+      final isExpired =
+          controller.error!.toLowerCase().contains("session expired");
 
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(MuudSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 44, color: AppTheme.purple),
-              const SizedBox(height: 10),
-              const Text(
+              const Icon(Icons.error_outline, size: 44, color: MuudColors.purple),
+              const SizedBox(height: MuudSpacing.sm),
+              Text(
                 "Could not load People",
-                style: TextStyle(
-                  color: AppTheme.purple,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                style: MuudTypography.titleMedium.copyWith(
+                  color: MuudColors.purple,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: MuudSpacing.xs),
               Text(
                 controller.error!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppTheme.greyText,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
+                style: MuudTypography.caption.copyWith(
+                  color: MuudColors.greyText,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: MuudSpacing.md),
               SizedBox(
                 width: 180,
                 height: 44,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple,
+                    backgroundColor: MuudColors.purple,
                     elevation: 0,
                     shape: const StadiumBorder(),
                   ),
@@ -106,10 +109,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   },
                   child: Text(
                     isExpired ? "Login" : "Retry",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: MuudTypography.button.copyWith(color: MuudColors.white),
                   ),
                 ),
               ),
@@ -128,141 +128,110 @@ class _PeopleTabState extends State<PeopleTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: MuudSpacing.sm),
 
-            // --- Inner Circle
+            // Inner Circle
             SectionTitle(
               title: "Inner Circle",
               trailingText: "See All",
-              onTapTrailing: () =>
-                  Navigator.pushNamed(context, '/people/inner-circle'),
+              onTapTrailing: () => context.push(Routes.innerCircle),
             ),
-            const SizedBox(height: 12),
-
+            const SizedBox(height: MuudSpacing.md),
             InnerCircleRing(
               isEmpty: controller.innerCircle.isEmpty,
               people: controller.innerCircle,
               centerPerson: controller.me,
-              onTapAddFriends: () =>
-                  Navigator.pushNamed(context, '/people/suggestions'),
-              onTapPerson: (p) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => ProfilePage(person: p)),
-                );
-              },
+              onTapAddFriends: () => context.push(Routes.suggestions),
+              onTapPerson: (p) => context.push(Routes.profile(p.id)),
             ),
 
-            const SizedBox(height: 26),
+            const SizedBox(height: MuudSpacing.xl),
 
-            // --- Connections
+            // Connections
             SectionTitle(
               title: "Connections",
               trailingText: "See All",
-              onTapTrailing: () =>
-                  Navigator.pushNamed(context, '/people/connections'),
+              onTapTrailing: () => context.push(Routes.connections),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: MuudSpacing.md),
 
             if (controller.connections.isEmpty) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: MuudSpacing.sm),
               Center(
                 child: Column(
-                  children: const [
+                  children: [
                     Icon(
                       Icons.group_outlined,
                       size: 44,
-                      color: Color(0xFFD7CDE3),
+                      color: MuudColors.lightPurple.withValues(alpha: 0.7),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: MuudSpacing.sm),
                     Text(
                       "No Connections",
-                      style: TextStyle(
-                        color: AppTheme.purple,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                      style: MuudTypography.titleMedium.copyWith(
+                        color: MuudColors.purple,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: MuudSpacing.xs),
                     Text(
                       "Your connections will show up here.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.greyText,
-                        fontSize: 13.5,
-                        height: 1.25,
-                        fontWeight: FontWeight.w600,
+                      style: MuudTypography.bodySmall.copyWith(
+                        color: MuudColors.greyText,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: MuudSpacing.md),
               PrimaryButton(
                 text: "Add friends",
-                onTap: () =>
-                    Navigator.pushNamed(context, '/people/suggestions'),
+                onTap: () => context.push(Routes.suggestions),
               ),
             ] else ...[
-              ...controller.connections
-                  .take(4)
-                  .map(
-                    (p) => PersonTile(
-                      person: p,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProfilePage(person: p),
-                          ),
-                        );
-                      },
-                      onTapMenu: () =>
-                          ManagePersonSheet.open(context, person: p),
-                    ),
-                  ),
-
-              const SizedBox(height: 10),
-
+              ...controller.connections.take(4).map(
+                (p) => PersonTile(
+                  person: p,
+                  onTap: () => context.push(Routes.profile(p.id)),
+                  onTapMenu: () =>
+                      ManagePersonSheet.open(context, person: p),
+                ),
+              ),
+              const SizedBox(height: MuudSpacing.sm),
               SizedBox(
                 width: double.infinity,
                 height: 44,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.purple, width: 1.5),
+                    side: const BorderSide(color: MuudColors.purple, width: 1.5),
                     shape: const StadiumBorder(),
                   ),
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/people/connections'),
-                  child: const Text(
+                  onPressed: () => context.push(Routes.connections),
+                  child: Text(
                     "Show more",
-                    style: TextStyle(
-                      color: AppTheme.purple,
-                      fontWeight: FontWeight.w900,
+                    style: MuudTypography.button.copyWith(
+                      color: MuudColors.purple,
                     ),
                   ),
                 ),
               ),
             ],
 
-            const SizedBox(height: 26),
+            const SizedBox(height: MuudSpacing.xl),
 
-            // --- Suggested friends row
+            // Suggested Friends
             SectionTitle(
               title: "Suggested Friends",
               trailingText: "See All",
-              onTapTrailing: () =>
-                  Navigator.pushNamed(context, '/people/suggestions'),
+              onTapTrailing: () => context.push(Routes.suggestions),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: MuudSpacing.md),
 
             if (suggestions.isEmpty)
-              const Text(
+              Text(
                 "No suggestions right now.",
-                style: TextStyle(
-                  color: AppTheme.greyText,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
+                style: MuudTypography.bodySmall.copyWith(
+                  color: MuudColors.greyText,
                 ),
               )
             else
@@ -272,19 +241,12 @@ class _PeopleTabState extends State<PeopleTab> {
                   physics: const BouncingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   itemCount: suggestions.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  separatorBuilder: (_, __) => const SizedBox(width: MuudSpacing.md),
                   itemBuilder: (context, i) {
                     final person = suggestions[i];
                     return SuggestedAvatar(
                       person: person,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProfilePage(person: person),
-                          ),
-                        );
-                      },
+                      onTap: () => context.push(Routes.profile(person.id)),
                     );
                   },
                 ),

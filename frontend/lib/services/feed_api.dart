@@ -1,50 +1,30 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+// MUUD Health — Feed API Service
+// © Muud Health — Armin Hoes, MD
 
-import 'token_storage.dart';
+import 'api_client.dart';
 
 class FeedApi {
-  static const String _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  FeedApi._();
 
-  static Future<Map<String, String>> _authHeaders() async {
-    final access = await TokenStorage.getAccessToken();
-    if (access == null || access.isEmpty) {
-      throw Exception("Missing access token");
-    }
-    return <String, String>{
-      "Authorization": "Bearer $access",
-      "Content-Type": "application/json",
-    };
-  }
-
-  static Future<List<Map<String, dynamic>>> getHomeFeed() async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/feed/home");
-
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Home feed failed: ${res.body}");
-    }
-
-    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-    final list = (decoded["posts"] as List?) ?? [];
+  /// Get home feed (connections' posts)
+  static Future<List<Map<String, dynamic>>> getHomeFeed({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await ApiClient.get('/api/v1/feed/home?page=$page&limit=$limit');
+    final data = ApiClient.handleResponse(res);
+    final list = (data['posts'] as List?) ?? [];
     return list.cast<Map<String, dynamic>>();
   }
 
-  static Future<List<Map<String, dynamic>>> getExploreFeed() async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/feed/explore");
-
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Explore feed failed: ${res.body}");
-    }
-
-    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-    final list = (decoded["posts"] as List?) ?? [];
+  /// Get explore feed (public/discovery)
+  static Future<List<Map<String, dynamic>>> getExploreFeed({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await ApiClient.get('/api/v1/feed/explore?page=$page&limit=$limit');
+    final data = ApiClient.handleResponse(res);
+    final list = (data['posts'] as List?) ?? [];
     return list.cast<Map<String, dynamic>>();
   }
 }

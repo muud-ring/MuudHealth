@@ -1,4 +1,4 @@
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 // import 'package:flutter/material.dart';
 // import '../data/people_dummy_data.dart';
 

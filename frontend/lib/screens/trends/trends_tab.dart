@@ -9,6 +9,8 @@ import 'widgets/sleep_card.dart';
 import 'widgets/steps_card.dart';
 import 'widgets/daily_snapshot_card.dart';
 import 'widgets/stress_breakdown_card.dart';
+import 'widgets/mirror_ai_card.dart';
+import 'widgets/mood_ring_card.dart';
 
 class TrendsTab extends ConsumerWidget {
   const TrendsTab({super.key});
@@ -18,12 +20,12 @@ class TrendsTab extends ConsumerWidget {
     final state = ref.watch(biometricsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         bottom: false,
         child: state.isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.purple),
+                child: CircularProgressIndicator(color: MuudColors.purple),
               )
             : state.hasData
                 ? _BiometricsDashboard(state: state)
@@ -75,8 +77,8 @@ class _DateSelector extends ConsumerWidget {
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.purple.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(12),
+                color: MuudColors.purple.withValues(alpha:0.06),
+                borderRadius: MuudRadius.mdAll,
               ),
               alignment: Alignment.center,
               child: Row(
@@ -85,7 +87,7 @@ class _DateSelector extends ConsumerWidget {
                   Icon(
                     Icons.calendar_today_rounded,
                     size: 16,
-                    color: AppTheme.purple.withOpacity(0.7),
+                    color: MuudColors.purple.withValues(alpha:0.7),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -93,7 +95,7 @@ class _DateSelector extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.purple,
+                      color: MuudColors.purple,
                     ),
                   ),
                 ],
@@ -129,10 +131,10 @@ class _DateSelector extends ConsumerWidget {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppTheme.purple,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppTheme.darkText,
+              primary: MuudColors.purple,
+              onPrimary: MuudColors.white,
+              surface: MuudColors.white,
+              onSurface: MuudColors.darkText,
             ),
           ),
           child: child!,
@@ -169,15 +171,15 @@ class _DateArrowButton extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           color: enabled
-              ? AppTheme.purple.withOpacity(0.06)
-              : Colors.grey.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(12),
+              ? MuudColors.purple.withValues(alpha:0.06)
+              : Colors.grey.withValues(alpha:0.06),
+          borderRadius: MuudRadius.mdAll,
         ),
         child: Icon(
           icon,
           color: enabled
-              ? AppTheme.purple
-              : Colors.grey.withOpacity(0.3),
+              ? MuudColors.purple
+              : Colors.grey.withValues(alpha:0.3),
           size: 24,
         ),
       ),
@@ -197,7 +199,7 @@ class _BiometricsDashboard extends StatelessWidget {
     final summary = state.summary!;
 
     return RefreshIndicator(
-      color: AppTheme.purple,
+      color: MuudColors.purple,
       onRefresh: () async {
         // Trigger a reload via the provider from the nearest consumer ancestor.
         // The RefreshIndicator needs a Future, so we access the container
@@ -335,6 +337,18 @@ class _BiometricsDashboard extends StatelessWidget {
   List<Widget> _buildFullWidthCards(DailySummary summary) {
     final cards = <Widget>[];
 
+    // MUUD Mirror — AI-generated insight (always shown)
+    cards.add(const Padding(
+      padding: EdgeInsets.only(bottom: 14),
+      child: MirrorAiCard(),
+    ));
+
+    // MUUD Notes — 12-emotion mood ring dial
+    cards.add(const Padding(
+      padding: EdgeInsets.only(bottom: 14),
+      child: MoodRingCard(),
+    ));
+
     if (summary.sleep != null) {
       cards.add(Padding(
         padding: const EdgeInsets.only(bottom: 14),
@@ -396,7 +410,7 @@ class _EmptyState extends StatelessWidget {
                           Icon(
                             Icons.storage_rounded,
                             size: 64,
-                            color: AppTheme.lightPurple.withOpacity(0.75),
+                            color: MuudColors.lightPurple.withValues(alpha:0.75),
                           ),
                           Positioned(
                             right: 6,
@@ -404,7 +418,7 @@ class _EmptyState extends StatelessWidget {
                             child: Icon(
                               Icons.search_rounded,
                               size: 34,
-                              color: AppTheme.lightPurple.withOpacity(0.85),
+                              color: MuudColors.lightPurple.withValues(alpha:0.85),
                             ),
                           ),
                         ],
@@ -414,7 +428,7 @@ class _EmptyState extends StatelessWidget {
                     const Text(
                       'No Data',
                       style: TextStyle(
-                        color: AppTheme.purple,
+                        color: MuudColors.purple,
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                       ),
@@ -423,7 +437,7 @@ class _EmptyState extends StatelessWidget {
                     Text(
                       'Your trends will show up here.',
                       style: TextStyle(
-                        color: AppTheme.greyText.withOpacity(0.9),
+                        color: MuudColors.greyText.withValues(alpha:0.9),
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -435,11 +449,11 @@ class _EmptyState extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.purple,
-                          foregroundColor: Colors.white,
+                          backgroundColor: MuudColors.purple,
+                          foregroundColor: MuudColors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: MuudRadius.pillAll,
                           ),
                         ),
                         child: const Text(

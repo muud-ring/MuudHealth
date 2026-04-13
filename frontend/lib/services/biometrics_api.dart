@@ -1,96 +1,69 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'token_storage.dart';
+// MUUD Health — Biometrics API Service
+// Signal → Ring → Cloud pipeline
+// © Muud Health — Armin Hoes, MD
+
 import '../models/biometric_reading.dart';
+import 'api_client.dart';
 
 class BiometricsApi {
-  static const String _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  BiometricsApi._();
 
-  static Future<Map<String, String>> _authHeaders() async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) throw Exception('Not authenticated');
-    return {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    };
-  }
-
+  /// Submit single biometric reading
   static Future<void> recordReading(BiometricReading reading) async {
-    final headers = await _authHeaders();
-    final res = await http.post(
-      Uri.parse('$_baseUrl/biometrics/reading'),
-      headers: headers,
-      body: jsonEncode(reading.toJson()),
+    final res = await ApiClient.post(
+      '/api/v1/biometrics/reading',
+      body: reading.toJson(),
     );
-    if (res.statusCode != 201) throw Exception('Failed to record reading');
+    ApiClient.handleResponse(res);
   }
 
+  /// Submit batch readings (from Ring sync)
   static Future<void> recordBatch(List<BiometricReading> readings) async {
-    final headers = await _authHeaders();
-    final res = await http.post(
-      Uri.parse('$_baseUrl/biometrics/batch'),
-      headers: headers,
-      body: jsonEncode({'readings': readings.map((r) => r.toJson()).toList()}),
+    final res = await ApiClient.post(
+      '/api/v1/biometrics/batch',
+      body: {'readings': readings.map((r) => r.toJson()).toList()},
     );
-    if (res.statusCode != 201) throw Exception('Failed to record batch');
+    ApiClient.handleResponse(res);
   }
 
+  /// Get reading history
   static Future<List<BiometricReading>> getHistory({
+    String range = '7d',
     String? type,
-    DateTime? from,
-    DateTime? to,
     int limit = 100,
   }) async {
-    final headers = await _authHeaders();
-    final params = <String, String>{'limit': '$limit'};
-    if (type != null) params['type'] = type;
-    if (from != null) params['from'] = from.toIso8601String();
-    if (to != null) params['to'] = to.toIso8601String();
-
-    final uri = Uri.parse('$_baseUrl/biometrics/history').replace(queryParameters: params);
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) throw Exception('Failed to fetch history');
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final params = <String>['range=$range', 'limit=$limit'];
+    if (type != null) params.add('type=$type');
+    final res = await ApiClient.get(
+      '/api/v1/biometrics/history?${params.join("&")}',
+    );
+    final data = ApiClient.handleResponse(res);
     final list = (data['readings'] as List?) ?? [];
-    return list.map((j) => BiometricReading.fromJson(j)).toList();
+    return list.map((j) => BiometricReading.fromJson(j as Map<String, dynamic>)).toList();
   }
 
+  /// Get latest reading per type
   static Future<Map<String, BiometricReading>> getLatest() async {
-    final headers = await _authHeaders();
-    final res = await http.get(Uri.parse('$_baseUrl/biometrics/latest'), headers: headers);
-    if (res.statusCode != 200) throw Exception('Failed to fetch latest');
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final res = await ApiClient.get('/api/v1/biometrics/latest');
+    final data = ApiClient.handleResponse(res);
     final latest = data['latest'] as Map<String, dynamic>? ?? {};
-    return latest.map((k, v) => MapEntry(k, BiometricReading.fromJson(v)));
+    return latest.map((k, v) => MapEntry(k, BiometricReading.fromJson(v as Map<String, dynamic>)));
   }
 
+  /// Get daily summary for a specific date (YYYY-MM-DD)
   static Future<DailySummary> getDailySummary(String date) async {
-    final headers = await _authHeaders();
-    final res = await http.get(
-      Uri.parse('$_baseUrl/biometrics/summary/$date'),
-      headers: headers,
-    );
-    if (res.statusCode != 200) throw Exception('Failed to fetch summary');
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
-    return DailySummary.fromJson(data['summary'] ?? {});
+    final res = await ApiClient.get('/api/v1/biometrics/summary/$date');
+    final data = ApiClient.handleResponse(res);
+    return DailySummary.fromJson(data['summary'] as Map<String, dynamic>? ?? {});
   }
 
+  /// Get range of daily summaries
   static Future<List<DailySummary>> getSummaryRange(String from, String to) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse('$_baseUrl/biometrics/summaries').replace(
-      queryParameters: {'from': from, 'to': to},
+    final res = await ApiClient.get(
+      '/api/v1/biometrics/summaries?from=$from&to=$to',
     );
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) throw Exception('Failed to fetch summaries');
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final data = ApiClient.handleResponse(res);
     final list = (data['summaries'] as List?) ?? [];
-    return list.map((j) => DailySummary.fromJson(j)).toList();
+    return list.map((j) => DailySummary.fromJson(j as Map<String, dynamic>)).toList();
   }
 }

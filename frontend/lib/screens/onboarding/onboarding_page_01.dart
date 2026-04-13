@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 
 class OnboardingPage01 extends StatelessWidget {
   const OnboardingPage01({super.key});
-  static const Color kSubtitlePurple = AppTheme.purple;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
@@ -24,10 +25,10 @@ class OnboardingPage01 extends StatelessWidget {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: AppTheme.purple,
+                    color: MuudColors.purple,
                     size: 22,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                 ),
               ),
 
@@ -39,7 +40,7 @@ class OnboardingPage01 extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   height: 1.1,
                   letterSpacing: 0.2,
                 ),
@@ -53,7 +54,7 @@ class OnboardingPage01 extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w500,
-                  color: kSubtitlePurple,
+                  color: MuudColors.purple,
                   height: 1.25,
                   letterSpacing: 0,
                 ),
@@ -78,24 +79,24 @@ class OnboardingPage01 extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple,
-                    foregroundColor: Colors.white,
+                    backgroundColor: MuudColors.purple,
+                    foregroundColor: MuudColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                     elevation: 0,
                   ),
                   onPressed: () {
                     // ✅ DO NOT change logic
                     OnboardingState.reset();
-                    Navigator.pushNamed(context, '/onboarding/02');
+                    context.push(Routes.onboarding('02'));
                   },
                   child: const Text(
                     "Next",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: MuudColors.white,
                     ),
                   ),
                 ),

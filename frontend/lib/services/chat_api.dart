@@ -1,161 +1,72 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'token_storage.dart';
+// MUUD Health — Chat API Service
+// Real-time messaging via REST + Socket.IO
+// © Muud Health — Armin Hoes, MD
+
+import 'api_client.dart';
 
 class ChatApi {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  ChatApi._();
 
+  /// Fetch total unread message count (for badge)
+  static Future<int> fetchUnreadCount() async {
+    final res = await ApiClient.get('/api/v1/chat/unread-count');
+    final data = ApiClient.handleResponse(res);
+    final unread = data['unread'];
+    if (unread is int) return unread;
+    if (unread is String) return int.tryParse(unread) ?? 0;
+    return 0;
+  }
+
+  /// Fetch all conversations
+  static Future<List<Map<String, dynamic>>> fetchConversations() async {
+    final res = await ApiClient.get('/api/v1/chat/conversations');
+    final data = ApiClient.handleResponse(res);
+    final list = (data['conversations'] as List?) ?? [];
+    return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
+  }
+
+  /// Fetch inbox view (conversations + previews)
+  static Future<Map<String, dynamic>> fetchInbox() async {
+    final res = await ApiClient.get('/api/v1/chat/inbox');
+    return ApiClient.handleResponse(res);
+  }
+
+  /// Get or create a conversation with another user
   static Future<Map<String, dynamic>> getOrCreateConversation({
     required String otherSub,
   }) async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception("Missing access token");
-    }
-
-    final uri = Uri.parse('$baseUrl/chat/conversation/$otherSub');
-
-    final res = await http.post(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    final body = jsonDecode(res.body);
-
-    if (res.statusCode != 200) {
-      throw Exception(
-        body is Map && (body['message'] ?? body['error']) != null
-            ? (body['message'] ?? body['error']).toString()
-            : 'Failed to create conversation',
-      );
-    }
-
-    return body as Map<String, dynamic>;
+    final res = await ApiClient.get('/api/v1/chat/conversation/$otherSub');
+    return ApiClient.handleResponse(res);
   }
 
+  /// Fetch messages for a conversation
   static Future<List<Map<String, dynamic>>> fetchMessages({
     required String conversationId,
+    int page = 1,
+    int limit = 50,
   }) async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception("Missing access token");
-    }
-
-    final uri = Uri.parse('$baseUrl/chat/messages/$conversationId');
-
-    final res = await http.get(
-      uri,
-      headers: {'Authorization': 'Bearer $token'},
+    final res = await ApiClient.get(
+      '/api/v1/chat/messages/$conversationId?page=$page&limit=$limit',
     );
-
-    final body = jsonDecode(res.body);
-
-    if (res.statusCode != 200) {
-      throw Exception(
-        body is Map && (body['message'] ?? body['error']) != null
-            ? (body['message'] ?? body['error']).toString()
-            : 'Failed to load messages',
-      );
-    }
-
-    final list = (body['messages'] as List? ?? []);
+    final data = ApiClient.handleResponse(res);
+    final list = (data['messages'] as List?) ?? [];
     return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
   }
 
+  /// Send a message
   static Future<Map<String, dynamic>> sendMessage({
     required String conversationId,
     required String text,
+    String? mediaUrl,
   }) async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception("Missing access token");
-    }
-
-    final uri = Uri.parse('$baseUrl/chat/messages/$conversationId');
-
-    final res = await http.post(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
+    final res = await ApiClient.post(
+      '/api/v1/chat/messages/$conversationId',
+      body: {
+        'text': text,
+        if (mediaUrl != null) 'mediaUrl': mediaUrl,
       },
-      body: jsonEncode({'text': text}),
     );
-
-    final body = jsonDecode(res.body);
-
-    if (res.statusCode != 201) {
-      throw Exception(
-        body is Map && (body['message'] ?? body['error']) != null
-            ? (body['message'] ?? body['error']).toString()
-            : 'Failed to send',
-      );
-    }
-
-    return (body['message'] as Map).cast<String, dynamic>();
-  }
-
-  static Future<List<Map<String, dynamic>>> fetchConversations() async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception("Missing access token");
-    }
-
-    final uri = Uri.parse('$baseUrl/chat/conversations');
-
-    final res = await http.get(
-      uri,
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    final body = jsonDecode(res.body);
-
-    if (res.statusCode != 200) {
-      throw Exception(
-        body is Map && (body['message'] ?? body['error']) != null
-            ? (body['message'] ?? body['error']).toString()
-            : 'Failed to load conversations',
-      );
-    }
-
-    final list = (body['conversations'] as List? ?? []);
-    return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
-  }
-
-  // ✅ total unread count (for badge)
-  static Future<int> fetchUnreadCount() async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception("Missing access token");
-    }
-
-    final uri = Uri.parse('$baseUrl/chat/unread-count');
-
-    final res = await http.get(
-      uri,
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    final body = jsonDecode(res.body);
-
-    if (res.statusCode != 200) {
-      throw Exception(
-        body is Map && (body['message'] ?? body['error']) != null
-            ? (body['message'] ?? body['error']).toString()
-            : 'Failed to load unread count',
-      );
-    }
-
-    final unread = (body is Map) ? body['unread'] : null;
-    if (unread is int) return unread;
-    if (unread is String) return int.tryParse(unread) ?? 0;
-
-    return 0;
+    final data = ApiClient.handleResponse(res);
+    return (data['message'] as Map?)?.cast<String, dynamic>() ?? data;
   }
 }

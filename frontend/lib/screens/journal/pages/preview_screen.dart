@@ -7,6 +7,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../../../theme/app_theme.dart';
 import 'send_to_screen.dart';
 
 class PreviewScreen extends StatefulWidget {
@@ -301,8 +302,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(22),
+                            color: Colors.white.withValues(alpha:0.15),
+                            borderRadius: MuudRadius.pillAll,
                           ),
                           child: Row(
                             children: [
@@ -341,19 +342,19 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 ),
                 decoration: InputDecoration(
                   hintText: "#happy, #ootd, #healing",
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  hintStyle: TextStyle(color: Colors.white.withValues(alpha:0.7)),
                   filled: true,
-                  fillColor: Colors.black.withOpacity(0.25),
+                  fillColor: Colors.black.withValues(alpha:0.25),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.25),
+                      color: Colors.white.withValues(alpha:0.25),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: MuudRadius.mdAll,
                     borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha:0.15),
                     ),
                   ),
                 ),
@@ -369,8 +370,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(22),
+        color: Colors.white.withValues(alpha:0.15),
+        borderRadius: MuudRadius.pillAll,
       ),
       child: Text(
         label,
@@ -389,7 +390,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha:0.15),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white),
@@ -451,10 +452,10 @@ class _Canvas extends StatelessWidget {
                     ),
                     decoration: selected
                         ? BoxDecoration(
-                            color: Colors.black.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.black.withValues(alpha:0.25),
+                            borderRadius: MuudRadius.mdAll,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha:0.5),
                             ),
                           )
                         : null,

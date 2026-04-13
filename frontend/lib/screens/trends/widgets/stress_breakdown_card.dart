@@ -22,7 +22,7 @@ class StressBreakdownCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.purple.withOpacity(0.07),
+            color: MuudColors.purple.withValues(alpha: 0.07),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -40,7 +40,7 @@ class StressBreakdownCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                 ),
               ),
             ],
@@ -54,7 +54,7 @@ class StressBreakdownCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: level.color.withOpacity(0.1),
+                color: level.color.withValues(alpha:0.1),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(
@@ -74,7 +74,7 @@ class StressBreakdownCard extends StatelessWidget {
               Expanded(
                 child: _StatColumn(label: 'Average', value: '$avg', color: level.color),
               ),
-              Container(width: 1, height: 36, color: Colors.grey.withOpacity(0.15)),
+              Container(width: 1, height: 36, color: Colors.grey.withValues(alpha:0.15)),
               Expanded(
                 child: _StatColumn(
                   label: 'Peak',
@@ -129,9 +129,9 @@ class _StressGauge extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF43A047).withOpacity(0.15),
-                        const Color(0xFFFF8F00).withOpacity(0.15),
-                        const Color(0xFFE53935).withOpacity(0.15),
+                        const Color(0xFF43A047).withValues(alpha:0.15),
+                        const Color(0xFFFF8F00).withValues(alpha:0.15),
+                        const Color(0xFFE53935).withValues(alpha:0.15),
                       ],
                     ),
                   ),

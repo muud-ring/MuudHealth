@@ -1,3 +1,8 @@
+// MUUD Health — Creator Tool Screen
+// Camera, gallery, and voice note capture
+// Signal Pathway: Signal layer (content creation)
+// © Muud Health — Armin Hoes, MD
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,8 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../../../theme/app_theme.dart';
 import 'preview_screen.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
 
 class CreatorToolScreen extends StatefulWidget {
   const CreatorToolScreen({super.key});
@@ -40,7 +45,6 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
         preferredCameraDevice: CameraDevice.rear,
       );
       if (x == null) return;
-
       setState(() => _imageFile = File(x.path));
     } catch (e) {
       setState(() => _error = "Failed to get image: $e");
@@ -59,10 +63,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
     try {
       if (_recording) {
         final path = await _recorder.stop();
-        setState(() {
-          _recording = false;
-          _audioPath = path ?? _audioPath;
-        });
+        setState(() { _recording = false; _audioPath = path ?? _audioPath; });
         return;
       }
 
@@ -74,18 +75,10 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
 
       final path = await _newAudioPath();
       await _recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          bitRate: 128000,
-          sampleRate: 44100,
-        ),
+        const RecordConfig(encoder: AudioEncoder.aacLc, bitRate: 128000, sampleRate: 44100),
         path: path,
       );
-
-      setState(() {
-        _recording = true;
-        _audioPath = null; // overwrite any old one
-      });
+      setState(() { _recording = true; _audioPath = null; });
     } catch (e) {
       setState(() => _error = "Audio recording failed: $e");
     }
@@ -96,11 +89,9 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
       setState(() => _error = "Add a photo to continue.");
       return;
     }
-
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            PreviewScreen(imageFile: _imageFile!, audioPath: _audioPath),
+        builder: (_) => PreviewScreen(imageFile: _imageFile!, audioPath: _audioPath),
       ),
     );
   }
@@ -115,10 +106,10 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
             // Main canvas
             Positioned.fill(
               child: _imageFile == null
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "Add a photo (camera or gallery)",
-                        style: TextStyle(color: Colors.white70),
+                        style: MuudTypography.bodyMedium.copyWith(color: Colors.white70),
                       ),
                     )
                   : Image.file(_imageFile!, fit: BoxFit.cover),
@@ -126,9 +117,7 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
 
             // Top bar
             Positioned(
-              top: 8,
-              left: 8,
-              right: 8,
+              top: MuudSpacing.sm, left: MuudSpacing.sm, right: MuudSpacing.sm,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -138,19 +127,9 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
                   ),
                   GestureDetector(
                     onTap: _goNext,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      child: Text(
-                        "Next",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.sm, vertical: MuudSpacing.sm),
+                      child: Text("Next", style: MuudTypography.label.copyWith(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -160,56 +139,32 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
             // Error banner
             if (_error != null)
               Positioned(
-                left: 16,
-                right: 16,
-                top: 64,
+                left: MuudSpacing.base, right: MuudSpacing.base, top: 64,
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(MuudSpacing.sm),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withOpacity(0.4)),
+                    color: MuudColors.error.withValues(alpha: 0.2),
+                    borderRadius: MuudRadius.mdAll,
+                    border: Border.all(color: MuudColors.error.withValues(alpha: 0.4)),
                   ),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  child: Text(_error!, style: MuudTypography.bodySmall.copyWith(color: Colors.white)),
                 ),
               ),
 
             // Bottom bar
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 18,
+              left: 0, right: 0, bottom: MuudSpacing.lg,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.base),
                 child: Row(
                   children: [
                     _pill(label: "Public"),
-                    const SizedBox(width: 10),
-
-                    // ✅ Camera
-                    _circleIcon(
-                      icon: Icons.photo_camera_outlined,
-                      onTap: () => _pickImage(ImageSource.camera),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // ✅ Gallery
-                    _circleIcon(
-                      icon: Icons.photo_library_outlined,
-                      onTap: () => _pickImage(ImageSource.gallery),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Mic
-                    _circleIcon(
-                      icon: _recording ? Icons.stop : Icons.mic_none,
-                      onTap: _toggleRecord,
-                      active: _recording,
-                    ),
-
+                    const SizedBox(width: MuudSpacing.sm),
+                    _circleIcon(icon: Icons.photo_camera_outlined, onTap: () => _pickImage(ImageSource.camera)),
+                    const SizedBox(width: MuudSpacing.sm),
+                    _circleIcon(icon: Icons.photo_library_outlined, onTap: () => _pickImage(ImageSource.gallery)),
+                    const SizedBox(width: MuudSpacing.sm),
+                    _circleIcon(icon: _recording ? Icons.stop : Icons.mic_none, onTap: _toggleRecord, active: _recording),
                     const Spacer(),
                     _sendToButton(label: "Next", onTap: _goNext),
                   ],
@@ -217,30 +172,15 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
               ),
             ),
 
-            // Tiny status text
             if (_audioPath != null && !_recording)
               Positioned(
-                left: 16,
-                bottom: 86,
-                child: Text(
-                  "Voice note ready",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                left: MuudSpacing.base, bottom: 86,
+                child: Text("Voice note ready", style: MuudTypography.label.copyWith(color: Colors.white.withValues(alpha: 0.8))),
               ),
             if (_recording)
               Positioned(
-                left: 16,
-                bottom: 86,
-                child: Text(
-                  "Recording… tap stop",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                left: MuudSpacing.base, bottom: 86,
+                child: Text("Recording… tap stop", style: MuudTypography.label.copyWith(color: Colors.white.withValues(alpha: 0.9))),
               ),
           ],
         ),
@@ -250,33 +190,22 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
 
   Widget _pill({required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.base, vertical: MuudSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(22),
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: MuudRadius.pillAll,
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+      child: Text(label, style: MuudTypography.label.copyWith(color: Colors.white)),
     );
   }
 
-  Widget _circleIcon({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool active = false,
-  }) {
+  Widget _circleIcon({required IconData icon, required VoidCallback onTap, bool active = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: 44, height: 44,
         decoration: BoxDecoration(
-          color: active ? AppTheme.purple : Colors.white.withOpacity(0.15),
+          color: active ? MuudColors.purple : Colors.white.withValues(alpha: 0.15),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white),
@@ -288,18 +217,12 @@ class _CreatorToolScreenState extends State<CreatorToolScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.lg, vertical: MuudSpacing.md),
         decoration: BoxDecoration(
-          color: AppTheme.purple,
-          borderRadius: BorderRadius.circular(24),
+          color: MuudColors.purple,
+          borderRadius: MuudRadius.pillAll,
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        child: Text(label, style: MuudTypography.button.copyWith(color: MuudColors.white)),
       ),
     );
   }

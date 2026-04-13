@@ -5,7 +5,8 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../services/user_api.dart';
 import '../services/token_storage.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -183,7 +184,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pop(context, true);
+      context.pop(true);
     } catch (e) {
       setState(() => error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -218,25 +219,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               as ImageProvider;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
-          onPressed: saving ? null : () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back, color: MuudColors.purple),
+          onPressed: saving ? null : () => context.pop(),
         ),
         centerTitle: true,
         title: const Text(
           "Edit your profile",
-          style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w700),
+          style: TextStyle(color: MuudColors.purple, fontWeight: FontWeight.w700),
         ),
         actions: [
           TextButton(
             onPressed: saving ? null : _save,
             child: const Text(
               "Save",
-              style: TextStyle(color: AppTheme.purple, fontWeight: FontWeight.w800),
+              style: TextStyle(color: MuudColors.purple, fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -276,12 +278,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         width: 38,
                         height: 38,
                         decoration: const BoxDecoration(
-                          color: AppTheme.purple,
+                          color: MuudColors.purple,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.camera_alt,
-                          color: Colors.white,
+                          color: MuudColors.white,
                           size: 18,
                         ),
                       ),
@@ -320,7 +322,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Text(
                 error!,
                 style: const TextStyle(
-                  color: Colors.red,
+                  color: MuudColors.error,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -345,7 +347,7 @@ class _Label extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: AppTheme.purple,
+          color: MuudColors.purple,
           fontWeight: FontWeight.w700,
           fontSize: 16,
         ),
@@ -378,21 +380,21 @@ class _Field extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: MuudColors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 16,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(color: kBorder, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(color: kBorder, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(color: kBorder, width: 2),
         ),
       ),

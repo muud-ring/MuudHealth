@@ -1,34 +1,26 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'token_storage.dart';
+// MUUD Health — Onboarding API Service
+// 8-step onboarding flow state management
+// © Muud Health — Armin Hoes, MD
+
+import 'api_client.dart';
 
 class OnboardingApi {
-  static const String _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.muudhealth.com',
-  );
+  OnboardingApi._();
 
-  // GET /onboarding/status  -> { "completed": true/false }
+  /// GET /api/v1/onboarding/status → { completed: true/false }
   static Future<bool> isCompleted() async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.get(
-      Uri.parse('$_baseUrl/onboarding/status'),
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Status check failed: ${res.statusCode} ${res.body}');
-    }
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final res = await ApiClient.get('/api/v1/onboarding/status');
+    final data = ApiClient.handleResponse(res);
     return data['completed'] == true;
   }
 
-  // POST /onboarding  -> saves onboarding
+  /// GET /api/v1/onboarding/me → full onboarding data
+  static Future<Map<String, dynamic>> getOnboarding() async {
+    final res = await ApiClient.get('/api/v1/onboarding/me');
+    return ApiClient.handleResponse(res);
+  }
+
+  /// POST /api/v1/onboarding → save onboarding answers
   static Future<void> saveOnboarding({
     required String favoriteColor,
     required String focusGoal,
@@ -36,28 +28,13 @@ class OnboardingApi {
     required bool notificationsEnabled,
     required bool completed,
   }) async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw Exception('Missing access token');
-    }
-
-    final res = await http.post(
-      Uri.parse('$_baseUrl/onboarding'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'favoriteColor': favoriteColor,
-        'focusGoal': focusGoal,
-        'activities': activities,
-        'notificationsEnabled': notificationsEnabled,
-        'completed': completed,
-      }),
-    );
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception('Save onboarding failed: ${res.statusCode} ${res.body}');
-    }
+    final res = await ApiClient.post('/api/v1/onboarding', body: {
+      'favoriteColor': favoriteColor,
+      'focusGoal': focusGoal,
+      'activities': activities,
+      'notificationsEnabled': notificationsEnabled,
+      'completed': completed,
+    });
+    ApiClient.handleResponse(res);
   }
 }

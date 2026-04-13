@@ -32,12 +32,12 @@ class MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha:0.08),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha:0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class MetricCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha:0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 20),
@@ -76,7 +76,7 @@ class MetricCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: color.withOpacity(0.6),
+                  color: color.withValues(alpha:0.6),
                 ),
               ),
             ],
@@ -87,7 +87,7 @@ class MetricCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppTheme.greyText,
+              color: MuudColors.greyText,
             ),
           ),
           if (subtitle != null) ...[
@@ -96,7 +96,7 @@ class MetricCard extends StatelessWidget {
               subtitle!,
               style: const TextStyle(
                 fontSize: 11,
-                color: AppTheme.lightGrey,
+                color: MuudColors.lightGrey,
               ),
             ),
           ],
@@ -126,14 +126,14 @@ class _TrendIndicator extends StatelessWidget {
         trendColor = const Color(0xFFE74C3C);
       case MetricTrend.stable:
         trendIcon = Icons.trending_flat_rounded;
-        trendColor = AppTheme.lightGrey;
+        trendColor = MuudColors.lightGrey;
     }
 
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: trendColor.withOpacity(0.1),
+        color: trendColor.withValues(alpha:0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(trendIcon, size: 18, color: trendColor),

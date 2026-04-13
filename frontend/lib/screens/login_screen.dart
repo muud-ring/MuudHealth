@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../router/route_names.dart';
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../services/cognito_oauth.dart';
 import '../services/post_auth_redirect.dart';
+import '../theme/app_theme.dart';
 
-// ✅ Legal popup imports
+// Legal popup imports
 import 'legal/legal_modal_page.dart';
 import 'legal/legal_texts.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -98,10 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 28, 20, 20 + bottomInset),
+          padding: EdgeInsets.fromLTRB(MuudSpacing.lg, 28, MuudSpacing.lg, MuudSpacing.lg + bottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -113,9 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 30),
 
               // Username or email
-              const Text(
+              Text(
                 'Username or email',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: MuudTypography.label.copyWith(color: MuudColors.purple),
               ),
               const SizedBox(height: 10),
               _RoundedInput(
@@ -126,9 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 18),
 
               // Password
-              const Text(
+              Text(
                 'Password',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: MuudTypography.label.copyWith(color: MuudColors.purple),
               ),
               const SizedBox(height: 10),
               _RoundedInput(controller: _password, obscureText: true),
@@ -138,31 +141,30 @@ class _LoginScreenState extends State<LoginScreen> {
               // Forgot
               Align(
                 alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/forgot'),
-                  child: const Text(
-                    'Forgot username or password?',
-                    style: TextStyle(
-                      color: AppTheme.purple,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
+                child: Semantics(
+                  button: true,
+                  label: 'Forgot username or password',
+                  child: GestureDetector(
+                    onTap: () => context.push(Routes.forgot),
+                    child: Text(
+                      'Forgot username or password?',
+                      style: MuudTypography.caption.copyWith(
+                        color: MuudColors.purple,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 18),
 
               if (_error != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: MuudSpacing.sm),
                   child: Text(
                     _error!,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: MuudTypography.caption.copyWith(color: MuudColors.error, fontWeight: FontWeight.w600),
                   ),
                 ),
 
@@ -172,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple,
+                    backgroundColor: MuudColors.purple,
                     shape: const StadiumBorder(),
                     elevation: 0,
                   ),
@@ -248,9 +250,9 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 height: 56,
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/signup'),
+                  onPressed: () => context.push(Routes.signup),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.purple, width: 2),
+                    side: const BorderSide(color: MuudColors.purple, width: 2),
                     shape: const StadiumBorder(),
                   ),
                   child: const Text(
@@ -258,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.purple,
+                      color: MuudColors.purple,
                     ),
                   ),
                 ),
@@ -330,15 +332,15 @@ class _RoundedInput extends StatelessWidget {
           horizontal: 16,
           vertical: 18,
         ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border: OutlineInputBorder(borderRadius: MuudRadius.mdAll),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(color: Colors.black54),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(
-            color: AppTheme.purple,
+            color: MuudColors.purple,
             width: 2,
           ),
         ),
@@ -356,17 +358,17 @@ class _SocialIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: MuudRadius.mdAll,
       onTap: onTap,
       child: Ink(
         width: 64,
         height: 64,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: MuudRadius.mdAll,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -391,7 +393,7 @@ class _FooterLink extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: AppTheme.purple,
+          color: MuudColors.purple,
           fontWeight: FontWeight.w700,
           fontSize: 13,
         ),

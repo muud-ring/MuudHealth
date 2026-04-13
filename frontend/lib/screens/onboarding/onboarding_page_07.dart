@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 
 class OnboardingPage07 extends StatefulWidget {
   const OnboardingPage07({super.key});
@@ -29,7 +31,7 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,10 +44,10 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 constraints: const BoxConstraints(),
                 icon: const Icon(
                   Icons.arrow_back_ios,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   size: 22,
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.pop(),
               ),
             ),
 
@@ -59,7 +61,7 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   height: 1.2,
                 ),
               ),
@@ -171,24 +173,24 @@ class _OnboardingPage07State extends State<OnboardingPage07> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple.withOpacity(
+                    backgroundColor: MuudColors.purple.withValues(alpha:
                       mood == null ? 0.5 : 1,
                     ),
-                    foregroundColor: Colors.white,
+                    foregroundColor: MuudColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                     elevation: 0,
                   ),
                   onPressed: mood == null
                       ? null
-                      : () => Navigator.pushNamed(context, '/onboarding/08'),
+                      : () => context.push(Routes.onboarding('08')),
                   child: const Text(
                     "Continue",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: MuudColors.white,
                     ),
                   ),
                 ),
@@ -230,7 +232,7 @@ class _MoodButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: circleColor,
               border: isSelected
-                  ? Border.all(color: AppTheme.purple, width: 3)
+                  ? Border.all(color: MuudColors.purple, width: 3)
                   : null,
             ),
             child: Center(

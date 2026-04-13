@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -13,7 +13,7 @@ class PrimaryButton extends StatelessWidget {
       height: 52,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.purple,
+          backgroundColor: MuudColors.purple,
           elevation: 0,
           shape: const StadiumBorder(),
         ),

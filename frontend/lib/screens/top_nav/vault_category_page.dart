@@ -1,12 +1,17 @@
+// MUUD Health — Vault Category Page
+// Paginated vault items by category
+// © Muud Health — Armin Hoes, MD
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../services/vault_api.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 
 class VaultCategoryPage extends StatefulWidget {
-  final String categoryKey; // friends | family | holidays | etc
-  final String categoryTitle; // Friends | Family | ...
-  final String? fromIso; // ISO
-  final String? toIso; // ISO
+  final String categoryKey;
+  final String categoryTitle;
+  final String? fromIso;
+  final String? toIso;
 
   const VaultCategoryPage({
     super.key,
@@ -21,26 +26,20 @@ class VaultCategoryPage extends StatefulWidget {
 }
 
 class _VaultCategoryPageState extends State<VaultCategoryPage> {
-  static const Color kBorder = Color(0xFFE7E1EF);
-
   bool loading = true;
   bool loadingMore = false;
   String? error;
 
   final List<_VaultPost> posts = [];
-  String? nextCursor; // ISO cursor from backend
-
+  String? nextCursor;
   final ScrollController _scroll = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadFirst();
-
     _scroll.addListener(() {
-      if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) {
-        _loadMore();
-      }
+      if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) _loadMore();
     });
   }
 
@@ -51,35 +50,16 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   }
 
   Future<void> _loadFirst() async {
-    setState(() {
-      loading = true;
-      error = null;
-      posts.clear();
-      nextCursor = null;
-    });
+    setState(() { loading = true; error = null; posts.clear(); nextCursor = null; });
 
     try {
-      final decoded = await VaultApi.getItems(
-        category: widget.categoryKey,
-        limit: 20,
-        cursor: null,
-        from: widget.fromIso,
-        to: widget.toIso,
-      );
-
+      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, cursor: null, from: widget.fromIso, to: widget.toIso);
       final items = (decoded["items"] as List?) ?? [];
       final cursor = decoded["nextCursor"]?.toString();
-
-      final mapped = items
-          .cast<Map<String, dynamic>>()
-          .map((m) => _VaultPost.fromMap(m))
-          .toList();
+      final mapped = items.cast<Map<String, dynamic>>().map((m) => _VaultPost.fromMap(m)).toList();
 
       if (!mounted) return;
-      setState(() {
-        posts.addAll(mapped);
-        nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null;
-      });
+      setState(() { posts.addAll(mapped); nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null; });
     } catch (e) {
       if (!mounted) return;
       setState(() => error = e.toString().replaceFirst("Exception: ", ""));
@@ -89,36 +69,17 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   }
 
   Future<void> _loadMore() async {
-    if (loading || loadingMore) return;
-    if (nextCursor == null || nextCursor!.isEmpty) return;
-
+    if (loading || loadingMore || nextCursor == null) return;
     setState(() => loadingMore = true);
 
     try {
-      final decoded = await VaultApi.getItems(
-        category: widget.categoryKey,
-        limit: 20,
-        cursor: nextCursor,
-        from: widget.fromIso,
-        to: widget.toIso,
-      );
-
+      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, cursor: nextCursor, from: widget.fromIso, to: widget.toIso);
       final items = (decoded["items"] as List?) ?? [];
       final cursor = decoded["nextCursor"]?.toString();
-
-      final mapped = items
-          .cast<Map<String, dynamic>>()
-          .map((m) => _VaultPost.fromMap(m))
-          .toList();
-
+      final mapped = items.cast<Map<String, dynamic>>().map((m) => _VaultPost.fromMap(m)).toList();
       if (!mounted) return;
-      setState(() {
-        posts.addAll(mapped);
-        nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null;
-      });
-    } catch (_) {
-      // ignore paging errors for MVP
-    } finally {
+      setState(() { posts.addAll(mapped); nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null; });
+    } catch (_) {} finally {
       if (mounted) setState(() => loadingMore = false);
     }
   }
@@ -126,212 +87,124 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.purple),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back, color: MuudColors.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: Text(
-          widget.categoryTitle,
-          style: const TextStyle(
-            color: AppTheme.purple,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        title: Text(widget.categoryTitle, style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple)),
       ),
-
       body: loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: MuudColors.purple))
           : (error != null)
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      error!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: _loadFirst,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.purple,
-                        shape: const StadiumBorder(),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "Retry",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : (posts.isEmpty)
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.bookmark_border,
-                      size: 58,
-                      color: Color(0xFFD7CDE3),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "Nothing saved here yet",
-                      style: TextStyle(
-                        color: AppTheme.purple,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      "Save a journal to see it in this category.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.greyText,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadFirst,
-              child: ListView.separated(
-                controller: _scroll,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                itemCount: posts.length + (loadingMore ? 1 : 0),
-                separatorBuilder: (_, __) => const SizedBox(height: 14),
-                itemBuilder: (_, i) {
-                  if (i >= posts.length) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 8, bottom: 10),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  final p = posts[i];
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: kBorder),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(MuudSpacing.lg),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(error!, textAlign: TextAlign.center, style: MuudTypography.bodyMedium.copyWith(color: MuudColors.error)),
+                        const SizedBox(height: MuudSpacing.md),
+                        ElevatedButton(
+                          onPressed: _loadFirst,
+                          style: ElevatedButton.styleFrom(backgroundColor: MuudColors.purple, shape: const StadiumBorder(), elevation: 0),
+                          child: Text("Retry", style: MuudTypography.button.copyWith(color: MuudColors.white)),
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(18),
-                          ),
-                          child: AspectRatio(
-                            aspectRatio: 1.1,
-                            child: (p.imageUrl == null || p.imageUrl!.isEmpty)
-                                ? Container(
-                                    color: const Color(0xFFF2EEF6),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        color: AppTheme.greyText,
-                                      ),
-                                    ),
-                                  )
-                                : Image.network(p.imageUrl!, fit: BoxFit.cover),
-                          ),
+                  ),
+                )
+              : (posts.isEmpty)
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(MuudSpacing.lg),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bookmark_border, size: 58, color: MuudColors.lightPurple),
+                            const SizedBox(height: MuudSpacing.md),
+                            Text("Nothing saved here yet", style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple)),
+                            const SizedBox(height: MuudSpacing.xs),
+                            Text("Save a journal to see it in this category.", textAlign: TextAlign.center, style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText)),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (p.caption.isNotEmpty)
-                                Text(
-                                  p.caption,
-                                  style: const TextStyle(
-                                    color: AppTheme.purple,
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w900,
+                      ),
+                    )
+                  : RefreshIndicator(
+                      color: MuudColors.purple,
+                      onRefresh: _loadFirst,
+                      child: ListView.separated(
+                        controller: _scroll,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(MuudSpacing.base, MuudSpacing.md, MuudSpacing.base, MuudSpacing.xl),
+                        itemCount: posts.length + (loadingMore ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(height: MuudSpacing.md),
+                        itemBuilder: (_, i) {
+                          if (i >= posts.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: MuudSpacing.sm),
+                              child: Center(child: CircularProgressIndicator(color: MuudColors.purple)),
+                            );
+                          }
+                          final p = posts[i];
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: MuudColors.white,
+                              borderRadius: MuudRadius.lgAll,
+                              border: Border.all(color: MuudColors.divider),
+                              boxShadow: MuudShadows.card,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                  child: AspectRatio(
+                                    aspectRatio: 1.1,
+                                    child: (p.imageUrl == null || p.imageUrl!.isEmpty)
+                                        ? Container(color: MuudColors.lightPurple.withValues(alpha: 0.3), child: const Center(child: Icon(Icons.image_not_supported, color: MuudColors.greyText)))
+                                        : CachedNetworkImage(imageUrl: p.imageUrl!, fit: BoxFit.cover),
                                   ),
                                 ),
-                              if (p.caption.isNotEmpty)
-                                const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Text(
-                                    _formatTime(p.createdAt),
-                                    style: const TextStyle(
-                                      color: AppTheme.greyText,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 12.5,
-                                    ),
+                                Padding(
+                                  padding: const EdgeInsets.all(MuudSpacing.md),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (p.caption.isNotEmpty) ...[
+                                        Text(p.caption, style: MuudTypography.bodyMedium.copyWith(color: MuudColors.purple, fontWeight: FontWeight.w900)),
+                                        const SizedBox(height: MuudSpacing.sm),
+                                      ],
+                                      Row(
+                                        children: [
+                                          Text(_formatTime(p.createdAt), style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
+                                          const Spacer(),
+                                          Text(p.visibilityLabel, style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    p.visibilityLabel,
-                                    style: const TextStyle(
-                                      color: AppTheme.greyText,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 12.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
     );
   }
 
   String _formatTime(DateTime dt) {
-    final y = dt.year.toString().padLeft(4, '0');
-    final m = dt.month.toString().padLeft(2, '0');
-    final d = dt.day.toString().padLeft(2, '0');
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return "$y-$m-$d  $hh:$mm";
+    return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
   }
 }
 
-// Parses backend shape: { vault: {...}, post: {...} }
 class _VaultPost {
   final String postId;
   final String caption;
@@ -339,13 +212,7 @@ class _VaultPost {
   final String visibility;
   final DateTime createdAt;
 
-  _VaultPost({
-    required this.postId,
-    required this.caption,
-    required this.imageUrl,
-    required this.visibility,
-    required this.createdAt,
-  });
+  _VaultPost({required this.postId, required this.caption, required this.imageUrl, required this.visibility, required this.createdAt});
 
   String get visibilityLabel {
     if (visibility == "innerCircle") return "Inner Circle";
@@ -360,9 +227,7 @@ class _VaultPost {
       caption: (post["caption"] ?? "").toString(),
       imageUrl: post["imageUrl"]?.toString(),
       visibility: (post["visibility"] ?? "public").toString(),
-      createdAt:
-          DateTime.tryParse((post["createdAt"] ?? "").toString()) ??
-          DateTime.now(),
+      createdAt: DateTime.tryParse((post["createdAt"] ?? "").toString()) ?? DateTime.now(),
     );
   }
 }

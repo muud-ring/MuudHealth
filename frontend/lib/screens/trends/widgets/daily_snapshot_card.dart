@@ -21,7 +21,7 @@ class DailySnapshotCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.purple.withOpacity(0.07),
+            color: MuudColors.purple.withValues(alpha: 0.07),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -32,14 +32,14 @@ class DailySnapshotCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.dashboard_rounded, size: 20, color: AppTheme.purple),
+              Icon(Icons.dashboard_rounded, size: 20, color: MuudColors.purple),
               SizedBox(width: 8),
               Text(
                 'Daily Snapshot',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                 ),
               ),
             ],
@@ -141,9 +141,9 @@ class _SnapshotChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha:0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha:0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

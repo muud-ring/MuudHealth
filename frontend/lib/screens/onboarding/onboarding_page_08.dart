@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
 import '../../services/post_auth_redirect.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 
 class OnboardingPage08 extends StatefulWidget {
   const OnboardingPage08({super.key});
@@ -68,7 +70,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
     final hasSelection = selectedOptions.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 8, 32, 40),
@@ -81,10 +83,10 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 constraints: const BoxConstraints(),
                 icon: const Icon(
                   Icons.arrow_back_ios,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   size: 22,
                 ),
-                onPressed: loading ? null : () => Navigator.pop(context),
+                onPressed: loading ? null : () => context.pop(),
               ),
 
               const SizedBox(height: 32),
@@ -95,7 +97,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   height: 1.2,
                 ),
               ),
@@ -108,7 +110,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 style: TextStyle(
                   fontSize: 18,
                   height: 1.4,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -132,7 +134,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 Text(
                   error!,
                   style: const TextStyle(
-                    color: Colors.red,
+                    color: MuudColors.error,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -146,12 +148,12 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple.withOpacity(
+                    backgroundColor: MuudColors.purple.withValues(alpha:
                       hasSelection ? 1 : 0.5,
                     ),
-                    foregroundColor: Colors.white,
+                    foregroundColor: MuudColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                     elevation: 0,
                   ),
@@ -162,7 +164,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         )
                       : Text(
@@ -170,7 +172,7 @@ class _OnboardingPage08State extends State<OnboardingPage08> {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         ),
                 ),
@@ -199,13 +201,13 @@ class _CheckRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: MuudRadius.lgAll,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: checked ? kSelectedBg : const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: MuudRadius.lgAll,
           border: checked
               ? Border.all(color: kSelectedBorder, width: 1.5)
               : null,
@@ -217,11 +219,11 @@ class _CheckRow extends StatelessWidget {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.purple, width: 2),
-                color: checked ? AppTheme.purple : Colors.transparent,
+                border: Border.all(color: MuudColors.purple, width: 2),
+                color: checked ? MuudColors.purple : Colors.transparent,
               ),
               child: checked
-                  ? const Icon(Icons.check, color: Colors.white, size: 18)
+                  ? const Icon(Icons.check, color: MuudColors.white, size: 18)
                   : null,
             ),
             const SizedBox(width: 14),

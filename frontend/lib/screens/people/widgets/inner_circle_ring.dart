@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 
 class InnerCircleRing extends StatelessWidget {
   final bool isEmpty;
@@ -71,7 +72,7 @@ class InnerCircleRing extends StatelessWidget {
                       Text(
                         "No Inner Circle",
                         style: TextStyle(
-                          color: AppTheme.purple,
+                          color: MuudColors.purple,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -81,7 +82,7 @@ class InnerCircleRing extends StatelessWidget {
                         "Your inner circles will show up here.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppTheme.greyText,
+                          color: MuudColors.greyText,
                           fontSize: 13.5,
                           height: 1.25,
                           fontWeight: FontWeight.w600,
@@ -101,7 +102,7 @@ class InnerCircleRing extends StatelessWidget {
               height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.purple,
+                  backgroundColor: MuudColors.purple,
                   elevation: 0,
                   shape: const StadiumBorder(),
                 ),
@@ -167,7 +168,7 @@ class InnerCircleRing extends StatelessWidget {
       case "yellow":
         return const Color(0xFFB88700);
       default:
-        return AppTheme.purple;
+        return MuudColors.purple;
     }
   }
 }
@@ -188,20 +189,20 @@ class _CenterAvatar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha:0.08),
             blurRadius: 18,
             spreadRadius: 2,
             offset: const Offset(0, 10),
           ),
         ],
-        border: Border.all(color: AppTheme.purple, width: 6),
+        border: Border.all(color: MuudColors.purple, width: 6),
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isNotEmpty
-          ? Image.network(
-              url,
+          ? CachedNetworkImage(
+              imageUrl: url,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(name),
+              errorWidget: (_, __, ___) => _placeholder(name),
             )
           : _placeholder(name),
     );
@@ -215,7 +216,7 @@ class _CenterAvatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: AppTheme.purple,
+          color: MuudColors.purple,
           fontWeight: FontWeight.w900,
           fontSize: 36,
         ),
@@ -251,10 +252,10 @@ class _RingAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: avatarUrl.isNotEmpty
-          ? Image.network(
-              avatarUrl,
+          ? CachedNetworkImage(
+              imageUrl: avatarUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(letter),
+              errorWidget: (_, __, ___) => _placeholder(letter),
             )
           : _placeholder(letter),
     );
@@ -265,7 +266,7 @@ class _RingAvatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: AppTheme.purple,
+          color: MuudColors.purple,
           fontWeight: FontWeight.w900,
           fontSize: 18,
         ),

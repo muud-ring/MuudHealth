@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -19,7 +19,7 @@ class SectionTitle extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: AppTheme.purple,
+            color: MuudColors.purple,
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
@@ -34,7 +34,7 @@ class SectionTitle extends StatelessWidget {
               child: Text(
                 trailingText!,
                 style: const TextStyle(
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/people_provider.dart';
+import '../router/route_names.dart';
 
 // Screens (content-only)
 import '../screens/home/home_tab.dart';
@@ -21,7 +23,7 @@ import '../screens/chat/state/chat_badge.dart';
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -63,7 +65,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     ChatBadge.reset();
     await ref.read(authProvider.notifier).logout();
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    context.go(Routes.login);
   }
 
   void _onNavTap(int index) {
@@ -106,12 +108,12 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (_selectedIndex == 3) {
       return [
         IconButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/chat/conversations');
-          },
+          tooltip: 'Messages',
+          onPressed: () => context.push(Routes.chat),
           icon: const _MessageWithBadge(),
         ),
         IconButton(
+          tooltip: 'Notifications',
           onPressed: () async {
             await Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
@@ -125,14 +127,14 @@ class _AppShellState extends ConsumerState<AppShell> {
 
     return [
       IconButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/chat/conversations');
-        },
+        tooltip: 'Messages',
+        onPressed: () => context.push(Routes.chat),
         icon: const _MessageWithBadge(),
       ),
       IconButton(
+        tooltip: 'Log out',
         onPressed: _logout,
-        icon: const Icon(Icons.logout, color: AppTheme.purple),
+        icon: const Icon(Icons.logout, color: MuudColors.purple),
       ),
     ];
   }
@@ -149,14 +151,8 @@ class _AppShellState extends ConsumerState<AppShell> {
           child: _TopBar(
             title: _titleForIndex(_selectedIndex),
             rightActions: _rightActionsForIndex(),
-            onTapLeft1: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-            },
-            onTapLeft2: () {
-              Navigator.of(context).pushNamed('/vault');
-            },
+            onTapLeft1: () => context.push(Routes.settings),
+            onTapLeft2: () => context.push(Routes.vault),
           ),
         ),
       ),
@@ -204,11 +200,11 @@ class _TopBar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onTapLeft1,
-                icon: const Icon(Icons.settings_outlined, color: AppTheme.purple),
+                icon: const Icon(Icons.settings_outlined, color: MuudColors.purple),
               ),
               IconButton(
                 onPressed: onTapLeft2,
-                icon: const Icon(Icons.lock_outline, color: AppTheme.purple),
+                icon: const Icon(Icons.lock_outline, color: MuudColors.purple),
               ),
             ],
           ),
@@ -216,7 +212,7 @@ class _TopBar extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: AppTheme.purple,
+              color: MuudColors.purple,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -241,7 +237,7 @@ class _MessageWithBadge extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            const Icon(Icons.chat_bubble_outline, color: AppTheme.purple),
+            const Icon(Icons.chat_bubble_outline, color: MuudColors.purple),
             if (count > 0)
               Positioned(
                 right: -4,
@@ -288,7 +284,7 @@ class _BellWithBadge extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const Icon(Icons.notifications_none, color: AppTheme.purple),
+        const Icon(Icons.notifications_none, color: MuudColors.purple),
         if (count > 0)
           Positioned(
             right: -4,
@@ -342,8 +338,8 @@ class _BottomNav extends StatelessWidget {
         currentIndex: selectedIndex,
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.purple,
-        unselectedItemColor: AppTheme.greyText,
+        selectedItemColor: MuudColors.purple,
+        unselectedItemColor: MuudColors.greyText,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -373,7 +369,7 @@ class _PlusIcon extends StatelessWidget {
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: AppTheme.purple,
+        color: MuudColors.purple,
         borderRadius: BorderRadius.circular(14),
       ),
       child: const Icon(Icons.add, color: Colors.white, size: 26),

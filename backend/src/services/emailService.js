@@ -1,7 +1,7 @@
 // backend/src/services/emailService.js
 const FormData = require("form-data");
 const Mailgun = require("mailgun.js");
-const logger = require("../config/logger");
+const logger = require("../utils/logger");
 
 const mailgun = new Mailgun(FormData);
 

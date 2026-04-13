@@ -4,17 +4,7 @@ const logger = require("../utils/logger");
 const Post = require("../models/Post");
 const UserProfile = require("../models/UserProfile");
 
-const { GetObjectCommand } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { s3 } = require("../config/s3");
-
-const BUCKET = process.env.S3_BUCKET;
-
-async function signKey(key, expiresIn = 600) {
-  if (!BUCKET || !key) return null;
-  const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
-  return await getSignedUrl(s3, cmd, { expiresIn });
-}
+const { signKey } = require("../utils/s3_sign");
 
 function normalizeCategory(v) {
   const s = (v || "").toString().toLowerCase().trim();

@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 
 class SuggestedAvatar extends StatelessWidget {
   final Person person;
@@ -49,7 +50,7 @@ class SuggestedAvatar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.purple,
+                color: MuudColors.purple,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w900,
               ),
@@ -61,7 +62,7 @@ class SuggestedAvatar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.greyText,
+                color: MuudColors.greyText,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,
               ),
@@ -100,12 +101,12 @@ class _AvatarCircle extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: avatarUrl.isNotEmpty
-          ? Image.network(
-              avatarUrl,
+          ? CachedNetworkImage(
+              imageUrl: avatarUrl,
               width: 54,
               height: 54,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(letter),
+              errorWidget: (_, __, ___) => _placeholder(letter),
             )
           : _placeholder(letter),
     );
@@ -116,7 +117,7 @@ class _AvatarCircle extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: AppTheme.purple,
+          color: MuudColors.purple,
           fontWeight: FontWeight.w900,
           fontSize: 18,
         ),

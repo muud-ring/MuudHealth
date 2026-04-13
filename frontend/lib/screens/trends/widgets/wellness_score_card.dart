@@ -20,12 +20,12 @@ class WellnessScoreCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.12),
+            color: color.withValues(alpha:0.12),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha:0.2)),
       ),
       child: Row(
         children: [
@@ -59,7 +59,7 @@ class WellnessScoreCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.darkText,
+                    color: MuudColors.darkText,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -76,7 +76,7 @@ class WellnessScoreCard extends StatelessWidget {
                   _scoreDescription(clampedScore),
                   style: const TextStyle(
                     fontSize: 12,
-                    color: AppTheme.greyText,
+                    color: MuudColors.greyText,
                   ),
                 ),
               ],
@@ -128,7 +128,7 @@ class _ScoreRingPainter extends CustomPainter {
     final bgPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = color.withOpacity(0.12)
+      ..color = color.withValues(alpha:0.12)
       ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(center, radius, bgPaint);
@@ -141,7 +141,7 @@ class _ScoreRingPainter extends CustomPainter {
       ..shader = SweepGradient(
         startAngle: -math.pi / 2,
         endAngle: 3 * math.pi / 2,
-        colors: [color.withOpacity(0.6), color],
+        colors: [color.withValues(alpha:0.6), color],
         stops: const [0.0, 1.0],
         transform: const GradientRotation(-math.pi / 2),
       ).createShader(Rect.fromCircle(center: center, radius: radius));

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../router/route_names.dart';
 import '../services/api_service.dart';
+import '../services/post_auth_redirect.dart';
 import '../services/token_storage.dart';
 import '../services/user_api.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
@@ -14,7 +17,8 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final _api = ApiService();
-  static const Color kBorderGrey = Color(0xFFCCCCCC);
+  // Border grey mapped to divider token
+
 
   final List<TextEditingController> _ctrl = List.generate(
     6,
@@ -88,33 +92,28 @@ class _OtpScreenState extends State<OtpScreen> {
         refreshToken: tokens['refreshToken'],
       );
 
-      // 3) ✅ VERY IMPORTANT: save profile to MUUD backend (prevents sub showing)
-      // If these are empty, we skip safely.
+      // 3) Save profile to MUUD backend (non-fatal — don't block signup if it fails)
       final nameToSave = fullName.trim();
       final usernameToSave = username.trim();
 
       if (nameToSave.isNotEmpty || usernameToSave.isNotEmpty) {
-        await UserApi.updateMe(
-          name: nameToSave,
-          username: usernameToSave,
-          bio: "",
-          location: "",
-          phone: "",
-        );
+        try {
+          await UserApi.updateMe(
+            name: nameToSave,
+            username: usernameToSave,
+            bio: "",
+            location: "",
+            phone: "",
+          );
+        } catch (_) {
+          // Profile save failed — user can update later in Settings.
+        }
       }
 
       if (!mounted) return;
 
-      // 4) Now go to onboarding/home redirect logic
-      // If you want onboarding always after signup, keep your route:
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/onboarding/01',
-        (_) => false,
-      );
-
-      // Or if you want to use your redirect helper:
-      // await PostAuthRedirect.go(context);
+      // 4) Smart redirect — check onboarding status, route accordingly
+      await PostAuthRedirect.go(context);
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -146,7 +145,7 @@ class _OtpScreenState extends State<OtpScreen> {
     if (value.isNotEmpty && index == 5) {
       FocusScope.of(context).unfocus(); // dismiss keyboard
       final args =
-          (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+          (GoRouterState.of(context).extra as Map?) ?? {};
       final identifier = (args['identifier'] ?? '') as String;
       final password = (args['password'] ?? '') as String;
       final fullName = (args['fullName'] ?? '') as String;
@@ -167,7 +166,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+    final args = (GoRouterState.of(context).extra as Map?) ?? {};
 
     final identifier = (args['identifier'] ?? '') as String;
     final password = (args['password'] ?? '') as String;
@@ -177,7 +176,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final username = (args['username'] ?? '') as String;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -187,7 +186,8 @@ class _OtpScreenState extends State<OtpScreen> {
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: AppTheme.purple, size: 28),
+                  tooltip: 'Close',
+                  icon: const Icon(Icons.close, color: MuudColors.purple, size: 28),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -198,7 +198,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                 ),
               ),
               const SizedBox(height: 14),
@@ -242,19 +242,19 @@ class _OtpScreenState extends State<OtpScreen> {
                       decoration: InputDecoration(
                         counterText: '',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: MuudColors.white,
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: MuudRadius.mdAll,
                           borderSide: const BorderSide(
-                            color: kBorderGrey,
+                            color: MuudColors.divider,
                             width: 1,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: MuudRadius.mdAll,
                           borderSide: const BorderSide(
                             color: Colors.black87,
                             width: 1.2,
@@ -276,7 +276,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     _error!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Colors.red,
+                      color: MuudColors.error,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -295,7 +295,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           username: username,
                         ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.purple,
+                    backgroundColor: MuudColors.purple,
                     shape: const StadiumBorder(),
                     elevation: 0,
                   ),
@@ -305,7 +305,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         )
                       : const Text(
@@ -313,7 +313,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         ),
                 ),
@@ -332,15 +332,19 @@ class _OtpScreenState extends State<OtpScreen> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  GestureDetector(
-                    onTap: _resend,
-                    child: const Text(
-                      "Resend",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppTheme.purple,
-                        fontWeight: FontWeight.w800,
-                        decoration: TextDecoration.underline,
+                  Semantics(
+                    button: true,
+                    label: 'Resend verification code',
+                    child: GestureDetector(
+                      onTap: _resend,
+                      child: const Text(
+                        "Resend",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: MuudColors.purple,
+                          fontWeight: FontWeight.w800,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),

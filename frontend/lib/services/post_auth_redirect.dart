@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/route_names.dart';
 import 'onboarding_api.dart';
 
 class PostAuthRedirect {
@@ -7,13 +9,14 @@ class PostAuthRedirect {
       final completed = await OnboardingApi.isCompleted();
       if (!context.mounted) return;
 
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        completed ? '/home' : '/onboarding/01',
-        (_) => false,
-      );
+      if (completed) {
+        context.go(Routes.home);
+      } else {
+        context.go(Routes.onboarding('01'));
+      }
     } catch (_) {
       if (!context.mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
+      context.go(Routes.home);
     }
   }
 }

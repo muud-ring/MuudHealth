@@ -26,12 +26,12 @@ class StepsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _stepsColor.withOpacity(0.08),
+            color: _stepsColor.withValues(alpha:0.08),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: _stepsColor.withOpacity(0.15)),
+        border: Border.all(color: _stepsColor.withValues(alpha:0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +42,7 @@ class StepsCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: _stepsColor.withOpacity(0.1),
+                  color: _stepsColor.withValues(alpha:0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.directions_walk_rounded,
@@ -54,7 +54,7 @@ class StepsCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.darkText,
+                  color: MuudColors.darkText,
                 ),
               ),
               const Spacer(),
@@ -63,7 +63,7 @@ class StepsCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2ECC71).withOpacity(0.1),
+                    color: const Color(0xFF2ECC71).withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Row(
@@ -104,7 +104,7 @@ class StepsCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.greyText,
+                  color: MuudColors.greyText,
                 ),
               ),
             ],
@@ -119,7 +119,7 @@ class StepsCard extends StatelessWidget {
                 children: [
                   Container(
                     width: double.infinity,
-                    color: _stepsColor.withOpacity(0.1),
+                    color: _stepsColor.withValues(alpha:0.1),
                   ),
                   FractionallySizedBox(
                     widthFactor: progress,
@@ -127,7 +127,7 @@ class StepsCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            _stepsColor.withOpacity(0.7),
+                            _stepsColor.withValues(alpha:0.7),
                             _stepsColor,
                           ],
                         ),
@@ -144,7 +144,7 @@ class StepsCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppTheme.greyText,
+              color: MuudColors.greyText,
             ),
           ),
         ],

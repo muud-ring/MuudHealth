@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../router/route_names.dart';
 import '../services/api_service.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -28,7 +31,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
 
       // ✅ Go to verify code screen (route kept as /reset to not break app)
-      Navigator.pushNamed(context, '/reset', arguments: {'identifier': id});
+      context.push(Routes.verifyReset, extra: {'identifier': id});
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -47,20 +50,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.purple),
-          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back_ios_new, color: MuudColors.purple),
+          onPressed: () => context.pop(),
         ),
         centerTitle: true,
         title: const Text(
           'Trouble Logging In',
           style: TextStyle(
-            color: AppTheme.purple,
+            color: MuudColors.purple,
             fontWeight: FontWeight.w800,
             fontSize: 20,
           ),
@@ -77,7 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.purple,
+                color: MuudColors.purple,
               ),
             ),
             const SizedBox(height: 10),
@@ -109,12 +113,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   vertical: 16,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: MuudRadius.mdAll,
                   borderSide: const BorderSide(color: Colors.black54),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTheme.purple, width: 1.8),
+                  borderRadius: MuudRadius.mdAll,
+                  borderSide: const BorderSide(color: MuudColors.purple, width: 1.8),
                 ),
               ),
             ),
@@ -125,7 +129,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Text(
                   _error!,
                   style: const TextStyle(
-                    color: Colors.red,
+                    color: MuudColors.error,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -136,7 +140,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _sendResetCode,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.purple,
+                  backgroundColor: MuudColors.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
@@ -146,7 +150,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: MuudColors.white,
                         ),
                       )
                     : const Text(
@@ -154,7 +158,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         style: TextStyle(
                           fontSize: 16.5,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: MuudColors.white,
                         ),
                       ),
               ),
@@ -162,11 +166,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             const SizedBox(height: 22),
             Center(
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => context.pop(),
                 child: const Text(
                   'Back to login',
                   style: TextStyle(
-                    color: AppTheme.purple,
+                    color: MuudColors.purple,
                     fontSize: 15.5,
                     fontWeight: FontWeight.w800,
                     decoration: TextDecoration.underline,

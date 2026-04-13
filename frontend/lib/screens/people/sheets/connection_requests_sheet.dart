@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../services/people_api.dart';
 import '../state/people_events.dart';
-import 'package:muud_health_app/theme/app_theme.dart';
+import '../../../theme/app_theme.dart';
 
 class ConnectionRequestsSheet {
   static Future<void> open(BuildContext context) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -154,7 +154,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha:0.08),
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
@@ -163,7 +163,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
               const Text(
                 "Connection Requests",
                 style: TextStyle(
-                  color: AppTheme.purple,
+                  color: MuudColors.purple,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                 ),
@@ -172,7 +172,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
               Text(
                 "${requests.length} people want to connect.",
                 style: const TextStyle(
-                  color: AppTheme.greyText,
+                  color: MuudColors.greyText,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -189,28 +189,28 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                             const Icon(
                               Icons.error_outline,
                               size: 40,
-                              color: AppTheme.purple,
+                              color: MuudColors.purple,
                             ),
                             const SizedBox(height: 8),
                             Text(
                               error!,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                color: AppTheme.greyText,
+                                color: MuudColors.greyText,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 10),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.purple,
+                                backgroundColor: MuudColors.purple,
                                 elevation: 0,
                                 shape: const StadiumBorder(),
                               ),
                               onPressed: _load,
                               child: const Text(
                                 "Retry",
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: MuudColors.white),
                               ),
                             ),
                           ],
@@ -221,7 +221,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                         child: Text(
                           "No requests right now.",
                           style: TextStyle(
-                            color: AppTheme.greyText,
+                            color: MuudColors.greyText,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -240,7 +240,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                             ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF5F2FA),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: MuudRadius.mdAll,
                             ),
                             child: Row(
                               children: [
@@ -249,7 +249,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                                   backgroundColor: Color(0xFFE7E1F3),
                                   child: Icon(
                                     Icons.person,
-                                    color: AppTheme.purple,
+                                    color: MuudColors.purple,
                                     size: 18,
                                   ),
                                 ),
@@ -263,7 +263,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                                       Text(
                                         _name(r),
                                         style: const TextStyle(
-                                          color: AppTheme.purple,
+                                          color: MuudColors.purple,
                                           fontWeight: FontWeight.w900,
                                         ),
                                       ),
@@ -271,7 +271,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                                       Text(
                                         _handle(r),
                                         style: const TextStyle(
-                                          color: AppTheme.greyText,
+                                          color: MuudColors.greyText,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -287,8 +287,8 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                                       ? null
                                       : () => _accept(requestId),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: AppTheme.purple,
+                                    foregroundColor: MuudColors.white,
+                                    backgroundColor: MuudColors.purple,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 14,
                                       vertical: 8,
@@ -308,7 +308,7 @@ class _ConnectionRequestsBodyState extends State<_ConnectionRequestsBody> {
                                       ? null
                                       : () => _decline(requestId),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: AppTheme.purple,
+                                    foregroundColor: MuudColors.purple,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 14,
                                       vertical: 8,
