@@ -34,6 +34,11 @@ const biometricsRoute = require("./routes/biometricsRoute");
 const notificationRoute = require("./routes/notificationRoute");
 const adminDevRoute = require("./routes/adminDevRoute");
 const complianceRoute = require("./routes/complianceRoute");
+const accountRoute = require("./routes/accountRoute");
+const organizationRoute = require("./routes/organizationRoute");
+const sharedVaultRoute = require("./routes/sharedVaultRoute");
+const servicePlanRoute = require("./routes/servicePlanRoute");
+const signalLoopRoute = require("./routes/signalLoopRoute");
 
 // ── App factory ──────────────────────────────────────────────────
 function createApp() {
@@ -97,6 +102,11 @@ function createApp() {
   v1.use("/biometrics", biometricsRoute);
   v1.use("/notifications", notificationRoute);
   v1.use("/compliance", complianceRoute);
+  v1.use("/account", accountRoute);
+  v1.use("/organizations", organizationRoute);
+  v1.use("/shared-vault", sharedVaultRoute);
+  v1.use("/service-plans", servicePlanRoute);
+  v1.use("/signals", signalLoopRoute);
 
   app.use("/api/v1", v1);
 
