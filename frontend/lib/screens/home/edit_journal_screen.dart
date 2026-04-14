@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/journal_api.dart';
+import '../../theme/app_theme.dart';
 
 class EditJournalScreen extends StatefulWidget {
   final String postId;
@@ -16,8 +18,6 @@ class EditJournalScreen extends StatefulWidget {
 }
 
 class _EditJournalScreenState extends State<EditJournalScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   late final TextEditingController _captionCtrl;
   bool _saving = false;
   String? _error;
@@ -48,7 +48,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pop(context, true); // ✅ tells Home to reload feed
+      context.pop(true); // ✅ tells Home to reload feed
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString().replaceFirst("Exception: ", ""));
@@ -60,14 +60,14 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kPurple),
+        iconTheme: const IconThemeData(color: MuudColors.purple),
         title: const Text(
           "Edit Journal",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+          style: TextStyle(color: MuudColors.purple, fontWeight: FontWeight.w900),
         ),
         actions: [
           TextButton(
@@ -81,7 +81,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
                 : const Text(
                     "Save",
                     style: TextStyle(
-                      color: kPurple,
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -98,14 +98,14 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withOpacity(0.25)),
+                  color: MuudColors.error.withValues(alpha:0.08),
+                  borderRadius: MuudRadius.mdAll,
+                  border: Border.all(color: MuudColors.error.withValues(alpha:0.25)),
                 ),
                 child: Text(
                   _error!,
                   style: const TextStyle(
-                    color: Colors.red,
+                    color: MuudColors.error,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -114,7 +114,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
 
             const Text(
               "Caption",
-              style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+              style: TextStyle(color: MuudColors.purple, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -123,7 +123,7 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
               decoration: InputDecoration(
                 hintText: "Update your caption… #hashtags",
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: MuudRadius.mdAll,
                 ),
               ),
             ),

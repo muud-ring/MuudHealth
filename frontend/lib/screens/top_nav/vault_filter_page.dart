@@ -1,4 +1,9 @@
+// MUUD Health — Vault Filter Page
+// Filter options for vault content
+// © Muud Health — Armin Hoes, MD
+
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 class VaultFilterPage extends StatefulWidget {
   const VaultFilterPage({super.key});
@@ -8,160 +13,76 @@ class VaultFilterPage extends StatefulWidget {
 }
 
 class _VaultFilterPageState extends State<VaultFilterPage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kBorder = Color(0xFFE7E1EF);
-  static const Color kGrey = Color(0xFF898384);
-
-  // selections (MVP UI only)
-  String tag = "All"; // All / Theme / Feeling / Location / Person
-  String experience = "All"; // All / Group / Solo / Yoga / Shopping
-  String contentType = "All"; // All / Journal / Journey / Photo
-  String sortBy = "All"; // All / Most Recent / Popular / By Relevance
-
+  String tag = "All";
+  String experience = "All";
+  String contentType = "All";
+  String sortBy = "All";
   DateTime? from;
   DateTime? to;
 
   Future<void> _pickDate({required bool isFrom}) async {
     final now = DateTime.now();
     final initial = (isFrom ? from : to) ?? now;
-
-    final picked = await showDatePicker(
-      context: context,
-      firstDate: DateTime(2015),
-      lastDate: DateTime(2100),
-      initialDate: initial,
-    );
-
+    final picked = await showDatePicker(context: context, firstDate: DateTime(2015), lastDate: DateTime(2100), initialDate: initial);
     if (picked == null) return;
-
-    setState(() {
-      if (isFrom) {
-        from = picked;
-      } else {
-        to = picked;
-      }
-    });
+    setState(() { if (isFrom) { from = picked; } else { to = picked; } });
   }
 
   void _reset() {
-    setState(() {
-      tag = "All";
-      experience = "All";
-      contentType = "All";
-      sortBy = "All";
-      from = null;
-      to = null;
-    });
+    setState(() { tag = "All"; experience = "All"; contentType = "All"; sortBy = "All"; from = null; to = null; });
   }
 
   String _fmt(DateTime? d) {
     if (d == null) return "";
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    final dd = d.day.toString().padLeft(2, '0');
-    return "$dd ${months[d.month - 1]} ${d.year}";
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return "${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back, color: MuudColors.purple),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
-          "Filter",
-          style: TextStyle(
-            color: kPurple,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        title: Text("Filter", style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple)),
       ),
-
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 8, 18, 22),
+        padding: const EdgeInsets.fromLTRB(MuudSpacing.lg, MuudSpacing.sm, MuudSpacing.lg, MuudSpacing.xl),
         children: [
           _title("Tag"),
-          const SizedBox(height: 12),
-          _chipRow(
-            items: const ["All", "Theme", "Feeling", "Location", "Person"],
-            selected: tag,
-            onSelect: (v) => setState(() => tag = v),
-          ),
-
-          const SizedBox(height: 22),
+          const SizedBox(height: MuudSpacing.md),
+          _chipRow(items: const ["All", "Theme", "Feeling", "Location", "Person"], selected: tag, onSelect: (v) => setState(() => tag = v)),
+          const SizedBox(height: MuudSpacing.xl),
           _title("Type of experience"),
-          const SizedBox(height: 12),
-          _chipRow(
-            items: const ["All", "Group", "Solo", "Yoga", "Shopping"],
-            selected: experience,
-            onSelect: (v) => setState(() => experience = v),
-          ),
-
-          const SizedBox(height: 22),
+          const SizedBox(height: MuudSpacing.md),
+          _chipRow(items: const ["All", "Group", "Solo", "Yoga", "Shopping"], selected: experience, onSelect: (v) => setState(() => experience = v)),
+          const SizedBox(height: MuudSpacing.xl),
           _title("Content type"),
-          const SizedBox(height: 12),
-          _chipRow(
-            items: const ["All", "Journal", "Journey", "Photo"],
-            selected: contentType,
-            onSelect: (v) => setState(() => contentType = v),
-          ),
-
-          const SizedBox(height: 22),
+          const SizedBox(height: MuudSpacing.md),
+          _chipRow(items: const ["All", "Journal", "Journey", "Photo"], selected: contentType, onSelect: (v) => setState(() => contentType = v)),
+          const SizedBox(height: MuudSpacing.xl),
           _title("Sort by"),
-          const SizedBox(height: 12),
-          _chipRow(
-            items: const ["All", "Most Recent", "Popular", "By Relevance"],
-            selected: sortBy,
-            onSelect: (v) => setState(() => sortBy = v),
-          ),
-
-          const SizedBox(height: 22),
+          const SizedBox(height: MuudSpacing.md),
+          _chipRow(items: const ["All", "Most Recent", "Popular", "By Relevance"], selected: sortBy, onSelect: (v) => setState(() => sortBy = v)),
+          const SizedBox(height: MuudSpacing.xl),
           _title("Filter by date and time"),
-          const SizedBox(height: 12),
-
+          const SizedBox(height: MuudSpacing.md),
           Row(
             children: [
-              Expanded(
-                child: _dateBox(
-                  label: "From",
-                  value: _fmt(from),
-                  onTap: () => _pickDate(isFrom: true),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _dateBox(
-                  label: "To",
-                  value: _fmt(to),
-                  onTap: () => _pickDate(isFrom: false),
-                ),
-              ),
+              Expanded(child: _dateBox(label: "From", value: _fmt(from), onTap: () => _pickDate(isFrom: true))),
+              const SizedBox(width: MuudSpacing.md),
+              Expanded(child: _dateBox(label: "To", value: _fmt(to), onTap: () => _pickDate(isFrom: false))),
             ],
           ),
-
-          const SizedBox(height: 26),
-
+          const SizedBox(height: MuudSpacing.xxl),
           Row(
             children: [
               Expanded(
@@ -169,50 +90,24 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
                   height: 52,
                   child: OutlinedButton(
                     onPressed: _reset,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: kBorder),
-                      shape: const StadiumBorder(),
-                    ),
-                    child: const Text(
-                      "Reset Filter",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15.5,
-                      ),
-                    ),
+                    style: OutlinedButton.styleFrom(side: BorderSide(color: MuudColors.divider), shape: const StadiumBorder()),
+                    child: Text("Reset Filter", style: MuudTypography.label.copyWith(color: MuudColors.purple)),
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: MuudSpacing.md),
               Expanded(
                 child: SizedBox(
                   height: 52,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context, {
-                        "tag": tag,
-                        "experience": experience,
-                        "contentType": contentType,
-                        "sortBy": sortBy,
-                        "from": from?.toIso8601String(),
-                        "to": to?.toIso8601String(),
+                        "tag": tag, "experience": experience, "contentType": contentType,
+                        "sortBy": sortBy, "from": from?.toIso8601String(), "to": to?.toIso8601String(),
                       });
                     },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPurple,
-                      shape: const StadiumBorder(),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "Apply",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15.5,
-                      ),
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: MuudColors.purple, shape: const StadiumBorder(), elevation: 0),
+                    child: Text("Apply", style: MuudTypography.button.copyWith(color: MuudColors.white)),
                   ),
                 ),
               ),
@@ -223,49 +118,26 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
     );
   }
 
-  Widget _title(String t) {
-    return Text(
-      t,
-      style: const TextStyle(
-        color: kPurple,
-        fontSize: 20,
-        fontWeight: FontWeight.w900,
-      ),
-    );
-  }
+  Widget _title(String t) => Text(t, style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple));
 
-  Widget _chipRow({
-    required List<String> items,
-    required String selected,
-    required void Function(String) onSelect,
-  }) {
+  Widget _chipRow({required List<String> items, required String selected, required void Function(String) onSelect}) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: items.map((t) {
           final isOn = selected == t;
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: MuudSpacing.sm),
             child: GestureDetector(
               onTap: () => onSelect(t),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.base, vertical: MuudSpacing.sm),
                 decoration: BoxDecoration(
-                  color: isOn ? kPurple : Colors.white,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: kPurple, width: 2),
+                  color: isOn ? MuudColors.purple : MuudColors.white,
+                  borderRadius: MuudRadius.pillAll,
+                  border: Border.all(color: MuudColors.purple, width: 2),
                 ),
-                child: Text(
-                  t,
-                  style: TextStyle(
-                    color: isOn ? Colors.white : kPurple,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                  ),
-                ),
+                child: Text(t, style: MuudTypography.caption.copyWith(color: isOn ? MuudColors.white : MuudColors.purple, fontWeight: FontWeight.w900)),
               ),
             ),
           );
@@ -274,41 +146,23 @@ class _VaultFilterPageState extends State<VaultFilterPage> {
     );
   }
 
-  Widget _dateBox({
-    required String label,
-    required String value,
-    required VoidCallback onTap,
-  }) {
+  Widget _dateBox({required String label, required String value, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 74,
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        padding: const EdgeInsets.fromLTRB(MuudSpacing.md, MuudSpacing.sm, MuudSpacing.md, MuudSpacing.sm),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: kBorder, width: 1.6),
+          color: MuudColors.white,
+          borderRadius: MuudRadius.mdAll,
+          border: Border.all(color: MuudColors.divider, width: 1.6),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value.isEmpty ? " " : value,
-              style: const TextStyle(
-                color: kGrey,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
+            Text(label, style: MuudTypography.label.copyWith(color: MuudColors.purple)),
+            const SizedBox(height: MuudSpacing.sm),
+            Text(value.isEmpty ? " " : value, style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
           ],
         ),
       ),

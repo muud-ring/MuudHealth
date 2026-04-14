@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
@@ -7,18 +9,16 @@ import '../../services/journal_api.dart';
 import '../../services/token_storage.dart';
 import '../../services/vault_api.dart';
 import '../journal/pages/edit_journal_screen.dart';
+import '../../theme/app_theme.dart';
 
-class ExploreTab extends StatefulWidget {
+class ExploreTab extends ConsumerStatefulWidget {
   const ExploreTab({super.key});
 
   @override
-  State<ExploreTab> createState() => _ExploreTabState();
+  ConsumerState<ExploreTab> createState() => _ExploreTabState();
 }
 
-class _ExploreTabState extends State<ExploreTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
+class _ExploreTabState extends ConsumerState<ExploreTab> {
   bool _feedLoading = true;
   String? _feedError;
   List<_FeedPost> _posts = [];
@@ -129,7 +129,7 @@ class _ExploreTabState extends State<ExploreTab> {
   Future<void> _showOwnerMenu(_FeedPost p) async {
     final picked = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -143,25 +143,25 @@ class _ExploreTabState extends State<ExploreTab> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE7E1EF),
-                  borderRadius: BorderRadius.circular(10),
+                  color: const MuudColors.divider,
+                  borderRadius: MuudRadius.mdAll,
                 ),
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.edit_outlined, color: kPurple),
+                leading: const Icon(Icons.edit_outlined, color: MuudColors.purple),
                 title: const Text(
                   "Edit",
-                  style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+                  style: TextStyle(color: MuudColors.purple, fontWeight: FontWeight.w900),
                 ),
                 onTap: () => Navigator.pop(context, "edit"),
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                leading: const Icon(Icons.delete_outline, color: MuudColors.error),
                 title: const Text(
                   "Delete",
                   style: TextStyle(
-                    color: Colors.red,
+                    color: MuudColors.error,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -253,14 +253,14 @@ class _ExploreTabState extends State<ExploreTab> {
   Future<void> _openSaveToVaultSheet(_FeedPost p) async {
     final chosen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (_) => _VaultCategorySheet(
         categories: _vaultCategories,
-        purple: kPurple,
-        grey: kGreyText,
+        purple: MuudColors.purple,
+        grey: MuudColors.greyText,
       ),
     );
 
@@ -291,7 +291,7 @@ class _ExploreTabState extends State<ExploreTab> {
             const Text(
               "Explore",
               style: TextStyle(
-                color: kPurple,
+                color: MuudColors.purple,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -301,7 +301,7 @@ class _ExploreTabState extends State<ExploreTab> {
             const Text(
               "Your Journals",
               style: TextStyle(
-                color: kPurple,
+                color: MuudColors.purple,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -323,7 +323,7 @@ class _ExploreTabState extends State<ExploreTab> {
                     Text(
                       _feedError!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: MuudColors.error,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -331,14 +331,14 @@ class _ExploreTabState extends State<ExploreTab> {
                     ElevatedButton(
                       onPressed: _loadFeed,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: MuudColors.purple,
                         shape: const StadiumBorder(),
                         elevation: 0,
                       ),
                       child: const Text(
                         "Retry",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: MuudColors.white,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -357,7 +357,7 @@ class _ExploreTabState extends State<ExploreTab> {
                       Text(
                         "No journals yet",
                         style: TextStyle(
-                          color: kPurple,
+                          color: MuudColors.purple,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -366,7 +366,7 @@ class _ExploreTabState extends State<ExploreTab> {
                       Text(
                         "Tap + to create your first post.",
                         style: TextStyle(
-                          color: kGreyText,
+                          color: MuudColors.greyText,
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -385,15 +385,9 @@ class _ExploreTabState extends State<ExploreTab> {
                     padding: const EdgeInsets.only(bottom: 14),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                        color: MuudColors.white,
+                        borderRadius: MuudRadius.lgAll,
+                        boxShadow: [MuudShadows.card],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,12 +408,12 @@ class _ExploreTabState extends State<ExploreTab> {
                                           child: const Center(
                                             child: Icon(
                                               Icons.image_not_supported,
-                                              color: kGreyText,
+                                              color: MuudColors.greyText,
                                             ),
                                           ),
                                         )
-                                      : Image.network(
-                                          p.imageUrl!,
+                                      : CachedNetworkImage(
+                                          imageUrl: p.imageUrl!,
                                           fit: BoxFit.cover,
                                         ),
                                 ),
@@ -434,12 +428,12 @@ class _ExploreTabState extends State<ExploreTab> {
                                       width: 38,
                                       height: 38,
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.35),
+                                        color: Colors.black.withValues(alpha:0.35),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
                                         Icons.more_horiz,
-                                        color: Colors.white,
+                                        color: MuudColors.white,
                                       ),
                                     ),
                                   ),
@@ -455,7 +449,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                   Text(
                                     p.caption,
                                     style: const TextStyle(
-                                      color: kPurple,
+                                      color: MuudColors.purple,
                                       fontSize: 14.5,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -470,9 +464,9 @@ class _ExploreTabState extends State<ExploreTab> {
                                       vertical: 10,
                                     ),
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius: MuudRadius.mdAll,
                                       border: Border.all(
-                                        color: const Color(0xFFE7E1EF),
+                                        color: const MuudColors.divider,
                                       ),
                                     ),
                                     child: Row(
@@ -483,7 +477,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                             isThisPlaying
                                                 ? Icons.pause_circle
                                                 : Icons.play_circle,
-                                            color: kPurple,
+                                            color: MuudColors.purple,
                                             size: 34,
                                           ),
                                         ),
@@ -492,7 +486,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                           child: Text(
                                             "Voice note",
                                             style: TextStyle(
-                                              color: kPurple,
+                                              color: MuudColors.purple,
                                               fontWeight: FontWeight.w900,
                                             ),
                                           ),
@@ -506,7 +500,7 @@ class _ExploreTabState extends State<ExploreTab> {
                                     Text(
                                       _formatTime(p.createdAt),
                                       style: const TextStyle(
-                                        color: kGreyText,
+                                        color: MuudColors.greyText,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 12.5,
                                       ),
@@ -516,14 +510,14 @@ class _ExploreTabState extends State<ExploreTab> {
                                       onPressed: () => _openSaveToVaultSheet(p),
                                       icon: const Icon(
                                         Icons.bookmark_border,
-                                        color: kPurple,
+                                        color: MuudColors.purple,
                                       ),
                                       tooltip: "Save to Vault",
                                     ),
                                     Text(
                                       p.visibilityLabel,
                                       style: const TextStyle(
-                                        color: kGreyText,
+                                        color: MuudColors.greyText,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 12.5,
                                       ),
@@ -547,7 +541,7 @@ class _ExploreTabState extends State<ExploreTab> {
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: MuudColors.purple,
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
@@ -559,7 +553,7 @@ class _ExploreTabState extends State<ExploreTab> {
                 child: const Text(
                   "Start Journaling",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: MuudColors.white,
                     fontSize: 16.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -653,8 +647,8 @@ class _VaultCategorySheetState extends State<_VaultCategorySheet> {
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFE7E1EF),
-                borderRadius: BorderRadius.circular(20),
+                color: const MuudColors.divider,
+                borderRadius: MuudRadius.lgAll,
               ),
             ),
             const SizedBox(height: 14),
@@ -684,21 +678,21 @@ class _VaultCategorySheetState extends State<_VaultCategorySheet> {
 
                   return InkWell(
                     onTap: () => setState(() => selected = key),
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: MuudRadius.pillAll,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected ? widget.purple : Colors.white,
-                        borderRadius: BorderRadius.circular(22),
+                        color: isSelected ? widget.purple : MuudColors.white,
+                        borderRadius: MuudRadius.pillAll,
                         border: Border.all(color: widget.purple),
                       ),
                       child: Text(
                         label,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : widget.purple,
+                          color: isSelected ? MuudColors.white : widget.purple,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -740,7 +734,7 @@ class _VaultCategorySheetState extends State<_VaultCategorySheet> {
                     child: const Text(
                       "Save",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: MuudColors.white,
                         fontWeight: FontWeight.w900,
                       ),
                     ),

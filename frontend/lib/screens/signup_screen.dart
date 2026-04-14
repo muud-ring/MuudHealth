@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:go_router/go_router.dart';
 
+import '../router/route_names.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
-// ✅ Legal popup imports
+// Legal popup imports
 import 'legal/legal_modal_page.dart';
 import 'legal/legal_texts.dart';
 
@@ -27,11 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _loading = false;
   String? _error;
-
-  static const Color kPurple = Color(0xFF5B288E);
-
-  // ✅ Figma-like disabled button color (light grey-purple)
-  static const Color kDisabledPurple = Color(0xFFB7A6C8);
+  static final Color kDisabledPurple = MuudColors.purple.withValues(alpha: 0.4);
 
   // ✅ Tooltip copy (DOB info)
   static const String _dobTooltipText =
@@ -73,8 +72,8 @@ class _SignupScreenState extends State<SignupScreen> {
               width: MediaQuery.of(ctx).size.width * 0.86,
               padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
+                color: MuudColors.white,
+                borderRadius: MuudRadius.pillAll,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -93,7 +92,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         TextSpan(
                           text: 'Privacy Policy.',
                           style: const TextStyle(
-                            color: kPurple,
+                            color: MuudColors.purple,
                             fontWeight: FontWeight.w800,
                             decoration: TextDecoration.underline,
                           ),
@@ -116,14 +115,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: MuudColors.purple,
                         shape: const StadiumBorder(),
                         elevation: 0,
                       ),
                       child: const Text(
                         'Okay',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: MuudColors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -211,17 +210,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      Navigator.pushNamed(
-        context,
-        '/otp',
-        arguments: {
-          'identifier': identifier,
-          'password': password,
-          'fullName': fullName,
-          'username': username,
-          'dob': _formatDobForBackend(_dob!),
-        },
-      );
+      context.push(Routes.otp, extra: {
+        'identifier': identifier,
+        'password': password,
+        'fullName': fullName,
+        'username': username,
+        'dob': _formatDobForBackend(_dob!),
+      });
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -249,20 +244,21 @@ class _SignupScreenState extends State<SignupScreen> {
     final bool enabled = _isFormComplete && !_loading;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple),
-          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back_ios_new, color: MuudColors.purple),
+          onPressed: () => context.pop(),
         ),
         centerTitle: true,
         title: const Text(
           'Sign Up',
           style: TextStyle(
-            color: kPurple,
+            color: MuudColors.purple,
             fontWeight: FontWeight.w800,
             fontSize: 22,
           ),
@@ -308,12 +304,13 @@ class _SignupScreenState extends State<SignupScreen> {
               hint: 'Enter your password',
               obscureText: _obscure,
               suffix: IconButton(
+                    tooltip: 'Toggle password visibility',
                 onPressed: () => setState(() => _obscure = !_obscure),
                 icon: Icon(
                   _obscure
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: kPurple,
+                  color: MuudColors.purple,
                 ),
               ),
             ),
@@ -345,10 +342,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   hint: 'MM/DD/YYYY',
                   suffix: IconButton(
+                    tooltip: 'Toggle password visibility',
                     onPressed: _pickDob,
                     icon: const Icon(
                       Icons.calendar_today_outlined,
-                      color: kPurple,
+                      color: MuudColors.purple,
                     ),
                   ),
                 ),
@@ -373,7 +371,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Learn More',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -400,7 +398,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Terms of Service',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -415,7 +413,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextSpan(
                     text: 'Privacy Policy',
                     style: const TextStyle(
-                      color: kPurple,
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -442,7 +440,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Text(
                   _error!,
                   style: const TextStyle(
-                    color: Colors.red,
+                    color: MuudColors.error,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -453,7 +451,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: ElevatedButton(
                 onPressed: enabled ? _signup : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
+                  backgroundColor: MuudColors.purple,
                   disabledBackgroundColor: kDisabledPurple,
                   shape: const StadiumBorder(),
                   elevation: 0,
@@ -464,13 +462,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: MuudColors.white,
                         ),
                       )
                     : const Text(
                         'Sign up',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: MuudColors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -534,18 +532,18 @@ class _Field extends StatelessWidget {
           vertical: 16,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(color: Color(0xFFD0D0D0)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: MuudRadius.mdAll,
           borderSide: const BorderSide(
-            color: _SignupScreenState.kPurple,
+            color: MuudColors.purple,
             width: 1.6,
           ),
         ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: MuudColors.white,
       ),
     );
   }

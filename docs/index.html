@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<!-- Muud Health App Prototype v1.1 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Muud Health - Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+      <div class="login-container">
+        <div class="login-logo">
+          <div class="logo-circle">M</div>
+          <h1>Muud Health</h1>
+          <p class="tagline">Signal &rarr; Insight &rarr; Action &rarr; Learn &rarr; Grow</p>
+        </div>
+        <div class="login-form">
+          <h2>Welcome back</h2>
+          <div class="demo-accounts">
+            <p class="demo-label">Choose a demo account:</p>
+            <button class="demo-btn" onclick="loginAs('alex','Alex Johnson')">
+              <span class="avatar-sm">AJ</span>
+              <div><strong>Alex Johnson</strong><br><small>@alex &middot; San Francisco</small></div>
+            </button>
+            <button class="demo-btn" onclick="loginAs('sam','Sam Rivera')">
+              <span class="avatar-sm">SR</span>
+              <div><strong>Sam Rivera</strong><br><small>@sam &middot; Austin</small></div>
+            </button>
+            <button class="demo-btn" onclick="loginAs('jordan','Jordan Lee')">
+              <span class="avatar-sm">JL</span>
+              <div><strong>Jordan Lee</strong><br><small>@jordan &middot; Portland</small></div>
+            </button>
+          </div>
+          <div class="divider"><span>or</span></div>
+          <input type="text" id="custom-username" placeholder="Enter username" class="input">
+          <input type="text" id="custom-name" placeholder="Display name" class="input">
+          <button class="btn-primary" onclick="loginCustom()">Sign In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App Shell -->
+    <div id="app-shell" class="screen">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button class="icon-btn" onclick="showScreen('settings')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+        <h1 class="top-title" id="top-title">Home</h1>
+        <div class="top-right">
+          <button class="icon-btn" onclick="showScreen('chat-list')" id="chat-icon-btn">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <span class="badge" id="chat-badge" style="display:none">0</span>
+          </button>
+          <button class="icon-btn" onclick="showScreen('notifications')">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content" id="content">
+        <!-- Home Tab -->
+        <div id="tab-home" class="tab-content active">
+          <div class="greeting" id="greeting"></div>
+          <div class="wellness-banner" id="wellness-banner">
+            <div class="wellness-score">
+              <div class="score-circle" id="score-circle">--</div>
+              <div class="score-label">Wellness Score</div>
+            </div>
+            <div class="wellness-details" id="wellness-details"></div>
+          </div>
+          <div class="section-title">Today's Metrics</div>
+          <div class="metrics-grid" id="metrics-grid"></div>
+          <div class="section-title">Recent Activity</div>
+          <div id="home-feed"></div>
+        </div>
+
+        <!-- Trends Tab -->
+        <div id="tab-trends" class="tab-content">
+          <div class="section-title">7-Day Overview</div>
+          <div id="trends-cards"></div>
+          <div class="section-title">Daily Summaries</div>
+          <div id="trends-history"></div>
+        </div>
+
+        <!-- Journal Tab -->
+        <div id="tab-journal" class="tab-content">
+          <div class="journal-header">
+            <h2>Journal</h2>
+            <button class="btn-primary btn-sm" onclick="showJournalCreate()">+ New Entry</button>
+          </div>
+          <div id="journal-list"></div>
+          <!-- Create journal form (hidden) -->
+          <div id="journal-create" style="display:none">
+            <textarea id="journal-text" class="input textarea" placeholder="What's on your mind today? Reflect on your wellness journey..." rows="6"></textarea>
+            <div class="journal-actions">
+              <select id="journal-visibility" class="input select">
+                <option value="connections">Connections</option>
+                <option value="innerCircle">Inner Circle</option>
+                <option value="public">Public</option>
+              </select>
+              <button class="btn-primary btn-sm" onclick="submitJournal()">Post</button>
+              <button class="btn-secondary btn-sm" onclick="hideJournalCreate()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- People Tab -->
+        <div id="tab-people" class="tab-content">
+          <div class="people-section">
+            <div class="section-title">Inner Circle</div>
+            <div class="inner-circle-ring" id="inner-circle-ring"></div>
+          </div>
+          <div class="people-section">
+            <div class="section-title">
+              Pending Requests
+              <span class="count-badge" id="request-count" style="display:none">0</span>
+            </div>
+            <div id="requests-list"></div>
+          </div>
+          <div class="people-section">
+            <div class="section-title">Connections</div>
+            <div id="connections-list"></div>
+          </div>
+          <div class="people-section">
+            <div class="section-title">Suggestions</div>
+            <div id="suggestions-list"></div>
+          </div>
+        </div>
+
+        <!-- Explore Tab -->
+        <div id="tab-explore" class="tab-content">
+          <div class="section-title">Explore</div>
+          <div id="explore-feed"></div>
+        </div>
+
+        <!-- Chat List (overlay) -->
+        <div id="screen-chat-list" class="overlay-screen">
+          <div class="overlay-header">
+            <button class="icon-btn" onclick="hideOverlay()">&larr;</button>
+            <h2>Messages</h2>
+          </div>
+          <div id="conversations-list"></div>
+        </div>
+
+        <!-- Chat Detail (overlay) -->
+        <div id="screen-chat-detail" class="overlay-screen">
+          <div class="overlay-header">
+            <button class="icon-btn" onclick="showScreen('chat-list')">&larr;</button>
+            <h2 id="chat-partner-name">Chat</h2>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-bar">
+            <input type="text" id="chat-input" class="input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+            <button class="btn-primary btn-sm" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+
+        <!-- Settings (overlay) -->
+        <div id="screen-settings" class="overlay-screen">
+          <div class="overlay-header">
+            <button class="icon-btn" onclick="hideOverlay()">&larr;</button>
+            <h2>Settings</h2>
+          </div>
+          <div class="settings-content">
+            <div class="profile-card" id="settings-profile"></div>
+            <div class="settings-group">
+              <div class="settings-item">App Version <span>Prototype 1.0</span></div>
+              <div class="settings-item">Mode <span>Development</span></div>
+              <div class="settings-item">Database <span>In-Memory</span></div>
+            </div>
+            <button class="btn-danger" onclick="logout()">Sign Out</button>
+          </div>
+        </div>
+
+        <!-- Notifications (overlay) -->
+        <div id="screen-notifications" class="overlay-screen">
+          <div class="overlay-header">
+            <button class="icon-btn" onclick="hideOverlay()">&larr;</button>
+            <h2>Notifications</h2>
+          </div>
+          <div class="notifications-content">
+            <div id="notifications-list"></div>
+          </div>
+        </div>
+
+        <!-- Profile View (overlay) -->
+        <div id="screen-profile" class="overlay-screen">
+          <div class="overlay-header">
+            <button class="icon-btn" onclick="hideOverlay()">&larr;</button>
+            <h2>Profile</h2>
+          </div>
+          <div id="profile-content"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="bottom-nav">
+        <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-btn" data-tab="trends" onclick="switchTab('trends')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Trends</span>
+        </button>
+        <button class="nav-btn journal-btn" data-tab="journal" onclick="switchTab('journal')">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="nav-btn" data-tab="people" onclick="switchTab('people')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>People</span>
+        </button>
+        <button class="nav-btn" data-tab="explore" onclick="switchTab('explore')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Explore</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

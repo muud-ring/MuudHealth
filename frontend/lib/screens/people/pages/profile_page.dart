@@ -1,9 +1,15 @@
+// MUUD Health — Profile Page
+// User profile view with posts and message CTA
+// © Muud Health — Armin Hoes, MD
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../router/route_names.dart';
+import '../../../theme/app_theme.dart';
 import '../data/people_models.dart';
-import '../pages/chat_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  static const Color kPurple = Color(0xFF5B288E);
   final Person person;
 
   const ProfilePage({super.key, required this.person});
@@ -13,101 +19,90 @@ class ProfilePage extends StatelessWidget {
     final title = person.handle.isNotEmpty ? person.handle : person.name;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kPurple),
-          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back, color: MuudColors.purple),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           title,
-          style: const TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
         child: Column(
           children: [
+            // Profile card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(MuudSpacing.base),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F0F8),
-                borderRadius: BorderRadius.circular(16),
+                color: MuudColors.purple.withValues(alpha: 0.04),
+                borderRadius: MuudRadius.lgAll,
               ),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 34,
-                    backgroundColor: const Color(0xFFE7E1F3),
+                    backgroundColor: MuudColors.lightPurple.withValues(alpha: 0.5),
                     child: Text(
                       (person.name.isNotEmpty ? person.name[0] : "?")
                           .toUpperCase(),
-                      style: const TextStyle(
-                        color: kPurple,
-                        fontWeight: FontWeight.w900,
+                      style: MuudTypography.heading.copyWith(
+                        color: MuudColors.purple,
                         fontSize: 22,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: MuudSpacing.sm),
                   Text(
                     person.name,
-                    style: const TextStyle(
-                      color: kPurple,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                    style: MuudTypography.titleMedium.copyWith(
+                      color: MuudColors.purple,
                     ),
                   ),
                   if (person.handle.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       person.handle,
-                      style: const TextStyle(
-                        color: Color(0xFF898384),
-                        fontWeight: FontWeight.w700,
+                      style: MuudTypography.caption.copyWith(
+                        color: MuudColors.greyText,
                       ),
                     ),
                   ],
                   if (person.location.isNotEmpty) ...[
-                    const SizedBox(height: 6),
+                    const SizedBox(height: MuudSpacing.xs),
                     Text(
                       person.location,
-                      style: const TextStyle(
-                        color: Color(0xFF898384),
-                        fontWeight: FontWeight.w600,
+                      style: MuudTypography.caption.copyWith(
+                        color: MuudColors.greyText,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 14),
+                  const SizedBox(height: MuudSpacing.md),
                   SizedBox(
                     height: 52,
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kPurple,
+                        backgroundColor: MuudColors.purple,
                         elevation: 0,
                         shape: const StadiumBorder(),
                       ),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatPage(
-                              otherSub: person.id, // person.id = sub
-                              title: title,
-                            ),
-                          ),
+                        context.push(
+                          Routes.chatConversation(person.id),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Message",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
+                        style: MuudTypography.button.copyWith(
+                          color: MuudColors.white,
                         ),
                       ),
                     ),
@@ -116,24 +111,23 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: MuudSpacing.base),
 
-            // Demo placeholder posts (optional)
-            const Align(
+            // Posts section
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Posts",
-                style: TextStyle(
-                  color: kPurple,
+                style: MuudTypography.titleMedium.copyWith(
+                  color: MuudColors.purple,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: MuudSpacing.sm),
             _postCard("Yoga class was amazing today!", "2h ago"),
             _postCard("Feeling a bit low but going for a walk.", "1d ago"),
-            _postCard("Meditation streak: 7 days ✅", "3d ago"),
+            _postCard("Meditation streak: 7 days", "3d ago"),
           ],
         ),
       ),
@@ -143,32 +137,28 @@ class ProfilePage extends StatelessWidget {
   Widget _postCard(String text, String time) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: MuudSpacing.sm),
+      padding: const EdgeInsets.all(MuudSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: MuudColors.white,
+        borderRadius: MuudRadius.mdAll,
+        boxShadow: MuudShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             text,
-            style: const TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+            style: MuudTypography.bodyMedium.copyWith(
+              color: MuudColors.purple,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: MuudSpacing.xs),
           Text(
             time,
-            style: const TextStyle(
-              color: Color(0xFF898384),
-              fontWeight: FontWeight.w600,
+            style: MuudTypography.caption.copyWith(
+              color: MuudColors.greyText,
               fontSize: 12,
             ),
           ),

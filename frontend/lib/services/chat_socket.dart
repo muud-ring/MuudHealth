@@ -8,7 +8,7 @@ class ChatSocket {
   // ✅ same pattern used in APIs
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:4000',
+    defaultValue: 'https://api.muudhealth.com',
   );
 
   io.Socket? _socket;

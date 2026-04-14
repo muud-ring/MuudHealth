@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "469678073444",
+    "project_id": "muud-health-ai-mvp",
+    "storage_bucket": "muud-health-ai-mvp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469678073444:android:ddeaf2603fc901ed7a2171",
+        "android_client_info": {
+          "package_name": "com.muudhealth.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgQnT6QRVAEXwaaP6CAgF201kfAphHb4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

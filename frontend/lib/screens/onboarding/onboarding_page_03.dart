@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_api.dart';
 import '../../services/onboarding_state.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 
 class OnboardingPage03 extends StatefulWidget {
   const OnboardingPage03({super.key});
@@ -10,8 +13,6 @@ class OnboardingPage03 extends StatefulWidget {
 }
 
 class _OnboardingPage03State extends State<OnboardingPage03> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   String? selectedGoal;
 
   final List<String> goalOptions = const [
@@ -43,7 +44,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
     } catch (_) {}
 
     if (!context.mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+    context.go(Routes.home);
   }
 
   @override
@@ -51,7 +52,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
     final canContinue = selectedGoal != null;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
@@ -66,10 +67,10 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: MuudColors.purple,
                     size: 22,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                 ),
               ),
 
@@ -81,7 +82,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
-                  color: kPurple,
+                  color: MuudColors.purple,
                   height: 1.2,
                 ),
               ),
@@ -94,7 +95,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 style: TextStyle(
                   fontSize: 18,
                   height: 1.4,
-                  color: kPurple,
+                  color: MuudColors.purple,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -111,7 +112,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                     final selected = selectedGoal == option;
 
                     return InkWell(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: MuudRadius.lgAll,
                       onTap: () {
                         setState(() => selectedGoal = option);
                         OnboardingState.answers.focusGoal = option; // ✅ store
@@ -123,7 +124,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: MuudRadius.lgAll,
                         ),
                         child: Row(
                           children: [
@@ -132,9 +133,9 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                               height: 28,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: kPurple, width: 2),
+                                border: Border.all(color: MuudColors.purple, width: 2),
                                 color: selected
-                                    ? Colors.white
+                                    ? MuudColors.white
                                     : Colors.transparent,
                               ),
                               child: selected
@@ -143,7 +144,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                                         width: 14,
                                         height: 14,
                                         decoration: const BoxDecoration(
-                                          color: kPurple,
+                                          color: MuudColors.purple,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -177,22 +178,22 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple.withOpacity(canContinue ? 1 : 0.5),
-                    foregroundColor: Colors.white,
+                    backgroundColor: MuudColors.purple.withValues(alpha:canContinue ? 1 : 0.5),
+                    foregroundColor: MuudColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                     elevation: 0,
                   ),
                   onPressed: canContinue
-                      ? () => Navigator.pushNamed(context, '/onboarding/04')
+                      ? () => context.push(Routes.onboarding('04'))
                       : null,
                   child: const Text(
                     "Continue",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: MuudColors.white,
                     ),
                   ),
                 ),
@@ -206,9 +207,9 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: MuudColors.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                   ),
                   onPressed: () => _skip(context),
@@ -217,7 +218,7 @@ class _OnboardingPage03State extends State<OnboardingPage03> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: MuudColors.purple,
                     ),
                   ),
                 ),

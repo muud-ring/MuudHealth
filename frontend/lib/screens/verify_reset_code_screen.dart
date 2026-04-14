@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../router/route_names.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class VerifyResetCodeScreen extends StatefulWidget {
   const VerifyResetCodeScreen({super.key});
@@ -9,8 +13,7 @@ class VerifyResetCodeScreen extends StatefulWidget {
 }
 
 class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kDisabledPurple = Color(0xFFB7A6C8);
+  static final Color kDisabledPurple = MuudColors.purple.withValues(alpha: 0.4);
 
   final _api = ApiService();
 
@@ -21,7 +24,6 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
   final List<FocusNode> _focus = List.generate(6, (_) => FocusNode());
 
   bool _loading = false;
-  String? _error;
 
   String get _code => _ctrl.map((c) => c.text).join();
   bool get _complete => _code.length == 6 && !_code.contains(RegExp(r'[^0-9]'));
@@ -77,20 +79,16 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
 
   void _continue(String identifier) {
     if (!_complete) return;
-    Navigator.pushNamed(
-      context,
-      '/reset-password',
-      arguments: {'identifier': identifier, 'code': _code},
-    );
+    context.push(Routes.resetPassword, extra: {'identifier': identifier, 'code': _code});
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+    final args = (GoRouterState.of(context).extra as Map?) ?? {};
     final identifier = (args['identifier'] ?? '') as String;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
@@ -102,7 +100,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                 'We sent you a\ncode',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: kPurple,
+                  color: MuudColors.purple,
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   height: 1.1,
@@ -165,16 +163,16 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                           vertical: 14,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: MuudRadius.mdAll,
                           borderSide: BorderSide(
-                            color: hasValue ? kPurple : Colors.black38,
+                            color: hasValue ? MuudColors.purple : Colors.black38,
                             width: 1.4,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: MuudRadius.mdAll,
                           borderSide: const BorderSide(
-                            color: kPurple,
+                            color: MuudColors.purple,
                             width: 2,
                           ),
                         ),
@@ -195,21 +193,21 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                       ? () => _continue(identifier)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
+                    backgroundColor: MuudColors.purple,
                     disabledBackgroundColor: kDisabledPurple,
                     shape: const StadiumBorder(),
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: MuudColors.white,
                         )
                       : const Text(
                           'Verify to continue',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: MuudColors.white,
                           ),
                         ),
                 ),
@@ -229,7 +227,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                     child: const Text(
                       'Resend',
                       style: TextStyle(
-                        color: kPurple,
+                        color: MuudColors.purple,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         decoration: TextDecoration.underline,

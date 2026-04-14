@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../data/people_models.dart';
+import '../../../theme/app_theme.dart';
 
 class PersonTile extends StatelessWidget {
   final Person person;
@@ -12,10 +14,6 @@ class PersonTile extends StatelessWidget {
     this.onTap,
     this.onTapMenu,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   Color _bgForTint(String tint) {
     switch (tint) {
       case "purple":
@@ -85,7 +83,7 @@ class PersonTile extends StatelessWidget {
                   Text(
                     person.name,
                     style: const TextStyle(
-                      color: kPurple,
+                      color: MuudColors.purple,
                       fontSize: 15.5,
                       fontWeight: FontWeight.w900,
                     ),
@@ -96,7 +94,7 @@ class PersonTile extends StatelessWidget {
                     Text(
                       person.lastActive,
                       style: const TextStyle(
-                        color: kGreyText,
+                        color: MuudColors.greyText,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -110,7 +108,7 @@ class PersonTile extends StatelessWidget {
                         vertical: 4.5,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.75),
+                        color: Colors.white.withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: ring, width: 1.2),
                       ),
@@ -130,7 +128,7 @@ class PersonTile extends StatelessWidget {
 
             IconButton(
               onPressed: onTapMenu,
-              icon: const Icon(Icons.more_vert, color: kPurple),
+              icon: const Icon(Icons.more_vert, color: MuudColors.purple),
               splashRadius: 18,
             ),
           ],
@@ -167,12 +165,12 @@ class _Avatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: avatarUrl.isNotEmpty
-          ? Image.network(
-              avatarUrl,
+          ? CachedNetworkImage(
+              imageUrl: avatarUrl,
               width: 52,
               height: 52,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(letter),
+              errorWidget: (_, __, ___) => _placeholder(letter),
             )
           : _placeholder(letter),
     );
@@ -183,7 +181,7 @@ class _Avatar extends StatelessWidget {
       child: Text(
         letter,
         style: const TextStyle(
-          color: Color(0xFF5B288E),
+          color: MuudColors.purple,
           fontWeight: FontWeight.w900,
           fontSize: 18,
         ),

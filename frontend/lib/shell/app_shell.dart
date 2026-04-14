@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import '../services/token_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
+import '../providers/people_provider.dart';
+import '../router/route_names.dart';
 
 // Screens (content-only)
 import '../screens/home/home_tab.dart';
@@ -13,48 +17,41 @@ import '../screens/top_nav/notifications_screen.dart';
 
 // People events (to refresh badge)
 import '../screens/people/state/people_events.dart';
-import '../services/people_api.dart';
 
-// ✅ NEW: chat badge
+// Chat badge (still uses ValueNotifier for Socket.IO real-time)
 import '../screens/chat/state/chat_badge.dart';
 
 // Journal Tab
 import '../screens/journal/pages/creator_tool_screen.dart';
+import '../theme/app_theme.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
-  static const Color kPurple = Color(0xFF5B288E);
-
+class _AppShellState extends ConsumerState<AppShell> {
   int _selectedIndex = 0;
-
-  // ✅ forces PeopleTab to rebuild when user taps People
   int _peopleReloadTick = 0;
-
-  // ✅ badge count for bell
-  int _requestCount = 0;
 
   @override
   void initState() {
     super.initState();
 
-    // Load initial badge count
-    _refreshRequestCount();
+    // Load people data (includes requests for badge count)
+    ref.read(peopleProvider.notifier).loadAll();
 
-    // Whenever PeopleEvents says "reload", refresh badge too
+    // Whenever PeopleEvents says "reload", refresh via provider
     PeopleEvents.reload.addListener(_onPeopleReloadSignal);
 
-    // ✅ start chat badge socket + initial unread fetch
+    // Start chat badge socket + initial unread fetch
     ChatBadge.start();
   }
 
   void _onPeopleReloadSignal() {
-    _refreshRequestCount();
+    ref.read(peopleProvider.notifier).loadAll();
   }
 
   @override
@@ -64,28 +61,14 @@ class _AppShellState extends State<AppShell> {
     super.dispose();
   }
 
-  Future<void> _refreshRequestCount() async {
-    try {
-      final list = await PeopleApi.fetchRequests();
-      if (!mounted) return;
-      setState(() => _requestCount = list.length);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _requestCount = 0);
-    }
-  }
-
   Future<void> _logout() async {
-    // ✅ reset badge + disconnect socket so no stale UI
     ChatBadge.reset();
-
-    await TokenStorage.clearTokens();
+    await ref.read(authProvider.notifier).logout();
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    context.go(Routes.login);
   }
 
   void _onNavTap(int index) {
-    // ✅ "+" should open Creator Tool instead of switching tabs
     if (index == 2) {
       Navigator.of(
         context,
@@ -97,7 +80,7 @@ class _AppShellState extends State<AppShell> {
       _selectedIndex = index;
       if (index == 3) {
         _peopleReloadTick++;
-        _refreshRequestCount();
+        ref.read(peopleProvider.notifier).loadAll();
       }
     });
   }
@@ -120,38 +103,38 @@ class _AppShellState extends State<AppShell> {
   }
 
   List<Widget> _rightActionsForIndex() {
-    // ✅ only People page shows bell + messages
+    final requestCount = ref.watch(peopleProvider).requests.length;
+
     if (_selectedIndex == 3) {
       return [
         IconButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/chat/conversations');
-          },
+          tooltip: 'Messages',
+          onPressed: () => context.push(Routes.chat),
           icon: const _MessageWithBadge(),
         ),
         IconButton(
+          tooltip: 'Notifications',
           onPressed: () async {
             await Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             );
-            _refreshRequestCount();
+            ref.read(peopleProvider.notifier).loadAll();
           },
-          icon: _BellWithBadge(count: _requestCount),
+          icon: _BellWithBadge(count: requestCount),
         ),
       ];
     }
 
-    // Default: chat + logout
     return [
       IconButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/chat/conversations');
-        },
+        tooltip: 'Messages',
+        onPressed: () => context.push(Routes.chat),
         icon: const _MessageWithBadge(),
       ),
       IconButton(
+        tooltip: 'Log out',
         onPressed: _logout,
-        icon: const Icon(Icons.logout, color: kPurple),
+        icon: const Icon(Icons.logout, color: MuudColors.purple),
       ),
     ];
   }
@@ -168,14 +151,8 @@ class _AppShellState extends State<AppShell> {
           child: _TopBar(
             title: _titleForIndex(_selectedIndex),
             rightActions: _rightActionsForIndex(),
-            onTapLeft1: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-            },
-            onTapLeft2: () {
-              Navigator.of(context).pushNamed('/vault');
-            },
+            onTapLeft1: () => context.push(Routes.settings),
+            onTapLeft2: () => context.push(Routes.vault),
           ),
         ),
       ),
@@ -213,9 +190,6 @@ class _TopBar extends StatelessWidget {
     required this.onTapLeft2,
     required this.rightActions,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -226,11 +200,11 @@ class _TopBar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onTapLeft1,
-                icon: const Icon(Icons.settings_outlined, color: kPurple),
+                icon: const Icon(Icons.settings_outlined, color: MuudColors.purple),
               ),
               IconButton(
                 onPressed: onTapLeft2,
-                icon: const Icon(Icons.lock_outline, color: kPurple),
+                icon: const Icon(Icons.lock_outline, color: MuudColors.purple),
               ),
             ],
           ),
@@ -238,7 +212,7 @@ class _TopBar extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: kPurple,
+              color: MuudColors.purple,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -255,9 +229,6 @@ class _TopBar extends StatelessWidget {
 
 class _MessageWithBadge extends StatelessWidget {
   const _MessageWithBadge();
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -266,7 +237,7 @@ class _MessageWithBadge extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            const Icon(Icons.chat_bubble_outline, color: kPurple),
+            const Icon(Icons.chat_bubble_outline, color: MuudColors.purple),
             if (count > 0)
               Positioned(
                 right: -4,
@@ -308,15 +279,12 @@ class _MessageWithBadge extends StatelessWidget {
 class _BellWithBadge extends StatelessWidget {
   final int count;
   const _BellWithBadge({required this.count});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const Icon(Icons.notifications_none, color: kPurple),
+        const Icon(Icons.notifications_none, color: MuudColors.purple),
         if (count > 0)
           Positioned(
             right: -4,
@@ -352,10 +320,6 @@ class _BottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   const _BottomNav({required this.selectedIndex, required this.onTap});
-
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -374,8 +338,8 @@ class _BottomNav extends StatelessWidget {
         currentIndex: selectedIndex,
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: kPurple,
-        unselectedItemColor: kGreyText,
+        selectedItemColor: MuudColors.purple,
+        unselectedItemColor: MuudColors.greyText,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -399,15 +363,13 @@ class _BottomNav extends StatelessWidget {
 
 class _PlusIcon extends StatelessWidget {
   const _PlusIcon();
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: kPurple,
+        color: MuudColors.purple,
         borderRadius: BorderRadius.circular(14),
       ),
       child: const Icon(Icons.add, color: Colors.white, size: 26),

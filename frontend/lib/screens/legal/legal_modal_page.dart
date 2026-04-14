@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../theme/app_theme.dart';
 
 class LegalModalPage extends StatelessWidget {
   const LegalModalPage({super.key, required this.title, required this.body});
 
   final String title;
   final String body;
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
 
       // Figma-like top bar (back arrow + centered purple title)
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: MuudColors.white,
+        surfaceTintColor: MuudColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kPurple),
-          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back_ios_new, color: MuudColors.purple),
+          onPressed: () => context.pop(),
         ),
         centerTitle: true,
         title: Text(
           title,
           style: const TextStyle(
-            color: kPurple,
+            color: MuudColors.purple,
             fontWeight: FontWeight.w800,
             fontSize: 30, // close to Figma
             height: 1.1,

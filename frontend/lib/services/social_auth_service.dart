@@ -4,13 +4,20 @@ import 'package:crypto/crypto.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SocialAuthService {
-  // ✅ Your Cognito Hosted UI domain + client id
-  static const String domain =
-      'https://us-west-2kl77r4jwp.auth.us-west-2.amazoncognito.com';
-  static const String clientId = '754pdur7oaaqe0a5vtupvfp464';
+  // Cognito Hosted UI domain
+  // Required: --dart-define=SOCIAL_AUTH_COGNITO_DOMAIN=https://your-domain.auth.region.amazoncognito.com
+  static const String domain = String.fromEnvironment('SOCIAL_AUTH_COGNITO_DOMAIN');
 
-  // ✅ Your deep link callback
-  static const String redirectUri = 'muud://auth/callback';
+  // Cognito App Client ID for social auth
+  // Required: --dart-define=SOCIAL_AUTH_CLIENT_ID=your-client-id
+  static const String clientId = String.fromEnvironment('SOCIAL_AUTH_CLIENT_ID');
+
+  // Deep link callback URI
+  // Required: --dart-define=SOCIAL_AUTH_REDIRECT_URI=your-redirect-uri
+  static const String redirectUri = String.fromEnvironment(
+    'SOCIAL_AUTH_REDIRECT_URI',
+    defaultValue: 'muud://auth/callback',
+  );
 
   // Scopes for OIDC
   static const String scope = 'openid email profile';

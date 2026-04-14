@@ -1,143 +1,84 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+// MUUD Health — Vault API Service
+// Private content vault with categories and tags
+// © Muud Health — Armin Hoes, MD
 
-import 'token_storage.dart';
+import 'api_client.dart';
 
 class VaultApi {
-  static const String _baseUrl = "http://127.0.0.1:4000";
+  VaultApi._();
 
-  static Future<Map<String, String>> _authHeaders() async {
-    final access = await TokenStorage.getAccessToken();
-    if (access == null || access.isEmpty) {
-      throw Exception("Missing access token");
-    }
-    return <String, String>{
-      "Authorization": "Bearer $access",
-      "Content-Type": "application/json",
-    };
-  }
-
-  /// GET /vault/landing
+  /// GET /api/v1/vault/landing — vault landing with categories
   static Future<List<Map<String, dynamic>>> getLanding({
-    String? chip, // optional client-side filter
-    String? search, // optional client-side filter
+    String? chip,
+    String? search,
   }) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/vault/landing");
+    final res = await ApiClient.get('/api/v1/vault/landing');
+    final data = ApiClient.handleResponse(res);
+    final sections = (data['sections'] as List?) ?? [];
+    var list = sections.cast<Map<String, dynamic>>();
 
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Vault landing failed: ${res.body}");
-    }
-
-    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-    final sections = (decoded["sections"] as List?) ?? [];
-    final list = sections.cast<Map<String, dynamic>>();
-
-    // Client-side filter (MVP)
-    final c = (chip ?? "").toLowerCase().trim();
-    final q = (search ?? "").toLowerCase().trim();
+    // Client-side filtering (MVP)
+    final c = (chip ?? '').toLowerCase().trim();
+    final q = (search ?? '').toLowerCase().trim();
 
     Iterable<Map<String, dynamic>> out = list;
 
-    if (c.isNotEmpty && c != "all") {
-      out = out.where((s) => (s["key"] ?? "").toString().toLowerCase() == c);
+    if (c.isNotEmpty && c != 'all') {
+      out = out.where((s) => (s['key'] ?? '').toString().toLowerCase() == c);
     }
 
     if (q.isNotEmpty) {
-      // Search within preview captions (MVP). Later: backend search.
-      out = out
-          .map((s) {
-            final preview = ((s["preview"] as List?) ?? [])
-                .cast<Map<String, dynamic>>();
-            final filtered = preview.where((p) {
-              final caption = (p["caption"] ?? "").toString().toLowerCase();
-              return caption.contains(q);
-            }).toList();
-
-            // Keep section if:
-            // - it already has count > 0
-            // - or preview matches query (filtered not empty)
-            return {...s, "preview": filtered};
-          })
-          .where((s) {
-            final count = (s["count"] is int)
-                ? (s["count"] as int)
-                : int.tryParse("${s["count"]}") ?? 0;
-            final preview = ((s["preview"] as List?) ?? []);
-            return count > 0 || preview.isNotEmpty;
-          });
+      out = out.map((s) {
+        final preview = ((s['preview'] as List?) ?? []).cast<Map<String, dynamic>>();
+        final filtered = preview.where((p) {
+          final caption = (p['caption'] ?? '').toString().toLowerCase();
+          return caption.contains(q);
+        }).toList();
+        return {...s, 'preview': filtered};
+      }).where((s) {
+        final count = (s['count'] is int) ? (s['count'] as int) : int.tryParse('${s["count"]}') ?? 0;
+        final preview = ((s['preview'] as List?) ?? []);
+        return count > 0 || preview.isNotEmpty;
+      });
     }
 
     return out.toList();
   }
 
-  /// POST /vault/save
-  static Future<String> save({
-    required String sourceId, // postId
-    required String category, // friends/family/...
-    List<Map<String, String>> tags = const [],
-    String experienceType = "",
-  }) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/vault/save");
-
-    final body = {
-      "sourceType": "post",
-      "sourceId": sourceId,
-      "category": category.toLowerCase().trim(),
-      "tags": tags,
-      "experienceType": experienceType,
-    };
-
-    final res = await http.post(uri, headers: headers, body: jsonEncode(body));
-
-    // backend may return 200 { ok:true, message:"Already saved" } OR 201
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception("Vault save failed: ${res.body}");
-    }
-
-    final decoded = jsonDecode(res.body);
-    if (decoded is Map && decoded["message"] != null) {
-      return decoded["message"].toString();
-    }
-
-    return res.statusCode == 201 ? "Saved to Vault ✅" : "Saved ✅";
-  }
-
-  /// DELETE /vault/save?sourceId=<postId>
-  static Future<void> unsave({required String sourceId}) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/vault/save?sourceId=$sourceId");
-
-    final res = await http.delete(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Vault unsave failed: ${res.body}");
-    }
-  }
-
-  /// GET /vault/items?category=friends&limit=20&cursor=<ISO>
+  /// GET /api/v1/vault/items — paginated vault items
   static Future<Map<String, dynamic>> getItems({
     required String category,
+    String? tag,
+    int page = 1,
     int limit = 20,
-    String? cursor, // savedAt ISO
-    String? from, // ISO
-    String? to, // ISO
   }) async {
-    final headers = await _authHeaders();
+    final params = <String>['category=$category', 'page=$page', 'limit=$limit'];
+    if (tag != null) params.add('tag=${Uri.encodeComponent(tag)}');
+    final res = await ApiClient.get('/api/v1/vault/items?${params.join("&")}');
+    return ApiClient.handleResponse(res);
+  }
 
-    final qp = <String, String>{"category": category, "limit": "$limit"};
-    if (cursor != null && cursor.isNotEmpty) qp["cursor"] = cursor;
-    if (from != null && from.isNotEmpty) qp["from"] = from;
-    if (to != null && to.isNotEmpty) qp["to"] = to;
+  /// POST /api/v1/vault/save — save item to vault
+  static Future<String> save({
+    required String sourceId,
+    required String category,
+    List<Map<String, String>> tags = const [],
+    String experienceType = '',
+  }) async {
+    final res = await ApiClient.post('/api/v1/vault/save', body: {
+      'sourceType': 'post',
+      'sourceId': sourceId,
+      'category': category.toLowerCase().trim(),
+      'tags': tags,
+      'experienceType': experienceType,
+    });
+    final data = ApiClient.handleResponse(res);
+    return data['message']?.toString() ?? 'Saved to Vault';
+  }
 
-    final uri = Uri.parse("$_baseUrl/vault/items").replace(queryParameters: qp);
-
-    final res = await http.get(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Vault items failed: ${res.body}");
-    }
-
-    return jsonDecode(res.body) as Map<String, dynamic>;
+  /// DELETE /api/v1/vault/save — remove from vault
+  static Future<void> unsave({required String sourceId}) async {
+    final res = await ApiClient.delete('/api/v1/vault/save?sourceId=$sourceId');
+    ApiClient.handleResponse(res);
   }
 }

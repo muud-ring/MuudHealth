@@ -1,23 +1,29 @@
-import 'package:flutter/material.dart';
+// MUUD Health — Conversations Page
+// Inbox with real-time Socket.IO updates
+// Signal Pathway: Learn layer (shared experiences)
+// © Muud Health — Armin Hoes, MD
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../providers/chat_provider.dart';
+import '../../../router/route_names.dart';
 import '../../../services/chat_api.dart';
 import '../../../services/chat_socket.dart';
-
-import '../../people/pages/chat_page.dart';
+import '../../../theme/app_theme.dart';
 import '../data/conversation_models.dart';
 import '../state/chat_badge.dart';
 
-class ConversationsPage extends StatefulWidget {
+class ConversationsPage extends ConsumerStatefulWidget {
   const ConversationsPage({super.key});
 
   @override
-  State<ConversationsPage> createState() => _ConversationsPageState();
+  ConsumerState<ConversationsPage> createState() => _ConversationsPageState();
 }
 
-class _ConversationsPageState extends State<ConversationsPage> {
-  static const kPurple = Color(0xFF5B288E);
-  static const kGrey = Color(0xFF898384);
-
+class _ConversationsPageState extends ConsumerState<ConversationsPage> {
   bool loading = true;
   bool _socketReady = false;
   String? error;
@@ -25,22 +31,17 @@ class _ConversationsPageState extends State<ConversationsPage> {
 
   List<ConversationItem> all = [];
 
-  // keep a reference so we can .off() in dispose
-  dynamic _socket; // io.Socket (dynamic avoids import issues)
+  dynamic _socket;
 
   @override
   void initState() {
     super.initState();
     _load();
     _initSocket();
-
-    // ✅ when user opens Messages screen, refresh badge once
     ChatBadge.refresh();
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                               DATA LOAD                                    */
-  /* -------------------------------------------------------------------------- */
+  /* ── Data ─────────────────────────────────────────────────────────── */
 
   Future<void> _load() async {
     if (!mounted) return;
@@ -65,42 +66,32 @@ class _ConversationsPageState extends State<ConversationsPage> {
     }
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                             SOCKET (INBOX)                                 */
-  /* -------------------------------------------------------------------------- */
+  /* ── Socket ───────────────────────────────────────────────────────── */
 
   Future<void> _initSocket() async {
     try {
       final socket = await ChatSocket.instance.connect();
       _socket = socket;
 
-      // remove old listeners (safe)
       socket.off('inboxUpdate');
       socket.off('connect');
       socket.off('disconnect');
 
-      // fired when backend emits inboxUpdate
       socket.on('inboxUpdate', (_) {
         _load();
-        ChatBadge.refresh(); // ✅ keep badge in sync too
+        ChatBadge.refresh();
       });
 
       socket.on('connect', (_) {
-        // ignore: avoid_print
-        print('✅ Inbox socket connected');
         if (mounted) setState(() => _socketReady = true);
       });
 
       socket.on('disconnect', (_) {
-        // ignore: avoid_print
-        print('⚠️ Inbox socket disconnected');
         if (mounted) setState(() => _socketReady = false);
       });
 
       if (mounted) setState(() => _socketReady = socket.connected == true);
-    } catch (e) {
-      // ignore: avoid_print
-      print('❌ Inbox socket error: $e');
+    } catch (_) {
       if (mounted) setState(() => _socketReady = false);
     }
   }
@@ -115,9 +106,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
     super.dispose();
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                                   UI                                       */
-  /* -------------------------------------------------------------------------- */
+  /* ── UI ───────────────────────────────────────────────────────────── */
 
   @override
   Widget build(BuildContext context) {
@@ -129,43 +118,51 @@ class _ConversationsPageState extends State<ConversationsPage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
-        leading: const BackButton(color: kPurple),
-        title: const Text(
+        leading: IconButton(
+          tooltip: 'Go back',
+          icon: const Icon(Icons.arrow_back, color: MuudColors.purple),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
           "Messages",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+          style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
         ),
         actions: [
-          // tiny indicator for socket (optional)
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: MuudSpacing.md),
             child: Icon(
               Icons.circle,
               size: 10,
-              color: _socketReady ? Colors.green : Colors.grey,
+              color: _socketReady ? Colors.green : MuudColors.greyText,
             ),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+        padding: const EdgeInsets.fromLTRB(
+          MuudSpacing.lg, MuudSpacing.sm, MuudSpacing.lg, MuudSpacing.lg,
+        ),
         child: Column(
           children: [
-            // Search
+            // Search bar
             Container(
               height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.md),
               decoration: BoxDecoration(
-                border: Border.all(color: kPurple.withOpacity(0.5), width: 1.2),
-                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: MuudColors.purple.withValues(alpha: 0.5),
+                  width: 1.2,
+                ),
+                borderRadius: MuudRadius.mdAll,
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search, color: kPurple),
-                  const SizedBox(width: 10),
+                  const Icon(Icons.search, color: MuudColors.purple),
+                  const SizedBox(width: MuudSpacing.sm),
                   Expanded(
                     child: TextField(
                       onChanged: (v) => setState(() => q = v),
@@ -179,30 +176,31 @@ class _ConversationsPageState extends State<ConversationsPage> {
               ),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: MuudSpacing.md),
 
             if (loading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(color: MuudColors.purple),
+                ),
+              )
             else if (error != null)
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 40, color: kPurple),
-                      const SizedBox(height: 10),
+                      const Icon(Icons.error_outline, size: 44, color: MuudColors.purple),
+                      const SizedBox(height: MuudSpacing.sm),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: kGrey,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: MuudTypography.caption.copyWith(color: MuudColors.greyText),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: MuudSpacing.md),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPurple,
+                          backgroundColor: MuudColors.purple,
                           elevation: 0,
                           shape: const StadiumBorder(),
                         ),
@@ -210,9 +208,9 @@ class _ConversationsPageState extends State<ConversationsPage> {
                           await _load();
                           ChatBadge.refresh();
                         },
-                        child: const Text(
+                        child: Text(
                           "Retry",
-                          style: TextStyle(color: Colors.white),
+                          style: MuudTypography.button.copyWith(color: MuudColors.white),
                         ),
                       ),
                     ],
@@ -220,17 +218,18 @@ class _ConversationsPageState extends State<ConversationsPage> {
                 ),
               )
             else if (filtered.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(
                     "No conversations yet.",
-                    style: TextStyle(color: kGrey, fontWeight: FontWeight.w600),
+                    style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText),
                   ),
                 ),
               )
             else
               Expanded(
                 child: RefreshIndicator(
+                  color: MuudColors.purple,
                   onRefresh: () async {
                     await _load();
                     ChatBadge.refresh();
@@ -238,11 +237,9 @@ class _ConversationsPageState extends State<ConversationsPage> {
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const Divider(height: 18),
+                    separatorBuilder: (_, __) => const Divider(height: MuudSpacing.lg),
                     itemBuilder: (context, i) {
                       final c = filtered[i];
-
-                      // ✅ always try username first for title
                       final displayTitle = c.username.isNotEmpty
                           ? '@${c.username}'
                           : c.name;
@@ -250,17 +247,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
                       return _ConversationRow(
                         item: c,
                         onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatPage(
-                                otherSub: c.otherSub,
-                                title: displayTitle,
-                              ),
-                            ),
-                          );
-
-                          // ✅ after returning from chat, refresh badge
+                          await context.push(Routes.chatConversation(c.otherSub));
                           ChatBadge.refresh();
                         },
                       );
@@ -275,23 +262,23 @@ class _ConversationsPageState extends State<ConversationsPage> {
   }
 }
 
+/* ── Conversation Row ──────────────────────────────────────────────── */
+
 class _ConversationRow extends StatelessWidget {
   final ConversationItem item;
   final VoidCallback onTap;
 
   const _ConversationRow({required this.item, required this.onTap});
 
-  static const kPurple = Color(0xFF5B288E);
-  static const kGrey = Color(0xFF898384);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: MuudRadius.mdAll,
       child: Row(
         children: [
           _Avatar(url: item.avatarUrl, label: item.name),
-          const SizedBox(width: 12),
+          const SizedBox(width: MuudSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,34 +287,29 @@ class _ConversationRow extends StatelessWidget {
                   item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black,
+                  style: MuudTypography.label.copyWith(
+                    color: MuudColors.purple,
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: MuudSpacing.xxs),
                 Text(
                   item.lastMessage.isEmpty ? " " : item.lastMessage,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: kGrey,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: MuudSpacing.sm),
 
-          // Keep your existing small dot behavior (does NOT depend on unreadCount)
           if (item.lastMessage.isNotEmpty)
             Container(
               width: 10,
               height: 10,
               decoration: const BoxDecoration(
-                color: kPurple,
+                color: MuudColors.purple,
                 shape: BoxShape.circle,
               ),
             ),
@@ -337,24 +319,24 @@ class _ConversationRow extends StatelessWidget {
   }
 }
 
+/* ── Avatar ─────────────────────────────────────────────────────────── */
+
 class _Avatar extends StatelessWidget {
   final String url;
   final String label;
 
   const _Avatar({required this.url, required this.label});
 
-  static const kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     if (url.isNotEmpty) {
       return ClipOval(
-        child: Image.network(
-          url,
+        child: CachedNetworkImage(
+          imageUrl: url,
           width: 52,
           height: 52,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _placeholder(),
+          errorWidget: (_, __, ___) => _placeholder(),
         ),
       );
     }
@@ -369,14 +351,14 @@ class _Avatar extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: kPurple, width: 2),
+        color: MuudColors.lightPurple.withValues(alpha: 0.5),
+        border: Border.all(color: MuudColors.purple, width: 2),
       ),
       child: Center(
         child: Text(
           letter,
-          style: const TextStyle(
-            color: kPurple,
-            fontWeight: FontWeight.w900,
+          style: MuudTypography.heading.copyWith(
+            color: MuudColors.purple,
             fontSize: 18,
           ),
         ),

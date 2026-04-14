@@ -1,5 +1,10 @@
+// MUUD Health — Edit Journal Screen
+// Caption editing for journal posts
+// © Muud Health — Armin Hoes, MD
+
 import 'package:flutter/material.dart';
 import '../../../services/journal_api.dart';
+import '../../../theme/app_theme.dart';
 
 class EditJournalScreen extends StatefulWidget {
   final String postId;
@@ -16,8 +21,6 @@ class EditJournalScreen extends StatefulWidget {
 }
 
 class _EditJournalScreenState extends State<EditJournalScreen> {
-  static const Color kPurple = Color(0xFF5B288E);
-
   late final TextEditingController _captionCtrl;
   bool _saving = false;
   String? _error;
@@ -36,20 +39,15 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
-
-    setState(() {
-      _saving = true;
-      _error = null;
-    });
+    setState(() { _saving = true; _error = null; });
 
     try {
       await JournalApi.updatePost(
         postId: widget.postId,
         caption: _captionCtrl.text.trim(),
       );
-
       if (!mounted) return;
-      Navigator.pop(context, true); // ✅ tells Home to reload
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString().replaceFirst("Exception: ", ""));
@@ -61,28 +59,27 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kPurple),
-        title: const Text(
+        iconTheme: const IconThemeData(color: MuudColors.purple),
+        title: Text(
           "Edit Journal",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+          style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
         ),
         actions: [
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
                 ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    width: 18, height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: MuudColors.purple),
                   )
-                : const Text(
+                : Text(
                     "Save",
-                    style: TextStyle(
-                      color: kPurple,
+                    style: MuudTypography.label.copyWith(
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -90,41 +87,37 @@ class _EditJournalScreenState extends State<EditJournalScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        padding: const EdgeInsets.fromLTRB(MuudSpacing.base, MuudSpacing.md, MuudSpacing.base, MuudSpacing.base),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_error != null)
+            if (_error != null) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(MuudSpacing.md),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withOpacity(0.25)),
+                  color: MuudColors.error.withValues(alpha: 0.08),
+                  borderRadius: MuudRadius.mdAll,
+                  border: Border.all(color: MuudColors.error.withValues(alpha: 0.25)),
                 ),
                 child: Text(
                   _error!,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: MuudTypography.bodySmall.copyWith(color: MuudColors.error),
                 ),
               ),
-            if (_error != null) const SizedBox(height: 12),
-            const Text(
+              const SizedBox(height: MuudSpacing.md),
+            ],
+            Text(
               "Caption",
-              style: TextStyle(color: kPurple, fontWeight: FontWeight.w900),
+              style: MuudTypography.label.copyWith(color: MuudColors.purple, fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: MuudSpacing.sm),
             TextField(
               controller: _captionCtrl,
               maxLines: 4,
               decoration: InputDecoration(
                 hintText: "Update your caption… #hashtags",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                border: OutlineInputBorder(borderRadius: MuudRadius.mdAll),
               ),
             ),
           ],

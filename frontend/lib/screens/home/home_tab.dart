@@ -1,20 +1,24 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../../services/user_api.dart';
 import '../../services/token_storage.dart';
+import '../../theme/app_theme.dart';
+import 'widgets/daily_greeting_card.dart';
+import 'widgets/quick_stats_row.dart';
+import 'widgets/signal_pathway_card.dart';
 
-class HomeTab extends StatefulWidget {
+class HomeTab extends ConsumerStatefulWidget {
   const HomeTab({super.key});
 
   @override
-  State<HomeTab> createState() => _HomeTabState();
+  ConsumerState<HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
+class _HomeTabState extends ConsumerState<HomeTab> {
   String _displayName = "there";
   String _location = "";
   String? _avatarUrl;
@@ -125,45 +129,57 @@ class _HomeTabState extends State<HomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            Text(
-              "Good Morning $_displayName!",
-              style: const TextStyle(
-                fontSize: 28,
-                height: 1.1,
-                fontWeight: FontWeight.w800,
-                color: kPurple,
-              ),
-            ),
-            const SizedBox(height: 18),
+            // Greeting card (context-aware, replaces static text)
+            DailyGreetingCard(displayName: _displayName),
 
-            // Error (keep)
+            const SizedBox(height: MuudSpacing.base),
+
+            // Error banner
             if (_error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _error!,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w700,
+                padding: const EdgeInsets.only(bottom: MuudSpacing.md),
+                child: Container(
+                  padding: const EdgeInsets.all(MuudSpacing.md),
+                  decoration: BoxDecoration(
+                    color: MuudColors.error.withValues(alpha: 0.08),
+                    borderRadius: MuudRadius.mdAll,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded,
+                          color: MuudColors.error, size: 18),
+                      const SizedBox(width: MuudSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: MuudTypography.bodySmall.copyWith(
+                            color: MuudColors.error,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
 
-            // Profile card (Figma-like)
+            // Quick stats row (biometric snapshot)
+            const QuickStatsRow(
+              heartRate: null, // Populated when ring data available
+              steps: null,
+              sleepMinutes: null,
+              stressLevel: null,
+            ),
+
+            const SizedBox(height: MuudSpacing.base),
+
+            // Profile card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+                color: MuudColors.white,
+                borderRadius: MuudRadius.lgAll,
+                boxShadow: MuudShadows.card,
               ),
               child: Column(
                 children: [
@@ -171,18 +187,16 @@ class _HomeTabState extends State<HomeTab> {
                     alignment: Alignment.topRight,
                     child: GestureDetector(
                       onTap: () async {
-                        final updated = await Navigator.pushNamed(
-                          context,
+                        final updated = await context.push<bool>(
                           '/edit-profile',
                         );
                         if (updated == true) await _loadAll();
                       },
-                      child: const Text(
+                      child: Text(
                         "Edit",
-                        style: TextStyle(
-                          color: kPurple,
+                        style: MuudTypography.label.copyWith(
+                          color: MuudColors.purple,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -192,108 +206,72 @@ class _HomeTabState extends State<HomeTab> {
                   const SizedBox(height: 12),
                   Text(
                     _displayName,
-                    style: const TextStyle(
-                      color: kPurple,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                    style: MuudTypography.titleMedium.copyWith(
+                      color: MuudColors.purple,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _location.isNotEmpty ? _location : " ",
-                    style: const TextStyle(
-                      color: kGreyText,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
+                    style: MuudTypography.caption.copyWith(
+                      color: MuudColors.greyText,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 90),
+            const SizedBox(height: MuudSpacing.base),
 
-            // ✅ Empty State (Figma)
-            Center(
-              child: Column(
-                children: [
-                  // icon
-                  Container(
-                    width: 72,
-                    height: 72,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.pie_chart_outline,
-                      size: 54,
-                      color: kPurple.withOpacity(0.25),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "No Data",
-                    style: TextStyle(
-                      color: kPurple,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Your trends will show up here.",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            // Signal Pathway progress card
+            const SignalPathwayCard(
+              signalProgress: 0.0, // Will be computed from ring data
+              insightProgress: 0.0,
+              actionProgress: 0.0,
+              learnProgress: 0.0,
+              growProgress: 0.0,
             ),
 
-            const SizedBox(height: 26),
+            const SizedBox(height: MuudSpacing.lg),
 
-            // ✅ Start Journaling button (Figma)
+            // Start Journaling CTA
             SizedBox(
               height: 56,
               width: double.infinity,
               child: ElevatedButton(
-                // UI-only: keep safe (do nothing if loading)
-                onPressed: _loading
-                    ? null
-                    : () {
-                        // Keep logic unchanged; wire later if needed
-                        // Navigator.pushNamed(context, '/journal/create');
-                      },
+                onPressed: _loading ? null : () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPurple,
-                  disabledBackgroundColor: kPurple.withOpacity(0.35),
+                  backgroundColor: MuudColors.purple,
+                  disabledBackgroundColor: MuudColors.purple.withValues(alpha: 0.35),
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   "Start Journaling",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                  style: MuudTypography.button.copyWith(
+                    color: MuudColors.white,
                   ),
                 ),
               ),
             ),
 
-            // Keep loading indicator but don't change logic
+            // Loading indicator
             if (_loading)
               const Padding(
-                padding: EdgeInsets.only(top: 18),
+                padding: EdgeInsets.only(top: MuudSpacing.base),
                 child: Center(
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: MuudColors.purple,
+                    ),
                   ),
                 ),
               ),
+
+            const SizedBox(height: MuudSpacing.xxl),
           ],
         ),
       ),
@@ -317,12 +295,12 @@ class _HomeTabState extends State<HomeTab> {
 
     if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
       return ClipOval(
-        child: Image.network(
-          _avatarUrl!,
+        child: CachedNetworkImage(
+          imageUrl: _avatarUrl!,
           width: 98,
           height: 98,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _placeholderAvatar(),
+          errorWidget: (_, __, ___) => _placeholderAvatar(),
         ),
       );
     }

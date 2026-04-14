@@ -1,0 +1,2035 @@
+openapi: 3.1.0
+info:
+  title: MUUD Health API
+  version: 1.1.0
+  description: |
+    Unified API contract for the MUUD Health ecosystem.
+
+    All six parallel workstreams (App, Portal, Backend, Ring SDK, Clinic, Academy)
+    build against this single source of truth. Endpoints are organized by the
+    three organizational pillars (Tech, Clinic, Academy) and routed through the
+    MUUD Portal as central signal router.
+
+    **SCA-IPA-BGA-SCA Product Loop Integration:**
+    - Signal endpoints: biometrics, mood check-ins, journal capture, intake forms
+    - Connect endpoints: social graph, clinical linking, coach matching
+    - Action endpoints: notifications, push, reminders, treatment recommendations
+    - Insight endpoints: analytics, trends, reports, clinical summaries
+    - Internal engine: treatment plans, credentials, curriculum, platform ops
+
+    **Authentication:** AWS Cognito (User Pool: us-west-2_VrtcZ20k3)
+    **Backend:** Express 5.2.1 + MongoDB (Mongoose 9.3) + Socket.IO 4.8.3
+    **CDN:** cdn.muudhealth.com (CloudFront → S3 muud-mvp-2025)
+  contact:
+    name: Armin Hoes, MD
+    email: armin@muudring.com
+    url: https://www.muudhealth.com
+  license:
+    name: Proprietary
+    identifier: LicenseRef-MUUD-Proprietary
+
+servers:
+  - url: https://api.muudhealth.com/api/v1
+    description: Production (ALB → ECS)
+  - url: http://localhost:4000/api/v1
+    description: Local development
+  - url: https://api.muudhealth.com
+    description: Legacy unversioned (deprecated — migrate to /api/v1)
+
+tags:
+  # ── MUUD Tech (Product Ops) ──────────────────────────────────
+  - name: Auth
+    description: Cognito signup, login, token refresh, password reset
+  - name: User
+    description: User profile CRUD, avatar management
+  - name: Onboarding
+    description: Multi-step onboarding state machine
+  - name: People
+    description: Social graph — connections, inner circle, friend requests
+  - name: Chat
+    description: Conversations and messages (REST + Socket.IO real-time)
+  - name: Posts
+    description: Journal/content creation, updates, deletion
+  - name: Feed
+    description: Home and explore feed aggregation
+  - name: Vault
+    description: Private content bookmarking and categorization
+  - name: Biometrics
+    description: "Ring biometric data — Signal stage of SCA (Detect)"
+  - name: Notifications
+    description: "FCM/APNs device registration — Action stage of SCA (Detect)"
+  - name: Upload
+    description: S3 presigned URL generation for media uploads
+  # ── MUUD Portal (Signal Router) ──────────────────────────────
+  - name: Analytics
+    description: "Portal deep analytics — Insight stage of IPA (Strategize)"
+  - name: Export
+    description: HIPAA-compliant data export (CSV, PDF)
+  - name: Provider
+    description: Time-limited provider access sessions
+  - name: Ring
+    description: Device registration, firmware, sync management
+  # ── MUUD Clinic (Healthcare Ops) ─────────────────────────────
+  - name: Clinic
+    description: "Clinical services — patient charts, sessions, treatment plans"
+  # ── MUUD Academy (Education Ops) ─────────────────────────────
+  - name: Academy
+    description: "Education services — cohorts, trainee progress, credentials"
+  # ── System ───────────────────────────────────────────────────
+  - name: Health
+    description: System health check
+  - name: Debug
+    description: Development-only debugging utilities
+
+security:
+  - cognitoBearer: []
+
+components:
+  # ════════════════════════════════════════════════════════════════
+  # SECURITY SCHEMES
+  # ════════════════════════════════════════════════════════════════
+  securitySchemes:
+    cognitoBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        AWS Cognito access token. Verified against JWKS at:
+        https://cognito-idp.us-west-2.amazonaws.com/us-west-2_VrtcZ20k3/.well-known/jwks.json
+
+        **Cognito Client IDs:**
+        - Mobile: 1fqnbenhso61dcoa9v8e9pckcs
+        - Web/Portal: 4u68s5b7ekvblhidpbpdcupa7f
+
+        **RBAC Roles** (custom:role attribute):
+        - patient (default)
+        - clinician (MUUD Clinic providers)
+        - coach (MUUD Academy trainees/graduates)
+        - educator (MUUD Academy faculty)
+        - admin (MUUD Health staff)
+
+  # ════════════════════════════════════════════════════════════════
+  # SCHEMAS (Mongoose-aligned)
+  # ════════════════════════════════════════════════════════════════
+  schemas:
+    # ── UserProfile ────────────────────────────────────────────
+    UserProfile:
+      type: object
+      required: [sub]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        sub:
+          type: string
+          description: Cognito user sub (unique identifier)
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        name:
+          type: string
+          example: "Jane Doe"
+        username:
+          type: string
+          example: "janedoe"
+        bio:
+          type: string
+          example: "Mental fitness enthusiast"
+        location:
+          type: string
+          example: "Los Angeles, CA"
+        phone:
+          type: string
+          example: "+13236095936"
+        avatarKey:
+          type: string
+          description: S3 object key for avatar image
+          example: "users/a1b2c3d4/profile/avatar.jpg"
+        fcmTokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/FcmToken"
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [patient, clinician, coach, educator, admin]
+          description: "RBAC roles (future: from Cognito custom:role)"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    FcmToken:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, web, unknown]
+          default: unknown
+        registeredAt:
+          type: string
+          format: date-time
+
+    # ── BiometricReading ───────────────────────────────────────
+    BiometricReading:
+      type: object
+      required: [userSub, type, value, unit, recordedAt]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        userSub:
+          type: string
+        type:
+          type: string
+          enum: [heart_rate, hrv, spo2, temperature, sleep, steps, stress]
+        value:
+          type: number
+          example: 72
+        unit:
+          type: string
+          example: "bpm"
+        source:
+          type: string
+          enum: [smart_ring, manual, phone]
+          default: smart_ring
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Flexible metadata (sensor firmware version, confidence score, etc.)
+        recordedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── DailySummary ───────────────────────────────────────────
+    DailySummary:
+      type: object
+      required: [userSub, date]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        userSub:
+          type: string
+        date:
+          type: string
+          format: date
+          example: "2026-04-12"
+        heartRate:
+          type: object
+          properties:
+            avg: { type: number }
+            min: { type: number }
+            max: { type: number }
+            resting: { type: number }
+        hrv:
+          type: object
+          properties:
+            avg: { type: number }
+            min: { type: number }
+            max: { type: number }
+        spo2:
+          type: object
+          properties:
+            avg: { type: number }
+            min: { type: number }
+        temperature:
+          type: object
+          properties:
+            avg: { type: number }
+            min: { type: number }
+            max: { type: number }
+        sleep:
+          type: object
+          properties:
+            totalMinutes: { type: number }
+            deepMinutes: { type: number }
+            lightMinutes: { type: number }
+            remMinutes: { type: number }
+            awakeMinutes: { type: number }
+            score: { type: number }
+        steps:
+          type: object
+          properties:
+            total: { type: number }
+            goal: { type: number, default: 10000 }
+        stress:
+          type: object
+          properties:
+            avg: { type: number }
+            max: { type: number }
+        wellnessScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Connection ─────────────────────────────────────────────
+    Connection:
+      type: object
+      required: [userA, userB]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        userA:
+          type: string
+          format: objectid
+          description: References UserProfile._id
+        userB:
+          type: string
+          format: objectid
+        tier:
+          type: string
+          enum: [connection, inner_circle]
+          default: connection
+        tag:
+          type: string
+          enum: [Friends, Family, Partner, ""]
+          default: ""
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── FriendRequest ──────────────────────────────────────────
+    FriendRequest:
+      type: object
+      required: [fromSub, toSub]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        fromSub:
+          type: string
+        toSub:
+          type: string
+        status:
+          type: string
+          enum: [pending, accepted, declined]
+          default: pending
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Conversation ───────────────────────────────────────────
+    Conversation:
+      type: object
+      required: [members, membersKey]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        members:
+          type: array
+          items:
+            type: string
+          description: Array of Cognito subs
+        membersKey:
+          type: string
+          description: "Sorted member subs joined by pipe: subA|subB"
+        lastMessage:
+          type: string
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Message ────────────────────────────────────────────────
+    Message:
+      type: object
+      required: [conversationId, fromSub, toSub, text]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        conversationId:
+          type: string
+          format: objectid
+        fromSub:
+          type: string
+        toSub:
+          type: string
+        text:
+          type: string
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Post (Journal Entry) ───────────────────────────────────
+    Post:
+      type: object
+      required: [authorSub]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        authorSub:
+          type: string
+        caption:
+          type: string
+        mediaKeys:
+          type: array
+          items:
+            type: string
+          description: S3 keys for attached images
+        audioKey:
+          type: string
+          description: S3 key for audio attachment
+        visibility:
+          type: string
+          enum: [public, connections, innerCircle]
+          default: public
+        recipientSubs:
+          type: array
+          items:
+            type: string
+        locationText:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Onboarding ─────────────────────────────────────────────
+    Onboarding:
+      type: object
+      required: [sub]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        sub:
+          type: string
+        favoriteColor:
+          type: string
+        focusGoal:
+          type: string
+          enum: ["", "Improve mood", "Increase focus and productivity", "Self-improvement", "Reduce stress or anxiety", "Other"]
+        activities:
+          type: array
+          items:
+            type: string
+        notificationsEnabled:
+          type: boolean
+          default: false
+        completed:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── VaultItem ──────────────────────────────────────────────
+    VaultItem:
+      type: object
+      required: [ownerSub, sourceId]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        ownerSub:
+          type: string
+        sourceType:
+          type: string
+          enum: [post]
+          default: post
+        sourceId:
+          type: string
+          format: objectid
+        category:
+          type: string
+          enum: [family, friends, events, holidays, work, school, other]
+          default: other
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/VaultTag"
+        experienceType:
+          type: string
+        savedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    VaultTag:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          enum: [theme, feeling, location, person]
+        value:
+          type: string
+
+    # ── Ring Device (new — from V2.2 spec) ─────────────────────
+    RingDevice:
+      type: object
+      required: [userSub, deviceId]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        userSub:
+          type: string
+        deviceId:
+          type: string
+          description: BLE hardware identifier
+        model:
+          type: string
+          example: "MUUD-R1"
+        firmwareVersion:
+          type: string
+          example: "2.1.0"
+        batteryLevel:
+          type: number
+          minimum: 0
+          maximum: 100
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        bondStatus:
+          type: string
+          enum: [paired, unpaired, pairing]
+          default: unpaired
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Clinical Session (MUUD Clinic) ─────────────────────────
+    ClinicalSession:
+      type: object
+      required: [patientSub, clinicianSub]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        patientSub:
+          type: string
+        clinicianSub:
+          type: string
+        sessionDate:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          description: Encrypted clinical session note
+        assessments:
+          type: object
+          properties:
+            phq9:
+              type: number
+              minimum: 0
+              maximum: 27
+            gad7:
+              type: number
+              minimum: 0
+              maximum: 21
+        treatmentPlanRef:
+          type: string
+          format: objectid
+          nullable: true
+        auditLog:
+          type: array
+          items:
+            type: object
+            properties:
+              action: { type: string }
+              by: { type: string }
+              at: { type: string, format: date-time }
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Training Progress (MUUD Academy) ───────────────────────
+    TrainingProgress:
+      type: object
+      required: [traineeSub, programId]
+      properties:
+        _id:
+          type: string
+          format: objectid
+        traineeSub:
+          type: string
+        programId:
+          type: string
+          description: "Program identifier (e.g., mfp-2026-cohort-1)"
+        modulesCompleted:
+          type: array
+          items:
+            type: object
+            properties:
+              moduleId: { type: string }
+              completedAt: { type: string, format: date-time }
+              score: { type: number }
+        supervisedHours:
+          type: number
+          default: 0
+        competencyScores:
+          type: object
+          additionalProperties:
+            type: number
+          description: "Domain → score mapping (e.g., motivational_interviewing: 85)"
+        credentialStatus:
+          type: string
+          enum: [in_progress, pending_review, certified, expired]
+          default: in_progress
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Insight Report (generated server-side) ─────────────────
+    InsightReport:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        userSub:
+          type: string
+        reportType:
+          type: string
+          enum: [daily, weekly, monthly, clinical]
+        period:
+          type: object
+          properties:
+            start: { type: string, format: date-time }
+            end: { type: string, format: date-time }
+        metrics:
+          type: object
+          additionalProperties: true
+        correlations:
+          type: array
+          items:
+            type: object
+            properties:
+              factorA: { type: string }
+              factorB: { type: string }
+              coefficient: { type: number }
+        generatedAt:
+          type: string
+          format: date-time
+
+    # ── Sync Manifest (Ring ↔ App) ─────────────────────────────
+    SyncManifest:
+      type: object
+      properties:
+        userSub:
+          type: string
+        deviceId:
+          type: string
+        lastSyncTimestamp:
+          type: string
+          format: date-time
+        pendingPackets:
+          type: number
+        checksums:
+          type: object
+          additionalProperties:
+            type: string
+
+    # ── Reusable response shapes ───────────────────────────────
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    PresignedUrlResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        key:
+          type: string
+        expiresIn:
+          type: number
+          description: Seconds until URL expires
+
+  # ════════════════════════════════════════════════════════════════
+  # SHARED PARAMETERS
+  # ════════════════════════════════════════════════════════════════
+  parameters:
+    subParam:
+      name: sub
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Cognito user sub
+    objectIdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: objectid
+      description: MongoDB ObjectId
+    limitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    offsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+
+# ════════════════════════════════════════════════════════════════════
+# PATHS
+# ════════════════════════════════════════════════════════════════════
+paths:
+  # ── HEALTH CHECK (root level) ────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: System health check
+      security: []
+      operationId: getHealth
+      servers:
+        - url: https://api.muudhealth.com
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  service: { type: string, example: MUUD Backend }
+                  version: { type: string, example: "1.1" }
+
+  # ════════════════════════════════════════════════════════════════
+  # AUTH (mounted at /auth — root level for backward compat)
+  # ════════════════════════════════════════════════════════════════
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register new Cognito user
+      security: []
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                name: { type: string }
+      responses:
+        "200":
+          description: Signup initiated — confirmation code sent
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      servers:
+        - url: https://api.muudhealth.com
+
+  /auth/confirm-signup:
+    post:
+      tags: [Auth]
+      summary: Confirm signup with OTP code
+      security: []
+      operationId: confirmSignup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string }
+      responses:
+        "200":
+          description: Account confirmed
+        "400":
+          description: Invalid or expired code
+      servers:
+        - url: https://api.muudhealth.com
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and receive tokens
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  refreshToken: { type: string }
+                  idToken: { type: string }
+                  expiresIn: { type: number }
+        "401":
+          description: Invalid credentials
+      servers:
+        - url: https://api.muudhealth.com
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      security: []
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200":
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  expiresIn: { type: number }
+        "401":
+          description: Invalid refresh token
+      servers:
+        - url: https://api.muudhealth.com
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Initiate password reset
+      security: []
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Reset code sent
+      servers:
+        - url: https://api.muudhealth.com
+
+  /auth/confirm-forgot-password:
+    post:
+      tags: [Auth]
+      summary: Confirm password reset with code
+      security: []
+      operationId: confirmForgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code, newPassword]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        "200":
+          description: Password reset successful
+      servers:
+        - url: https://api.muudhealth.com
+
+  # ════════════════════════════════════════════════════════════════
+  # USER
+  # ════════════════════════════════════════════════════════════════
+  /user/me:
+    get:
+      tags: [User]
+      summary: Get authenticated user profile
+      operationId: getUserMe
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    put:
+      tags: [User]
+      summary: Update authenticated user profile
+      operationId: upsertUserMe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                username: { type: string }
+                bio: { type: string }
+                location: { type: string }
+                phone: { type: string }
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /user/claims:
+    get:
+      tags: [User]
+      summary: Get raw JWT claims for authenticated user
+      operationId: getUserClaims
+      responses:
+        "200":
+          description: JWT claims payload
+
+  /user/avatar/presign:
+    post:
+      tags: [User]
+      summary: Get presigned S3 URL for avatar upload
+      operationId: presignAvatarUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType]
+              properties:
+                contentType: { type: string, example: "image/jpeg" }
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresignedUrlResponse"
+
+  /user/avatar/confirm:
+    post:
+      tags: [User]
+      summary: Confirm avatar upload and update profile
+      operationId: confirmAvatarUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key: { type: string }
+      responses:
+        "200":
+          description: Avatar confirmed
+
+  /user/avatar/url:
+    get:
+      tags: [User]
+      summary: Get current avatar URL
+      operationId: getAvatarUrl
+      responses:
+        "200":
+          description: Avatar URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri, nullable: true }
+
+  # ════════════════════════════════════════════════════════════════
+  # ONBOARDING
+  # ════════════════════════════════════════════════════════════════
+  /onboarding/me:
+    get:
+      tags: [Onboarding]
+      summary: Get current user's onboarding data
+      operationId: getOnboardingMe
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Onboarding"
+
+  /onboarding/status:
+    get:
+      tags: [Onboarding]
+      summary: Check if onboarding is completed
+      operationId: getOnboardingStatus
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  completed: { type: boolean }
+
+  /onboarding:
+    post:
+      tags: [Onboarding]
+      summary: Create or update onboarding answers
+      operationId: upsertOnboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                favoriteColor: { type: string }
+                focusGoal: { type: string }
+                activities: { type: array, items: { type: string } }
+                notificationsEnabled: { type: boolean }
+                completed: { type: boolean }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Onboarding"
+
+  # ════════════════════════════════════════════════════════════════
+  # PEOPLE (Social Graph)
+  # ════════════════════════════════════════════════════════════════
+  /people/me:
+    get:
+      tags: [People]
+      summary: Get own people profile with connection counts
+      operationId: getPeopleMe
+      responses:
+        "200":
+          description: People profile
+
+  /people/suggestions:
+    get:
+      tags: [People]
+      summary: Get connection suggestions
+      operationId: getPeopleSuggestions
+      parameters:
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: List of suggested connections
+
+  /people/connections:
+    get:
+      tags: [People]
+      summary: Get all connections
+      operationId: getConnections
+      responses:
+        "200":
+          description: Connection list
+
+  /people/inner-circle:
+    get:
+      tags: [People]
+      summary: Get inner circle connections
+      operationId: getInnerCircle
+      responses:
+        "200":
+          description: Inner circle list
+
+  /people/requests:
+    get:
+      tags: [People]
+      summary: Get pending friend requests
+      operationId: getFriendRequests
+      responses:
+        "200":
+          description: Pending requests
+
+  /people/request/{sub}:
+    post:
+      tags: [People]
+      summary: Send friend request
+      operationId: sendFriendRequest
+      parameters:
+        - $ref: "#/components/parameters/subParam"
+      responses:
+        "201":
+          description: Request sent
+        "409":
+          description: Request already pending
+
+  /people/request/{requestId}/accept:
+    post:
+      tags: [People]
+      summary: Accept friend request
+      operationId: acceptFriendRequest
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema: { type: string, format: objectid }
+      responses:
+        "200":
+          description: Request accepted, connection created
+
+  /people/request/{requestId}/decline:
+    post:
+      tags: [People]
+      summary: Decline friend request
+      operationId: declineFriendRequest
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema: { type: string, format: objectid }
+      responses:
+        "200":
+          description: Request declined
+
+  /people/{sub}:
+    delete:
+      tags: [People]
+      summary: Remove a connection
+      operationId: removeConnection
+      parameters:
+        - $ref: "#/components/parameters/subParam"
+      responses:
+        "200":
+          description: Connection removed
+
+  /people/{sub}/tier:
+    post:
+      tags: [People]
+      summary: Update connection tier (connection ↔ inner_circle)
+      operationId: updateConnectionTier
+      parameters:
+        - $ref: "#/components/parameters/subParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tier]
+              properties:
+                tier:
+                  type: string
+                  enum: [connection, inner_circle]
+                tag:
+                  type: string
+                  enum: [Friends, Family, Partner, ""]
+      responses:
+        "200":
+          description: Tier updated
+
+  # ════════════════════════════════════════════════════════════════
+  # CHAT
+  # ════════════════════════════════════════════════════════════════
+  /chat/unread-count:
+    get:
+      tags: [Chat]
+      summary: Get total unread message count
+      operationId: getUnreadCount
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+
+  /chat/conversations:
+    get:
+      tags: [Chat]
+      summary: Get all conversations
+      operationId: getConversations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+
+  /chat/inbox:
+    get:
+      tags: [Chat]
+      summary: Get inbox (conversations with preview)
+      operationId: getInbox
+      responses:
+        "200":
+          description: Inbox with last message preview
+
+  /chat/conversation/{otherSub}:
+    post:
+      tags: [Chat]
+      summary: Get or create a 1-on-1 conversation
+      operationId: getOrCreateConversation
+      parameters:
+        - name: otherSub
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /chat/messages/{conversationId}:
+    get:
+      tags: [Chat]
+      summary: Get messages in a conversation
+      operationId: getMessages
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema: { type: string, format: objectid }
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      tags: [Chat]
+      summary: Send a message
+      operationId: sendMessage
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema: { type: string, format: objectid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, toSub]
+              properties:
+                text: { type: string }
+                toSub: { type: string }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  # ════════════════════════════════════════════════════════════════
+  # POSTS (Journal Entries)
+  # ════════════════════════════════════════════════════════════════
+  /posts:
+    post:
+      tags: [Posts]
+      summary: Create a new post/journal entry
+      operationId: createPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caption: { type: string }
+                mediaKeys: { type: array, items: { type: string } }
+                audioKey: { type: string }
+                visibility: { type: string, enum: [public, connections, innerCircle] }
+                recipientSubs: { type: array, items: { type: string } }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/mine:
+    get:
+      tags: [Posts]
+      summary: Get current user's posts
+      operationId: getMyPosts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    put:
+      tags: [Posts]
+      summary: Update a post
+      operationId: updatePost
+      parameters:
+        - $ref: "#/components/parameters/objectIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caption: { type: string }
+                visibility: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      tags: [Posts]
+      summary: Delete a post
+      operationId: deletePost
+      parameters:
+        - $ref: "#/components/parameters/objectIdParam"
+      responses:
+        "200":
+          description: Post deleted
+
+  # ════════════════════════════════════════════════════════════════
+  # FEED
+  # ════════════════════════════════════════════════════════════════
+  /feed/home:
+    get:
+      tags: [Feed]
+      summary: Get home feed
+      operationId: getHomeFeed
+      responses:
+        "200":
+          description: Aggregated home feed
+
+  /feed/explore:
+    get:
+      tags: [Feed]
+      summary: Get explore feed
+      operationId: getExploreFeed
+      responses:
+        "200":
+          description: Explore/discovery feed
+
+  # ════════════════════════════════════════════════════════════════
+  # VAULT
+  # ════════════════════════════════════════════════════════════════
+  /vault/landing:
+    get:
+      tags: [Vault]
+      summary: Get vault landing page data (categories, counts)
+      operationId: getVaultLanding
+      responses:
+        "200":
+          description: Vault overview
+
+  /vault/items:
+    get:
+      tags: [Vault]
+      summary: Get vault items with optional category filter
+      operationId: getVaultItems
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [family, friends, events, holidays, work, school, other]
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VaultItem"
+
+  /vault/save:
+    post:
+      tags: [Vault]
+      summary: Save a post to vault
+      operationId: saveToVault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceId]
+              properties:
+                sourceId: { type: string, format: objectid }
+                category: { type: string }
+                tags: { type: array, items: { $ref: "#/components/schemas/VaultTag" } }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultItem"
+    delete:
+      tags: [Vault]
+      summary: Remove a post from vault
+      operationId: unsaveFromVault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceId]
+              properties:
+                sourceId: { type: string, format: objectid }
+      responses:
+        "200":
+          description: Item removed from vault
+
+  # ════════════════════════════════════════════════════════════════
+  # BIOMETRICS (Ring Signal Pipeline)
+  # ════════════════════════════════════════════════════════════════
+  /biometrics/reading:
+    post:
+      tags: [Biometrics]
+      summary: Record a single biometric reading
+      operationId: recordReading
+      description: "SCA (Detect) → Signal stage. Primary entry point for Ring data."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, value, unit, recordedAt]
+              properties:
+                type: { type: string, enum: [heart_rate, hrv, spo2, temperature, sleep, steps, stress] }
+                value: { type: number }
+                unit: { type: string }
+                source: { type: string, enum: [smart_ring, manual, phone] }
+                metadata: { type: object }
+                recordedAt: { type: string, format: date-time }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BiometricReading"
+
+  /biometrics/batch:
+    post:
+      tags: [Biometrics]
+      summary: Record a batch of biometric readings
+      operationId: recordBatch
+      description: "Batch upload after Ring BLE sync (7-day buffer drain)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [readings]
+              properties:
+                readings:
+                  type: array
+                  items:
+                    type: object
+                    required: [type, value, unit, recordedAt]
+                    properties:
+                      type: { type: string }
+                      value: { type: number }
+                      unit: { type: string }
+                      source: { type: string }
+                      metadata: { type: object }
+                      recordedAt: { type: string, format: date-time }
+      responses:
+        "201":
+          description: Batch recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inserted: { type: integer }
+
+  /biometrics/history:
+    get:
+      tags: [Biometrics]
+      summary: Get biometric reading history
+      operationId: getBiometricHistory
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [heart_rate, hrv, spo2, temperature, sleep, steps, stress]
+        - name: start
+          in: query
+          schema: { type: string, format: date-time }
+        - name: end
+          in: query
+          schema: { type: string, format: date-time }
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BiometricReading"
+
+  /biometrics/latest:
+    get:
+      tags: [Biometrics]
+      summary: Get most recent reading per type
+      operationId: getLatestBiometrics
+      description: "Powers Home dashboard KPI cards."
+      responses:
+        "200":
+          description: Latest reading per biometric type
+
+  /biometrics/summary/{date}:
+    get:
+      tags: [Biometrics]
+      summary: Get daily summary for a specific date
+      operationId: getDailySummary
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySummary"
+
+  /biometrics/summaries:
+    get:
+      tags: [Biometrics]
+      summary: Get daily summaries for a date range
+      operationId: getSummaryRange
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailySummary"
+
+  # ════════════════════════════════════════════════════════════════
+  # NOTIFICATIONS
+  # ════════════════════════════════════════════════════════════════
+  /notifications/register-device:
+    post:
+      tags: [Notifications]
+      summary: Register FCM push token
+      operationId: registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+                platform: { type: string, enum: [ios, android, web, unknown] }
+      responses:
+        "200":
+          description: Device registered
+
+  /notifications/unregister-device:
+    delete:
+      tags: [Notifications]
+      summary: Unregister FCM push token
+      operationId: unregisterDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        "200":
+          description: Device unregistered
+
+  # ════════════════════════════════════════════════════════════════
+  # UPLOADS
+  # ════════════════════════════════════════════════════════════════
+  /uploads/presign:
+    post:
+      tags: [Upload]
+      summary: Get presigned S3 URL for file upload
+      operationId: presignUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, purpose]
+              properties:
+                contentType: { type: string, example: "image/jpeg" }
+                purpose: { type: string, enum: [post_image, post_audio, avatar] }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresignedUrlResponse"
+
+  # ════════════════════════════════════════════════════════════════
+  # RING (Device Management)
+  # ════════════════════════════════════════════════════════════════
+  /ring/register:
+    post:
+      tags: [Ring]
+      summary: Register a MUUD Ring device
+      operationId: registerRing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId]
+              properties:
+                deviceId: { type: string }
+                model: { type: string }
+                firmwareVersion: { type: string }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RingDevice"
+
+  /ring/firmware:
+    get:
+      tags: [Ring]
+      summary: Check latest firmware version
+      operationId: checkFirmware
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latestVersion: { type: string }
+                  downloadUrl: { type: string, format: uri }
+                  releaseNotes: { type: string }
+
+  /ring/status:
+    put:
+      tags: [Ring]
+      summary: Update ring connection status and battery
+      operationId: updateRingStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId]
+              properties:
+                deviceId: { type: string }
+                batteryLevel: { type: number }
+                bondStatus: { type: string, enum: [paired, unpaired, pairing] }
+      responses:
+        "200":
+          description: Status updated
+
+  # ════════════════════════════════════════════════════════════════
+  # PORTAL — ANALYTICS (Insight Stage)
+  # ════════════════════════════════════════════════════════════════
+  /analytics/correlation:
+    get:
+      tags: [Analytics]
+      summary: Biometric-mood correlation data
+      operationId: getCorrelation
+      description: "IPA (Strategize) → Insight stage. Scatter plot data for Portal."
+      parameters:
+        - name: range
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d] }
+      responses:
+        "200":
+          description: Correlation data points
+
+  /analytics/heatmap:
+    get:
+      tags: [Analytics]
+      summary: Monthly mood heatmap data
+      operationId: getHeatmap
+      parameters:
+        - name: month
+          in: query
+          schema: { type: string, format: date }
+          description: "YYYY-MM format"
+      responses:
+        "200":
+          description: Calendar grid mood data
+
+  /analytics/sleep:
+    get:
+      tags: [Analytics]
+      summary: Sleep pattern analysis
+      operationId: getSleepAnalysis
+      parameters:
+        - name: range
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d] }
+      responses:
+        "200":
+          description: Sleep pattern data
+
+  # ════════════════════════════════════════════════════════════════
+  # PORTAL — EXPORT
+  # ════════════════════════════════════════════════════════════════
+  /export/csv:
+    get:
+      tags: [Export]
+      summary: Export data in CSV format
+      operationId: exportCsv
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: types
+          in: query
+          schema: { type: string }
+          description: "Comma-separated: biometrics,journal,mood"
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema: { type: string }
+
+  /export/pdf:
+    get:
+      tags: [Export]
+      summary: Generate formatted PDF report
+      operationId: exportPdf
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: PDF report
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+
+  # ════════════════════════════════════════════════════════════════
+  # PORTAL — PROVIDER ACCESS
+  # ════════════════════════════════════════════════════════════════
+  /provider/invite:
+    post:
+      tags: [Provider]
+      summary: Generate time-limited provider access link
+      operationId: createProviderInvite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [providerEmail, scope]
+              properties:
+                providerEmail: { type: string, format: email }
+                scope: { type: array, items: { type: string, enum: [biometrics, journal, mood, clinical] } }
+                expiresInHours: { type: number, default: 72 }
+      responses:
+        "201":
+          description: Invite created
+
+  /provider/sessions:
+    get:
+      tags: [Provider]
+      summary: List active provider access sessions
+      operationId: getProviderSessions
+      responses:
+        "200":
+          description: Active sessions
+
+  /provider/sessions/{id}:
+    delete:
+      tags: [Provider]
+      summary: Revoke provider access
+      operationId: revokeProviderSession
+      parameters:
+        - $ref: "#/components/parameters/objectIdParam"
+      responses:
+        "200":
+          description: Access revoked
+
+  # ════════════════════════════════════════════════════════════════
+  # MUUD CLINIC (Healthcare Ops)
+  # ════════════════════════════════════════════════════════════════
+  /clinic/patients:
+    get:
+      tags: [Clinic]
+      summary: List patients assigned to authenticated clinician
+      operationId: getClinicPatients
+      description: "Requires clinician role. Portal Clinician View."
+      responses:
+        "200":
+          description: Patient list
+        "403":
+          description: Insufficient role
+
+  /clinic/patient/{id}/chart:
+    get:
+      tags: [Clinic]
+      summary: Get full patient chart
+      operationId: getPatientChart
+      description: "Intake history, assessments (PHQ-9, GAD-7), treatment plans, session notes. Audit-logged."
+      parameters:
+        - $ref: "#/components/parameters/objectIdParam"
+      responses:
+        "200":
+          description: Patient chart data
+        "403":
+          description: Insufficient role or not assigned
+
+  /clinic/session-note:
+    post:
+      tags: [Clinic]
+      summary: Create clinical session note
+      operationId: createSessionNote
+      description: "Audit-logged. Feeds Plan stage of IPA (Strategize)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patientSub, notes]
+              properties:
+                patientSub: { type: string }
+                notes: { type: string }
+                assessments:
+                  type: object
+                  properties:
+                    phq9: { type: number, minimum: 0, maximum: 27 }
+                    gad7: { type: number, minimum: 0, maximum: 21 }
+                treatmentPlanRef: { type: string, format: objectid }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClinicalSession"
+
+  /clinic/treatment-plan:
+    post:
+      tags: [Clinic]
+      summary: Create or update treatment plan
+      operationId: upsertTreatmentPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patientSub, goals]
+              properties:
+                patientSub: { type: string }
+                goals:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description: { type: string }
+                      targetDate: { type: string, format: date }
+                      status: { type: string, enum: [active, completed, deferred] }
+                medications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      dosage: { type: string }
+                      frequency: { type: string }
+      responses:
+        "200":
+          description: Treatment plan saved
+
+  # ════════════════════════════════════════════════════════════════
+  # MUUD ACADEMY (Education Ops)
+  # ════════════════════════════════════════════════════════════════
+  /academy/cohorts:
+    get:
+      tags: [Academy]
+      summary: List training cohorts
+      operationId: getAcademyCohorts
+      description: "Requires educator role. Portal Educator View."
+      responses:
+        "200":
+          description: Cohort list
+        "403":
+          description: Insufficient role
+
+  /academy/trainee/{id}/progress:
+    get:
+      tags: [Academy]
+      summary: Get trainee certification progress
+      operationId: getTraineeProgress
+      description: "Module completions, supervised hours, competency scores."
+      parameters:
+        - $ref: "#/components/parameters/objectIdParam"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingProgress"
+
+  /academy/credential:
+    post:
+      tags: [Academy]
+      summary: Issue or update a coaching credential
+      operationId: issueCredential
+      description: "Achieve stage of IPA (Strategize). MFP credential issuance."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [traineeSub, programId, status]
+              properties:
+                traineeSub: { type: string }
+                programId: { type: string }
+                status: { type: string, enum: [in_progress, pending_review, certified, expired] }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingProgress"
+
+  /academy/supervised-session:
+    post:
+      tags: [Academy]
+      summary: Log a supervised coaching session
+      operationId: logSupervisedSession
+      description: "Action stage — trainee conducts supervised session."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [traineeSub, supervisorSub, durationMinutes]
+              properties:
+                traineeSub: { type: string }
+                supervisorSub: { type: string }
+                durationMinutes: { type: number }
+                notes: { type: string }
+                competenciesObserved:
+                  type: array
+                  items: { type: string }
+      responses:
+        "201":
+          description: Session logged

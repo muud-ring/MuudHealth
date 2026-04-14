@@ -15,7 +15,6 @@ class PeopleController extends ChangeNotifier {
   List<ConnectionRequest> requests = [];
 
   Future<void> loadAll() async {
-    print("🔄 PeopleController.loadAll() called");
     loading = true;
     error = null;
     notifyListeners();
@@ -46,7 +45,6 @@ class PeopleController extends ChangeNotifier {
       loading = false;
       notifyListeners();
     } catch (e) {
-      print("❌ People loadAll error: $e");
       loading = false;
 
       final msg = e.toString().replaceFirst("Exception: ", "");

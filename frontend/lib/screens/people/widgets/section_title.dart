@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -11,9 +12,6 @@ class SectionTitle extends StatelessWidget {
     this.trailingText,
     this.onTapTrailing,
   });
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -21,7 +19,7 @@ class SectionTitle extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: kPurple,
+            color: MuudColors.purple,
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
@@ -36,7 +34,7 @@ class SectionTitle extends StatelessWidget {
               child: Text(
                 trailingText!,
                 style: const TextStyle(
-                  color: kPurple,
+                  color: MuudColors.purple,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),

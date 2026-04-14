@@ -1,122 +1,92 @@
-import 'dart:convert';
+// MUUD Health — Journal/Post API Service
+// Creator tools: posts, journal entries, media uploads
+// © Muud Health — Armin Hoes, MD
+
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
-
-import 'token_storage.dart';
+import 'api_client.dart';
 
 class JournalApi {
-  static const String _baseUrl = "http://127.0.0.1:4000"; // match your backend
+  JournalApi._();
 
-  static Future<Map<String, String>> _authHeaders() async {
-    final access = await TokenStorage.getAccessToken();
-    if (access == null || access.isEmpty) {
-      throw Exception("Missing access token");
-    }
-    return <String, String>{
-      "Authorization": "Bearer $access",
-      "Content-Type": "application/json",
-    };
-  }
+  // ── Presigned Upload ───────────────────────────────────────────────────
 
-  // ✅ POST /uploads/presign
+  /// POST /api/v1/uploads/presign → { uploadUrl, key }
   static Future<Map<String, dynamic>> presign({
     required String contentType,
     required String kind, // journalImage | journalAudio
   }) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/uploads/presign");
-
-    final res = await http.post(
-      uri,
-      headers: headers,
-      body: jsonEncode({"contentType": contentType, "kind": kind}),
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception("Presign failed: ${res.body}");
-    }
-    return jsonDecode(res.body) as Map<String, dynamic>;
+    final res = await ApiClient.post('/api/v1/uploads/presign', body: {
+      'contentType': contentType,
+      'kind': kind,
+    });
+    return ApiClient.handleResponse(res);
   }
 
-  // ✅ PUT to presigned URL
+  /// PUT directly to S3 using presigned URL
   static Future<void> uploadToS3({
     required String uploadUrl,
     required File file,
     required String contentType,
   }) async {
     final bytes = await file.readAsBytes();
-
     final res = await http.put(
       Uri.parse(uploadUrl),
-      headers: <String, String>{"Content-Type": contentType},
+      headers: {'Content-Type': contentType},
       body: bytes,
     );
-
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception("S3 upload failed: ${res.statusCode}");
+      throw Exception('S3 upload failed: ${res.statusCode}');
     }
   }
 
-  // ✅ POST /posts
+  // ── Post CRUD ──────────────────────────────────────────────────────────
+
+  /// POST /api/v1/posts — create new post/journal entry
   static Future<Map<String, dynamic>> createPost({
     required String caption,
     required List<String> mediaKeys,
     String? audioKey,
-    required String visibility, // public | connections | innerCircle
+    required String visibility,
     required List<String> recipientSubs,
+    String type = 'journal',
+    List<String> tags = const [],
   }) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/posts");
-
-    final body = {
-      "caption": caption,
-      "mediaKeys": mediaKeys,
-      "audioKey": audioKey ?? "",
-      "visibility": visibility,
-      "recipientSubs": recipientSubs,
-    };
-
-    final res = await http.post(uri, headers: headers, body: jsonEncode(body));
-
-    if (res.statusCode != 201) {
-      throw Exception("Create post failed: ${res.body}");
-    }
-
-    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-    // your controller returns { post: {...} } usually
-    return decoded;
+    final res = await ApiClient.post('/api/v1/posts', body: {
+      'caption': caption,
+      'mediaKeys': mediaKeys,
+      'audioKey': audioKey ?? '',
+      'visibility': visibility,
+      'recipientSubs': recipientSubs,
+      'type': type,
+      'tags': tags,
+    });
+    return ApiClient.handleResponse(res);
   }
 
-  // ✅ PUT /posts/:id  (Edit caption only for now)
+  /// GET /api/v1/posts/mine — get user's own posts
+  static Future<List<Map<String, dynamic>>> getMyPosts() async {
+    final res = await ApiClient.get('/api/v1/posts/mine');
+    final data = ApiClient.handleResponse(res);
+    final list = (data['posts'] as List?) ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  /// PUT /api/v1/posts/:id — update post
   static Future<Map<String, dynamic>> updatePost({
     required String postId,
     required String caption,
+    List<String>? tags,
   }) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/posts/$postId");
-
-    final res = await http.put(
-      uri,
-      headers: headers,
-      body: jsonEncode({"caption": caption}),
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception("Update post failed: ${res.body}");
-    }
-
-    return jsonDecode(res.body) as Map<String, dynamic>;
+    final body = <String, dynamic>{'caption': caption};
+    if (tags != null) body['tags'] = tags;
+    final res = await ApiClient.put('/api/v1/posts/$postId', body: body);
+    return ApiClient.handleResponse(res);
   }
 
-  // ✅ DELETE /posts/:id
+  /// DELETE /api/v1/posts/:id — delete post
   static Future<void> deletePost({required String postId}) async {
-    final headers = await _authHeaders();
-    final uri = Uri.parse("$_baseUrl/posts/$postId");
-
-    final res = await http.delete(uri, headers: headers);
-    if (res.statusCode != 200) {
-      throw Exception("Delete post failed: ${res.body}");
-    }
+    final res = await ApiClient.delete('/api/v1/posts/$postId');
+    ApiClient.handleResponse(res);
   }
 }

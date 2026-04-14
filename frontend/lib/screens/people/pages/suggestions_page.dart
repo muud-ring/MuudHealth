@@ -1,7 +1,12 @@
+// MUUD Health — Suggestions Page
+// Discover and connect with suggested friends
+// © Muud Health — Armin Hoes, MD
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../services/people_api.dart';
+import '../../../theme/app_theme.dart';
 import '../data/people_models.dart';
 import '../widgets/search_field.dart';
 import '../widgets/person_tile.dart';
@@ -15,15 +20,10 @@ class SuggestionsPage extends StatefulWidget {
 }
 
 class _SuggestionsPageState extends State<SuggestionsPage> {
-  static const Color kPurple = Color(0xFF5B288E);
-  static const Color kGreyText = Color(0xFF898384);
-
   bool loading = true;
   String? error;
-
   String q = "";
   Timer? _debounce;
-
   List<Person> suggestions = [];
 
   @override
@@ -38,13 +38,9 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     super.dispose();
   }
 
-  bool _looksLikeUuid(String v) {
-    final s = v.trim();
-    final r = RegExp(
-      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-    );
-    return r.hasMatch(s);
-  }
+  bool _looksLikeUuid(String v) => RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  ).hasMatch(v.trim());
 
   String _tintForSub(String sub) {
     const options = ["purple", "orange", "green", "blue", "pink", "yellow"];
@@ -52,21 +48,13 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     return options[code % options.length];
   }
 
-  String _shortSub(String sub) {
-    if (sub.isEmpty) return "user";
-    return sub.length > 8 ? sub.substring(0, 8) : sub;
-  }
+  String _shortSub(String sub) =>
+      sub.isEmpty ? "user" : (sub.length > 8 ? sub.substring(0, 8) : sub);
 
-  /// ✅ Display priority:
-  /// 1) name (preferred)
-  /// 2) username (only if NOT uuid)
-  /// 3) short sub
   Person _personFromProfile(Map<String, dynamic> raw) {
     final sub = (raw['sub'] ?? '').toString().trim();
-
     final rawUsername = (raw['username'] ?? '').toString().trim();
     final username = _looksLikeUuid(rawUsername) ? "" : rawUsername;
-
     final name = (raw['name'] ?? '').toString().trim();
     final location = (raw['location'] ?? '').toString().trim();
 
@@ -74,12 +62,10 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         ? name
         : (username.isNotEmpty ? username : "User ${_shortSub(sub)}");
 
-    final handle = username.isNotEmpty ? '@$username' : '';
-
     return Person(
       id: sub,
       name: displayName,
-      handle: handle,
+      handle: username.isNotEmpty ? '@$username' : '',
       avatarUrl: (raw['avatarUrl'] ?? '').toString(),
       location: location,
       lastActive: "",
@@ -89,14 +75,10 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
+    setState(() { loading = true; error = null; });
 
     try {
       final list = await PeopleApi.fetchSuggestions(q: q, limit: 50);
-
       final mapped = <Person>[];
       for (final item in list) {
         if (item is Map<String, dynamic>) {
@@ -105,17 +87,12 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
           mapped.add(_personFromProfile(item.cast<String, dynamic>()));
         }
       }
-
-      setState(() {
-        suggestions = mapped;
-        loading = false;
-      });
+      setState(() { suggestions = mapped; loading = false; });
     } catch (e) {
       final msg = e.toString();
       setState(() {
         loading = false;
-        error =
-            msg.contains('401') || msg.toLowerCase().contains('unauthorized')
+        error = msg.contains('401') || msg.toLowerCase().contains('unauthorized')
             ? "Session expired. Please log in again."
             : msg.replaceFirst('Exception: ', '');
       });
@@ -124,29 +101,19 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
 
   void _onSearchChanged(String value) {
     setState(() => q = value);
-
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 350), () {
-      _load();
-    });
+    _debounce = Timer(const Duration(milliseconds: 350), () => _load());
   }
 
   Future<void> _sendRequest(Person p) async {
-    final sub = p.id;
-    if (sub.isEmpty) return;
-
+    if (p.id.isEmpty) return;
     try {
-      await PeopleApi.sendRequest(sub: sub);
+      await PeopleApi.sendRequest(sub: p.id);
       PeopleEvents.notifyReload();
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Request sent to ${p.name}"),
-          duration: const Duration(seconds: 2),
-        ),
+        SnackBar(content: Text("Request sent to ${p.name}"), duration: const Duration(seconds: 2)),
       );
-
       await _load();
     } catch (e) {
       if (!mounted) return;
@@ -159,56 +126,50 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   void _openMenu(Person p) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44, height: 5,
+                decoration: BoxDecoration(
+                  color: MuudColors.divider,
+                  borderRadius: MuudRadius.pillAll,
                 ),
-                const SizedBox(height: 14),
-                ListTile(
-                  leading: const Icon(Icons.person_add_alt_1, color: kPurple),
-                  title: const Text(
-                    "Send request",
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _sendRequest(p);
-                  },
-                ),
-                const SizedBox(height: 6),
-              ],
-            ),
+              ),
+              const SizedBox(height: MuudSpacing.md),
+              ListTile(
+                leading: const Icon(Icons.person_add_alt_1, color: MuudColors.purple),
+                title: Text("Send request", style: MuudTypography.label.copyWith(fontWeight: FontWeight.w800)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _sendRequest(p);
+                },
+              ),
+              const SizedBox(height: MuudSpacing.xs),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: MuudColors.white,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Suggested Friends",
-          style: TextStyle(color: kPurple, fontWeight: FontWeight.w800),
+          style: MuudTypography.titleMedium.copyWith(color: MuudColors.purple),
         ),
       ),
       body: Padding(
@@ -216,59 +177,47 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         child: Column(
           children: [
             PeopleSearchField(hint: "Search...", onChanged: _onSearchChanged),
-            const SizedBox(height: 16),
+            const SizedBox(height: MuudSpacing.base),
 
             if (loading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
+              const Expanded(
+                child: Center(child: CircularProgressIndicator(color: MuudColors.purple)),
+              )
             else if (error != null)
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 44, color: kPurple),
-                      const SizedBox(height: 8),
-                      Text(
-                        error!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: kGreyText,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+                      const Icon(Icons.error_outline, size: 44, color: MuudColors.purple),
+                      const SizedBox(height: MuudSpacing.sm),
+                      Text(error!, textAlign: TextAlign.center,
+                        style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
+                      const SizedBox(height: MuudSpacing.md),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPurple,
-                          elevation: 0,
-                          shape: const StadiumBorder(),
+                          backgroundColor: MuudColors.purple, elevation: 0, shape: const StadiumBorder(),
                         ),
                         onPressed: _load,
-                        child: const Text(
-                          "Retry",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: Text("Retry", style: MuudTypography.button.copyWith(color: MuudColors.white)),
                       ),
                     ],
                   ),
                 ),
               )
             else if (suggestions.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(
                     "No suggestions right now.",
-                    style: TextStyle(
-                      color: kGreyText,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText),
                   ),
                 ),
               )
             else
               Expanded(
                 child: RefreshIndicator(
+                  color: MuudColors.purple,
                   onRefresh: _load,
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),

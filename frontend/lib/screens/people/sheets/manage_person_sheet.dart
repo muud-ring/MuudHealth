@@ -1,9 +1,15 @@
-import 'package:flutter/material.dart';
+// MUUD Health — Manage Person Sheet
+// Bottom sheet for connection management actions
+// © Muud Health — Armin Hoes, MD
 
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../router/route_names.dart';
 import '../../../services/people_api.dart';
+import '../../../theme/app_theme.dart';
 import '../data/people_models.dart';
 import '../state/people_events.dart';
-import '../pages/chat_page.dart';
 
 class ManagePersonSheet {
   static Future<void> open(
@@ -12,7 +18,7 @@ class ManagePersonSheet {
   }) async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -30,7 +36,6 @@ class _ManagePersonBody extends StatefulWidget {
 }
 
 class _ManagePersonBodyState extends State<_ManagePersonBody> {
-  static const Color kPurple = Color(0xFF5B288E);
   bool working = false;
 
   Future<void> _setTier(String tier) async {
@@ -39,8 +44,6 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
     try {
       await PeopleApi.updateTier(sub: widget.person.id, tier: tier);
-
-      // ✅ Tell ALL People screens to reload (PeopleTab, ConnectionsPage, InnerCirclePage)
       PeopleEvents.notifyReload();
 
       if (!mounted) return;
@@ -72,7 +75,6 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
     try {
       await PeopleApi.removeConnection(sub: widget.person.id);
-
       PeopleEvents.notifyReload();
 
       if (!mounted) return;
@@ -100,128 +102,131 @@ class _ManagePersonBodyState extends State<_ManagePersonBody> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+        padding: const EdgeInsets.fromLTRB(
+          MuudSpacing.lg, MuudSpacing.md, MuudSpacing.lg, MuudSpacing.lg,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Drag handle
             Container(
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(20),
+                color: MuudColors.divider,
+                borderRadius: MuudRadius.pillAll,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: MuudSpacing.md),
 
+            // Person header
             Row(
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFFE7E1F3),
+                  backgroundColor: MuudColors.lightPurple.withValues(alpha: 0.5),
                   child: Text(
                     (p.name.isNotEmpty ? p.name[0] : "?").toUpperCase(),
-                    style: const TextStyle(
-                      color: kPurple,
+                    style: MuudTypography.label.copyWith(
+                      color: MuudColors.purple,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: MuudSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         p.name,
-                        style: const TextStyle(
-                          color: kPurple,
-                          fontSize: 16,
+                        style: MuudTypography.label.copyWith(
+                          color: MuudColors.purple,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        p.handle,
-                        style: const TextStyle(
-                          color: Color(0xFF898384),
-                          fontWeight: FontWeight.w600,
+                      if (p.handle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          p.handle,
+                          style: MuudTypography.caption.copyWith(
+                            color: MuudColors.greyText,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 14),
-            const Divider(),
+            const SizedBox(height: MuudSpacing.md),
+            const Divider(color: MuudColors.divider),
 
+            // Message action
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.chat_bubble_outline, color: kPurple),
-              title: const Text(
+              leading: const Icon(Icons.chat_bubble_outline, color: MuudColors.purple),
+              title: Text(
                 "Message",
-                style: TextStyle(fontWeight: FontWeight.w800),
+                style: MuudTypography.label.copyWith(fontWeight: FontWeight.w800),
               ),
               onTap: working
                   ? null
                   : () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatPage(
-                            otherSub: p.id,
-                            title: p.handle.isNotEmpty ? p.handle : p.name,
-                          ),
-                        ),
-                      );
+                      context.push(Routes.chatConversation(p.id));
                     },
             ),
 
+            // Move to Connections
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.group_outlined, color: kPurple),
-              title: const Text(
+              leading: const Icon(Icons.group_outlined, color: MuudColors.purple),
+              title: Text(
                 "Move to Connections",
-                style: TextStyle(fontWeight: FontWeight.w800),
+                style: MuudTypography.label.copyWith(fontWeight: FontWeight.w800),
               ),
               onTap: working ? null : () => _setTier("connection"),
             ),
 
+            // Move to Inner Circle
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.star_outline, color: kPurple),
-              title: const Text(
+              leading: const Icon(Icons.star_outline, color: MuudColors.purple),
+              title: Text(
                 "Move to Inner Circle",
-                style: TextStyle(fontWeight: FontWeight.w800),
+                style: MuudTypography.label.copyWith(fontWeight: FontWeight.w800),
               ),
               onTap: working ? null : () => _setTier("inner_circle"),
             ),
 
+            // Remove
             ListTile(
               enabled: !working,
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text(
+              leading: Icon(Icons.delete_outline, color: MuudColors.error),
+              title: Text(
                 "Remove",
-                style: TextStyle(
+                style: MuudTypography.label.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: Colors.red,
+                  color: MuudColors.error,
                 ),
               ),
               onTap: working ? null : _remove,
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: MuudSpacing.sm),
 
             if (working)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: MuudSpacing.sm),
                 child: SizedBox(
                   height: 18,
                   width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: MuudColors.purple,
+                  ),
                 ),
               ),
           ],

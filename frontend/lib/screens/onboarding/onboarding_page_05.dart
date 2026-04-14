@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_state.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/route_names.dart';
+import '../../theme/app_theme.dart';
 
 class OnboardingPage05 extends StatelessWidget {
   const OnboardingPage05({super.key});
-
-  static const Color kPurple = Color(0xFF5B288E);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: MuudColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 8, 32, 48),
@@ -24,10 +24,10 @@ class OnboardingPage05 extends StatelessWidget {
                   constraints: const BoxConstraints(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: kPurple,
+                    color: MuudColors.purple,
                     size: 22,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                 ),
               ),
 
@@ -52,7 +52,7 @@ class OnboardingPage05 extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,
-                    color: kPurple,
+                    color: MuudColors.purple,
                     height: 1.2,
                   ),
                 ),
@@ -68,7 +68,7 @@ class OnboardingPage05 extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     height: 1.4,
-                    color: kPurple,
+                    color: MuudColors.purple,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -82,10 +82,10 @@ class OnboardingPage05 extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPurple,
-                    foregroundColor: Colors.white,
+                    backgroundColor: MuudColors.purple,
+                    foregroundColor: MuudColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                     elevation: 0,
                   ),
@@ -93,14 +93,14 @@ class OnboardingPage05 extends StatelessWidget {
                     // Later you can request OS permission here.
                     OnboardingState.answers.notificationsEnabled =
                         true; // ✅ store
-                    Navigator.pushNamed(context, '/onboarding/06');
+                    context.push(Routes.onboarding('06'));
                   },
                   child: const Text(
                     "Allow notifications",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: MuudColors.white,
                     ),
                   ),
                 ),
@@ -114,22 +114,22 @@ class OnboardingPage05 extends StatelessWidget {
                 height: 56,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: kPurple, width: 1.5),
+                    side: const BorderSide(color: MuudColors.purple, width: 1.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: MuudRadius.pillAll,
                     ),
                   ),
                   onPressed: () {
                     OnboardingState.answers.notificationsEnabled =
                         false; // ✅ store
-                    Navigator.pushNamed(context, '/onboarding/06');
+                    context.push(Routes.onboarding('06'));
                   },
                   child: const Text(
                     "No thanks",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: kPurple,
+                      color: MuudColors.purple,
                     ),
                   ),
                 ),
