@@ -20,8 +20,9 @@ void main() {
       expect(AppTheme.lightPurple, const Color(0xFFC9B7E6));
     });
 
-    test('error color is red', () {
-      expect(AppTheme.error, Colors.red);
+    test('error color is brand red', () {
+      // AppTheme.error = MuudColors.error = Color(0xFFD50101)
+      expect(AppTheme.error, const Color(0xFFD50101));
     });
   });
 
@@ -33,13 +34,15 @@ void main() {
     });
 
     test('headingMedium uses purple and bold', () {
+      // MuudTypography.headingMedium: fontSize 20, w600
       expect(AppTheme.headingMedium.color, AppTheme.purple);
-      expect(AppTheme.headingMedium.fontSize, 18);
-      expect(AppTheme.headingMedium.fontWeight, FontWeight.w700);
+      expect(AppTheme.headingMedium.fontSize, 20);
+      expect(AppTheme.headingMedium.fontWeight, FontWeight.w600);
     });
 
-    test('bodyText uses black87', () {
-      expect(AppTheme.bodyText.color, Colors.black87);
+    test('bodyText color matches MuudColors.bodyText', () {
+      // MuudTypography.bodyMedium: color = MuudColors.bodyText = Color(0xFF4A4A4A)
+      expect(AppTheme.bodyText.color, const Color(0xFF4A4A4A));
       expect(AppTheme.bodyText.fontSize, 14);
     });
 
