@@ -109,4 +109,4 @@ The Android keystore was generated and stored as `ANDROID_KEYSTORE_BASE64`. Deta
 - **Validity:** 10,000 days
 
 > ⚠️ Before publishing to the Play Store, replace this with a proper production keystore generated and stored securely. The keystore used to sign the first published APK/AAB must be used for all future updates.
-<!-- deploy trigger: 2026-04-22T19:28:13Z -->
+<!-- deploy trigger: 2026-04-22T19:54:21Z -->
