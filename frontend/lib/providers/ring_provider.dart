@@ -118,6 +118,7 @@ class RingNotifier extends StateNotifier<RingState> {
       await RingApi.register(
         macAddress: device.macAddress,
         firmwareVersion: device.firmwareVersion,
+        model: device.model,
       );
     } catch (e) {
       state = state.copyWith(
@@ -158,7 +159,7 @@ class RingNotifier extends StateNotifier<RingState> {
   /// Check for firmware updates.
   Future<bool> checkFirmwareUpdate() async {
     try {
-      final result = await RingApi.checkFirmware();
+      final result = await RingApi.checkFirmware(currentVersion: state.device?.firmwareVersion ?? '0.0.0');
       return result['updateAvailable'] == true;
     } catch (_) {
       return false;
