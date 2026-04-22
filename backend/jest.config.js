@@ -1,4 +1,6 @@
 module.exports = {
+  // E2E tests require a live server — excluded from CI unit/integration run
+  testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.js'],
   collectCoverageFrom: ['src/**/*.js', '!src/index.js', '!src/server.js', '!src/config/**'],
