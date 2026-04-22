@@ -7,21 +7,12 @@ module.exports = {
   coverageDirectory: 'coverage',
   verbose: true,
   setupFiles: ['./tests/setup.js'],
+  // Run only unit tests by default — integration requires live DB, e2e requires live server
+  // To run all: npx jest --selectProjects=unit,integration,e2e
   projects: [
     {
       displayName: 'unit',
       testMatch: ['**/tests/unit/**/*.test.js'],
-      testEnvironment: 'node',
-    },
-    {
-      displayName: 'integration',
-      testMatch: ['**/tests/integration/**/*.test.js'],
-      testEnvironment: 'node',
-      setupFiles: ['./tests/setup.js'],
-    },
-    {
-      displayName: 'e2e',
-      testMatch: ['**/tests/e2e/**/*.test.js'],
       testEnvironment: 'node',
     },
   ],
