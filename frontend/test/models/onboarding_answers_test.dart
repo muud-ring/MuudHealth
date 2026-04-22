@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:muud_health_app/models/onboarding_answers.dart';
 
 void main() {
-  group('OnboardingAnswers', () => {
+  group('OnboardingAnswers', () {
     test('default values are correct', () {
       final answers = OnboardingAnswers();
 
