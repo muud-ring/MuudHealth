@@ -7,6 +7,7 @@
 name: CD
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
@@ -27,7 +28,8 @@ jobs:
   # ── Guard: Only deploy if CI succeeded ──────────────────────────────
   check-ci:
     name: Verify CI Success
-    runs-on: ubuntu-latest
+    runs-on:
+  workflow_dispatch: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - run: echo "CI passed — proceeding with deployment"
@@ -36,7 +38,8 @@ jobs:
   deploy-backend:
     name: Deploy Backend to ECS
     needs: check-ci
-    runs-on: ubuntu-latest
+    runs-on:
+  workflow_dispatch: ubuntu-latest
     environment: production
     permissions:
       id-token: write
@@ -48,7 +51,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region:
+  workflow_dispatch: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: ecr-login
@@ -70,14 +74,16 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          task-definition:
+  workflow_dispatch: ${{ env.ECS_TASK_DEFINITION }}
           container-name: muud-api
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition:
+  workflow_dispatch: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
@@ -99,7 +105,8 @@ jobs:
   build-android:
     name: Build Android App Bundle
     needs: check-ci
-    runs-on: ubuntu-latest
+    runs-on:
+  workflow_dispatch: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
@@ -108,12 +115,15 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution:
+  workflow_dispatch: 'temurin'
+          java-version:
+  workflow_dispatch: '17'
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.0'
+          flutter-version:
+  workflow_dispatch: '3.29.0'
           channel: 'stable'
           cache: true
 
@@ -144,7 +154,8 @@ jobs:
   build-ios:
     name: Build iOS IPA
     needs: check-ci
-    runs-on: macos-latest
+    runs-on:
+  workflow_dispatch: macos-latest
     defaults:
       run:
         working-directory: frontend
@@ -153,7 +164,8 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.0'
+          flutter-version:
+  workflow_dispatch: '3.29.0'
           channel: 'stable'
           cache: true
 
