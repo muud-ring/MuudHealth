@@ -292,7 +292,7 @@ class _ConversationRow extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: MuudSpacing.xxs),
+                const SizedBox(height: MuudSpacing.xs),
                 Text(
                   item.lastMessage.isEmpty ? " " : item.lastMessage,
                   maxLines: 1,
@@ -357,7 +357,7 @@ class _Avatar extends StatelessWidget {
       child: Center(
         child: Text(
           letter,
-          style: MuudTypography.heading.copyWith(
+          style: MuudTypography.headingLarge.copyWith(
             color: MuudColors.purple,
             fontSize: 18,
           ),
