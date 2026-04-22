@@ -42,7 +42,8 @@ android {
 
     defaultConfig {
         applicationId = "com.muudhealth.app"
-        minSdk = flutter.minSdkVersion
+        // minSdk 26 required by health plugin (uses Android 8.0+ APIs)
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
