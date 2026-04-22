@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/models/biometric_reading.dart';
+import 'package:muud_health_app/models/biometric_reading.dart';
 
 void main() {
   group('BiometricReading', () {
