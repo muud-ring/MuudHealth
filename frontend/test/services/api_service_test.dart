@@ -10,8 +10,9 @@ void main() {
   });
 
   group('ApiService baseUrl', () {
-    test('baseUrl defaults to localhost:4000', () {
-      expect(ApiService.baseUrl, contains('localhost'));
+    test('baseUrl defaults to production API', () {
+      // Default value is the production API; in test env no dart-define is set
+      expect(ApiService.baseUrl, contains('muudhealth.com'));
     });
   });
 
