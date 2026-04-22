@@ -163,7 +163,9 @@ class HealthDataService {
         'syncedAt': DateTime.now().toIso8601String(),
       };
 
-      await BiometricsApi.submitReading(payload);
+      // Post raw health sync payload directly to biometrics batch endpoint
+      final res = await ApiClient.post('/api/v1/biometrics/reading', body: payload);
+      ApiClient.handleResponse(res);
       debugPrint('[HealthData] Sync complete: $payload');
     } catch (e) {
       debugPrint('[HealthData] Sync failed: $e');
