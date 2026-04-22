@@ -8,6 +8,18 @@ const createPost = [
     .isString()
     .isLength({ max: 5000 })
     .withMessage("caption must be at most 5000 characters"),
+  // "content" is accepted as an alias for "caption" (portal field-name variant)
+  body("content")
+    .optional()
+    .isString()
+    .isLength({ max: 5000 })
+    .withMessage("content must be at most 5000 characters"),
+  // "emotion" is accepted as an alias for "caption" (portal field-name variant)
+  body("emotion")
+    .optional()
+    .isString()
+    .isLength({ max: 5000 })
+    .withMessage("emotion must be at most 5000 characters"),
   body("mediaKeys")
     .optional()
     .isArray()
@@ -20,6 +32,11 @@ const createPost = [
     .optional()
     .isIn(VISIBILITY_OPTIONS)
     .withMessage(`visibility must be one of: ${VISIBILITY_OPTIONS.join(", ")}`),
+  // "privacyLevel" is accepted as an alias for "visibility" (portal field-name variant)
+  body("privacyLevel")
+    .optional()
+    .isIn(VISIBILITY_OPTIONS)
+    .withMessage(`privacyLevel must be one of: ${VISIBILITY_OPTIONS.join(", ")}`),
   body("recipientSubs")
     .optional()
     .isArray()
@@ -33,10 +50,27 @@ const updatePost = [
     .isString()
     .isLength({ max: 5000 })
     .withMessage("caption must be at most 5000 characters"),
+  // "content" is accepted as an alias for "caption" (portal field-name variant)
+  body("content")
+    .optional()
+    .isString()
+    .isLength({ max: 5000 })
+    .withMessage("content must be at most 5000 characters"),
+  // "emotion" is accepted as an alias for "caption" (portal field-name variant)
+  body("emotion")
+    .optional()
+    .isString()
+    .isLength({ max: 5000 })
+    .withMessage("emotion must be at most 5000 characters"),
   body("visibility")
     .optional()
     .isIn(VISIBILITY_OPTIONS)
     .withMessage(`visibility must be one of: ${VISIBILITY_OPTIONS.join(", ")}`),
+  // "privacyLevel" is accepted as an alias for "visibility" (portal field-name variant)
+  body("privacyLevel")
+    .optional()
+    .isIn(VISIBILITY_OPTIONS)
+    .withMessage(`privacyLevel must be one of: ${VISIBILITY_OPTIONS.join(", ")}`),
   body("recipientSubs")
     .optional()
     .isArray()
