@@ -65,7 +65,7 @@ class _DisconnectedView extends ConsumerWidget {
 
         Text(
           ringState.isScanning ? 'Scanning...' : 'Connect Your Ring',
-          style: MuudTypography.heading.copyWith(color: MuudColors.purple),
+          style: MuudTypography.headingLarge.copyWith(color: MuudColors.purple),
         ),
         const SizedBox(height: MuudSpacing.md),
         Text(
