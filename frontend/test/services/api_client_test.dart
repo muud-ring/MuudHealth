@@ -56,7 +56,10 @@ void main() {
       );
     });
 
-    test('400 response without message field throws with status code', () {
+    test('400 response with only error field uses error text', () {
+      // handleResponse prefers body['message'] then body['error'] as the
+      // exception message. When the body has {"error": "bad request"} the
+      // exception message will be "bad request".
       final response = http.Response(
         '{"error": "bad request"}',
         400,
@@ -67,14 +70,15 @@ void main() {
         throwsA(isA<Exception>().having(
           (e) => e.toString(),
           'message',
-          contains('400'),
+          contains('bad request'),
         )),
       );
     });
 
-    test('500 response throws exception with status code', () {
+    test('500 response with no message field throws with status code', () {
+      // When body has no message/error key, the fallback includes status code.
       final response = http.Response(
-        '{"error": "Internal server error"}',
+        '{"code": "INTERNAL"}',
         500,
       );
 
