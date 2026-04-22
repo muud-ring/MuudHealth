@@ -2,6 +2,7 @@
 // © Muud Health — Armin Hoes, MD
 
 import 'dart:io';
+import 'api_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
