@@ -48,6 +48,10 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+
+        // Required by flutter_appauth — must match the redirect URI scheme
+        // configured in Amazon Cognito (https://api.muudhealth.com callback)
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.muudhealth.app"
     }
 
     buildTypes {
