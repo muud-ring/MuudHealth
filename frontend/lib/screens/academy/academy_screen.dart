@@ -45,7 +45,7 @@ class AcademyScreen extends StatelessWidget {
               const SizedBox(height: MuudSpacing.lg),
               Text(
                 'Coming Soon',
-                style: MuudTypography.heading.copyWith(
+                style: MuudTypography.headingLarge.copyWith(
                   color: MuudColors.purple,
                 ),
               ),
