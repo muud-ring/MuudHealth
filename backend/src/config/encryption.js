@@ -112,7 +112,7 @@ function encryptFields(obj, fields) {
 
   const result = { ...obj };
   for (const field of fields) {
-    if (result[field] != null && typeof result[field] === 'string') {
+    if (result[field] !== null && typeof result[field] === 'string') {
       result[field] = encrypt(result[field]);
     }
   }
@@ -131,7 +131,7 @@ function decryptFields(obj, fields) {
 
   const result = { ...obj };
   for (const field of fields) {
-    if (result[field] != null && typeof result[field] === 'string') {
+    if (result[field] !== null && typeof result[field] === 'string') {
       try {
         result[field] = decrypt(result[field]);
       } catch (err) {
