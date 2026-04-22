@@ -39,6 +39,7 @@ const organizationRoute = require("./routes/organizationRoute");
 const sharedVaultRoute = require("./routes/sharedVaultRoute");
 const servicePlanRoute = require("./routes/servicePlanRoute");
 const signalLoopRoute = require("./routes/signalLoopRoute");
+const stubRoute = require("./routes/stubRoute");
 
 // ── App factory ──────────────────────────────────────────────────
 function createApp() {
@@ -124,6 +125,15 @@ function createApp() {
   app.use("/vault", vaultRoute);
   app.use("/biometrics", biometricsRoute);
   app.use("/notifications", notificationRoute);
+
+  // ── Portal backward-compat shims — maps portal's /api/* calls to /api/v1/* handlers
+  app.use("/api/community", peopleRoute);   // /api/community → people (inner-circle)
+  app.use("/api/me", userRoute);            // /api/me → user
+  app.use("/api/messages", chatRoute);      // /api/messages → chat
+  app.use("/api/dashboard", stubRoute);     // stub — not yet backed by real data
+  app.use("/api/goals", stubRoute);         // stub — not yet backed by real data
+  app.use("/api/journeys", stubRoute);      // stub — not yet backed by real data
+  app.use("/api/streaks", stubRoute);       // stub — not yet backed by real data
 
   // ── DEV-only admin routes (never exposed in production) ─────
   if (process.env.NODE_ENV !== "production") {
