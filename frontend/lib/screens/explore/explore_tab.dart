@@ -143,7 +143,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const MuudColors.divider,
+                  color: MuudColors.divider,
                   borderRadius: MuudRadius.mdAll,
                 ),
               ),
@@ -387,7 +387,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                       decoration: BoxDecoration(
                         color: MuudColors.white,
                         borderRadius: MuudRadius.lgAll,
-                        boxShadow: [MuudShadows.card],
+                        boxShadow: MuudShadows.card,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +466,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                                     decoration: BoxDecoration(
                                       borderRadius: MuudRadius.mdAll,
                                       border: Border.all(
-                                        color: const MuudColors.divider,
+                                        color: MuudColors.divider,
                                       ),
                                     ),
                                     child: Row(
@@ -647,7 +647,7 @@ class _VaultCategorySheetState extends State<_VaultCategorySheet> {
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: const MuudColors.divider,
+                color: MuudColors.divider,
                 borderRadius: MuudRadius.lgAll,
               ),
             ),
