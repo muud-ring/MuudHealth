@@ -31,7 +31,8 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   String? error;
 
   final List<_VaultPost> posts = [];
-  String? nextCursor;
+  int _page = 1;
+  bool _hasMore = true;
   final ScrollController _scroll = ScrollController();
 
   @override
@@ -50,16 +51,18 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   }
 
   Future<void> _loadFirst() async {
-    setState(() { loading = true; error = null; posts.clear(); nextCursor = null; });
+    setState(() { loading = true; error = null; posts.clear(); _page = 1; _hasMore = true; });
 
     try {
-      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, cursor: null, from: widget.fromIso, to: widget.toIso);
+      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, page: 1);
       final items = (decoded["items"] as List?) ?? [];
-      final cursor = decoded["nextCursor"]?.toString();
       final mapped = items.cast<Map<String, dynamic>>().map((m) => _VaultPost.fromMap(m)).toList();
 
       if (!mounted) return;
-      setState(() { posts.addAll(mapped); nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null; });
+      setState(() {
+        posts.addAll(mapped);
+        _hasMore = mapped.length >= 20;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => error = e.toString().replaceFirst("Exception: ", ""));
@@ -69,16 +72,20 @@ class _VaultCategoryPageState extends State<VaultCategoryPage> {
   }
 
   Future<void> _loadMore() async {
-    if (loading || loadingMore || nextCursor == null) return;
+    if (loading || loadingMore || !_hasMore) return;
     setState(() => loadingMore = true);
 
     try {
-      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, cursor: nextCursor, from: widget.fromIso, to: widget.toIso);
+      final nextPage = _page + 1;
+      final decoded = await VaultApi.getItems(category: widget.categoryKey, limit: 20, page: nextPage);
       final items = (decoded["items"] as List?) ?? [];
-      final cursor = decoded["nextCursor"]?.toString();
       final mapped = items.cast<Map<String, dynamic>>().map((m) => _VaultPost.fromMap(m)).toList();
       if (!mounted) return;
-      setState(() { posts.addAll(mapped); nextCursor = (cursor != null && cursor.isNotEmpty) ? cursor : null; });
+      setState(() {
+        posts.addAll(mapped);
+        _page = nextPage;
+        _hasMore = mapped.length >= 20;
+      });
     } catch (_) {} finally {
       if (mounted) setState(() => loadingMore = false);
     }
