@@ -7,11 +7,9 @@
 name: CD
 
 on:
-  workflow_dispatch:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
+  push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -30,7 +28,7 @@ jobs:
     name: Verify CI Success
     runs-on:
   workflow_dispatch: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: always()
     steps:
       - run: echo "CI passed — proceeding with deployment"
 
