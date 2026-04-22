@@ -53,7 +53,7 @@ class ProfilePage extends StatelessWidget {
                     child: Text(
                       (person.name.isNotEmpty ? person.name[0] : "?")
                           .toUpperCase(),
-                      style: MuudTypography.heading.copyWith(
+                      style: MuudTypography.headingLarge.copyWith(
                         color: MuudColors.purple,
                         fontSize: 22,
                       ),
