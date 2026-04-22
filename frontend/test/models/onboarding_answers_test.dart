@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/models/onboarding_answers.dart';
+import 'package:muud_health_app/models/onboarding_answers.dart';
 
 void main() {
   group('OnboardingAnswers', () => {
