@@ -176,17 +176,37 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: Routes.journalEdit,
-        builder: (_, __) => const EditJournalScreen(),
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return EditJournalScreen(
+            postId: extra['postId'] as String? ?? '',
+            initialCaption: extra['initialCaption'] as String? ?? '',
+          );
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: Routes.journalPreview,
-        builder: (_, __) => const PreviewScreen(),
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return PreviewScreen(
+            imageFile: extra['imageFile'] as dynamic,
+            audioPath: extra['audioPath'] as String?,
+            initialVisibility: extra['initialVisibility'] as String? ?? 'Public',
+          );
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: Routes.journalSend,
-        builder: (_, __) => const SendToScreen(),
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return SendToScreen(
+            imageFile: extra['imageFile'] as dynamic,
+            caption: extra['caption'] as String? ?? '',
+            audioPath: extra['audioPath'] as String?,
+          );
+        },
       ),
 
       // ── People Sub-routes ──────────────────────────────────────────
