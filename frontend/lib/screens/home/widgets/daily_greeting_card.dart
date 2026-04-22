@@ -49,7 +49,7 @@ class DailyGreetingCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             displayName,
-            style: MuudTypography.heading.copyWith(
+            style: MuudTypography.headingLarge.copyWith(
               color: MuudColors.white,
               fontSize: 26,
             ),
