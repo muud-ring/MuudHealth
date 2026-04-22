@@ -1,0 +1,187 @@
+# Muud Health — Infrastructure Bootstrap
+# © Muud Health — Armin Hoes, MD
+#
+# One-shot workflow that provisions the ECS cluster, service, log group,
+# Secrets Manager placeholders, VPC/security group, and registers the
+# initial task definition. Safe to re-run: every step is idempotent.
+
+name: Infra Bootstrap
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-west-2
+  ECS_CLUSTER: muud-production
+  ECS_SERVICE: muud-api-service
+  ECS_TASK_FAMILY: muud-api-task
+
+jobs:
+  bootstrap:
+    name: Bootstrap AWS Infrastructure
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create ECS cluster
+        run: |
+          aws ecs create-cluster \
+            --cluster-name "$ECS_CLUSTER" \
+            --region "$AWS_REGION" \
+            --capacity-providers FARGATE \
+            --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
+            2>&1 || echo "Cluster may already exist — continuing"
+          aws ecs describe-clusters --clusters "$ECS_CLUSTER" --region "$AWS_REGION"
+
+      - name: Create CloudWatch log group
+        run: |
+          aws logs create-log-group \
+            --log-group-name /ecs/muud-api \
+            --region "$AWS_REGION" \
+            2>&1 || echo "Log group may already exist — continuing"
+          aws logs put-retention-policy \
+            --log-group-name /ecs/muud-api \
+            --retention-in-days 30 \
+            --region "$AWS_REGION" || true
+
+      - name: Create Secrets Manager placeholders
+        run: |
+          declare -A SECRET_VALUES=(
+            [MONGO_URI]="PLACEHOLDER_FILL_IN"
+            [COGNITO_USER_POOL_ID]="us-west-2_VrtcZ20k3"
+            [COGNITO_CLIENT_ID]="PLACEHOLDER_FILL_IN"
+            [S3_BUCKET_NAME]="muud-mvp-2025"
+            [ALLOWED_ORIGINS]="https://portal.muudhealth.com,https://muudhealth.com"
+            [FIREBASE_SERVICE_ACCOUNT_JSON]="PLACEHOLDER_FILL_IN"
+          )
+          for secret in "${!SECRET_VALUES[@]}"; do
+            VALUE="${SECRET_VALUES[$secret]}"
+            if aws secretsmanager describe-secret --secret-id "muud/prod/$secret" --region "$AWS_REGION" >/dev/null 2>&1; then
+              echo "Secret muud/prod/$secret already exists — skipping"
+            else
+              aws secretsmanager create-secret \
+                --name "muud/prod/$secret" \
+                --secret-string "$VALUE" \
+                --region "$AWS_REGION" \
+                && echo "Created muud/prod/$secret" \
+                || echo "Failed to create muud/prod/$secret — continuing"
+            fi
+          done
+
+      - name: Register ECS task definition
+        id: register-task
+        run: |
+          RESULT=$(aws ecs register-task-definition \
+            --cli-input-json file://.aws/task-definition.json \
+            --region "$AWS_REGION")
+          TASK_DEF_ARN=$(echo "$RESULT" | jq -r '.taskDefinition.taskDefinitionArn')
+          echo "Registered: $TASK_DEF_ARN"
+          echo "task_def_arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve VPC, subnets, and security group
+        id: network
+        run: |
+          VPC_ID=$(aws ec2 describe-vpcs \
+            --filters Name=isDefault,Values=true \
+            --query 'Vpcs[0].VpcId' --output text \
+            --region "$AWS_REGION")
+          echo "VPC: $VPC_ID"
+
+          SUBNET_IDS=$(aws ec2 describe-subnets \
+            --filters Name=vpc-id,Values=$VPC_ID \
+            --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' \
+            --output text --region "$AWS_REGION")
+          if [ -z "$SUBNET_IDS" ]; then
+            SUBNET_IDS=$(aws ec2 describe-subnets \
+              --filters Name=vpc-id,Values=$VPC_ID \
+              --query 'Subnets[*].SubnetId' \
+              --output text --region "$AWS_REGION")
+          fi
+          # Take first two subnets for HA
+          SUBNETS_CSV=$(echo "$SUBNET_IDS" | awk '{print $1","$2}' | sed 's/,$//')
+          if [ -z "$SUBNETS_CSV" ] || [ "$SUBNETS_CSV" = "," ]; then
+            SUBNETS_CSV=$(echo "$SUBNET_IDS" | awk '{print $1}')
+          fi
+          echo "Subnets: $SUBNETS_CSV"
+
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters Name=group-name,Values=muud-api-sg Name=vpc-id,Values=$VPC_ID \
+            --query 'SecurityGroups[0].GroupId' --output text \
+            --region "$AWS_REGION" 2>/dev/null || echo "None")
+          if [ "$SG_ID" = "None" ] || [ -z "$SG_ID" ]; then
+            SG_ID=$(aws ec2 create-security-group \
+              --group-name muud-api-sg \
+              --description "MUUD API Security Group" \
+              --vpc-id "$VPC_ID" \
+              --region "$AWS_REGION" \
+              --query 'GroupId' --output text)
+            echo "Created security group: $SG_ID"
+          else
+            echo "Using existing security group: $SG_ID"
+          fi
+
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" --protocol tcp --port 4000 --cidr 0.0.0.0/0 \
+            --region "$AWS_REGION" 2>&1 || echo "Port 4000 rule may already exist"
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" --protocol tcp --port 443 --cidr 0.0.0.0/0 \
+            --region "$AWS_REGION" 2>&1 || echo "Port 443 rule may already exist"
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" --protocol tcp --port 80 --cidr 0.0.0.0/0 \
+            --region "$AWS_REGION" 2>&1 || echo "Port 80 rule may already exist"
+
+          echo "vpc_id=$VPC_ID" >> "$GITHUB_OUTPUT"
+          echo "subnets=$SUBNETS_CSV" >> "$GITHUB_OUTPUT"
+          echo "sg_id=$SG_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update ECS service
+        env:
+          TASK_DEF_ARN: ${{ steps.register-task.outputs.task_def_arn }}
+          SUBNETS: ${{ steps.network.outputs.subnets }}
+          SG_ID: ${{ steps.network.outputs.sg_id }}
+        run: |
+          EXISTING=$(aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --region "$AWS_REGION" \
+            --query 'services[?status==`ACTIVE`].serviceName' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING" ]; then
+            echo "Service $ECS_SERVICE exists — updating"
+            aws ecs update-service \
+              --cluster "$ECS_CLUSTER" \
+              --service "$ECS_SERVICE" \
+              --task-definition "$TASK_DEF_ARN" \
+              --desired-count 1 \
+              --region "$AWS_REGION"
+          else
+            echo "Creating service $ECS_SERVICE"
+            aws ecs create-service \
+              --cluster "$ECS_CLUSTER" \
+              --service-name "$ECS_SERVICE" \
+              --task-definition "$TASK_DEF_ARN" \
+              --desired-count 1 \
+              --launch-type FARGATE \
+              --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG_ID],assignPublicIp=ENABLED}" \
+              --region "$AWS_REGION"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Infra Bootstrap Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Cluster: $ECS_CLUSTER" >> $GITHUB_STEP_SUMMARY
+          echo "- Service: $ECS_SERVICE" >> $GITHUB_STEP_SUMMARY
+          echo "- Task Definition: ${{ steps.register-task.outputs.task_def_arn }}" >> $GITHUB_STEP_SUMMARY
+          echo "- VPC: ${{ steps.network.outputs.vpc_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Subnets: ${{ steps.network.outputs.subnets }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Group: ${{ steps.network.outputs.sg_id }}" >> $GITHUB_STEP_SUMMARY
