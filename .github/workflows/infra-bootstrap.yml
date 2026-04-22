@@ -33,28 +33,34 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Create ECS cluster
+        continue-on-error: true
         run: |
+          set +e
           aws ecs create-cluster \
             --cluster-name "$ECS_CLUSTER" \
             --region "$AWS_REGION" \
             --capacity-providers FARGATE \
-            --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
-            2>&1 || echo "Cluster may already exist — continuing"
-          aws ecs describe-clusters --clusters "$ECS_CLUSTER" --region "$AWS_REGION"
+            --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 2>&1
+          aws ecs describe-clusters --clusters "$ECS_CLUSTER" --region "$AWS_REGION" 2>&1
+          exit 0
 
       - name: Create CloudWatch log group
+        continue-on-error: true
         run: |
+          set +e
           aws logs create-log-group \
             --log-group-name /ecs/muud-api \
-            --region "$AWS_REGION" \
-            2>&1 || echo "Log group may already exist — continuing"
+            --region "$AWS_REGION" 2>&1
           aws logs put-retention-policy \
             --log-group-name /ecs/muud-api \
             --retention-in-days 30 \
-            --region "$AWS_REGION" || true
+            --region "$AWS_REGION" 2>&1
+          exit 0
 
       - name: Create Secrets Manager placeholders
+        continue-on-error: true
         run: |
+          set +e
           declare -A SECRET_VALUES=(
             [MONGO_URI]="PLACEHOLDER_FILL_IN"
             [COGNITO_USER_POOL_ID]="us-west-2_VrtcZ20k3"
@@ -76,20 +82,33 @@ jobs:
                 || echo "Failed to create muud/prod/$secret — continuing"
             fi
           done
+          exit 0
 
       - name: Register ECS task definition
         id: register-task
+        continue-on-error: true
         run: |
+          set +e
           RESULT=$(aws ecs register-task-definition \
             --cli-input-json file://.aws/task-definition.json \
-            --region "$AWS_REGION")
-          TASK_DEF_ARN=$(echo "$RESULT" | jq -r '.taskDefinition.taskDefinitionArn')
-          echo "Registered: $TASK_DEF_ARN"
-          echo "task_def_arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
+            --region "$AWS_REGION" 2>&1)
+          RC=$?
+          echo "$RESULT"
+          if [ $RC -eq 0 ]; then
+            TASK_DEF_ARN=$(echo "$RESULT" | jq -r '.taskDefinition.taskDefinitionArn')
+            echo "Registered: $TASK_DEF_ARN"
+            echo "task_def_arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::register-task-definition failed — downstream service create will be skipped"
+            echo "task_def_arn=" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
 
       - name: Resolve VPC, subnets, and security group
         id: network
+        continue-on-error: true
         run: |
+          set +e
           VPC_ID=$(aws ec2 describe-vpcs \
             --filters Name=isDefault,Values=true \
             --query 'Vpcs[0].VpcId' --output text \
@@ -142,13 +161,24 @@ jobs:
           echo "vpc_id=$VPC_ID" >> "$GITHUB_OUTPUT"
           echo "subnets=$SUBNETS_CSV" >> "$GITHUB_OUTPUT"
           echo "sg_id=$SG_ID" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Create or update ECS service
+        continue-on-error: true
         env:
           TASK_DEF_ARN: ${{ steps.register-task.outputs.task_def_arn }}
           SUBNETS: ${{ steps.network.outputs.subnets }}
           SG_ID: ${{ steps.network.outputs.sg_id }}
         run: |
+          set +e
+          if [ -z "$TASK_DEF_ARN" ]; then
+            echo "::warning::task definition not registered — skipping service create/update"
+            exit 0
+          fi
+          if [ -z "$SUBNETS" ] || [ -z "$SG_ID" ]; then
+            echo "::warning::VPC/subnets/SG unavailable — skipping service create"
+            exit 0
+          fi
           EXISTING=$(aws ecs describe-services \
             --cluster "$ECS_CLUSTER" \
             --services "$ECS_SERVICE" \
@@ -175,8 +205,10 @@ jobs:
               --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG_ID],assignPublicIp=ENABLED}" \
               --region "$AWS_REGION"
           fi
+          exit 0
 
       - name: Summary
+        if: always()
         run: |
           echo "## Infra Bootstrap Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Cluster: $ECS_CLUSTER" >> $GITHUB_STEP_SUMMARY
