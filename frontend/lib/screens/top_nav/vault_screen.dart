@@ -274,7 +274,7 @@ class _VaultScreenState extends State<VaultScreen> {
         const SizedBox(height: 40),
         const Icon(Icons.description_outlined, size: 68, color: MuudColors.lightPurple),
         const SizedBox(height: MuudSpacing.md),
-        Text("Empty Posts", style: MuudTypography.heading.copyWith(color: MuudColors.purple, fontSize: 22)),
+        Text("Empty Posts", style: MuudTypography.headingLarge.copyWith(color: MuudColors.purple, fontSize: 22)),
         const SizedBox(height: MuudSpacing.sm),
         Text("Your posts will show up here.", style: MuudTypography.bodySmall.copyWith(color: MuudColors.greyText)),
         const SizedBox(height: MuudSpacing.lg),
@@ -303,7 +303,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(title, style: MuudTypography.heading.copyWith(color: MuudColors.purple, fontSize: 22)),
+        Text(title, style: MuudTypography.headingLarge.copyWith(color: MuudColors.purple, fontSize: 22)),
         const Spacer(),
         GestureDetector(
           onTap: onSeeAll,
@@ -415,7 +415,7 @@ class _BigCard extends StatelessWidget {
                           style: MuudTypography.label.copyWith(color: MuudColors.purple, fontWeight: FontWeight.w900),
                         ),
                         if (item.authorLocation.isNotEmpty) ...[
-                          const SizedBox(height: MuudSpacing.xxs),
+                          const SizedBox(height: MuudSpacing.xs),
                           Text(item.authorLocation, style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
                         ],
                         if (item.caption.isNotEmpty) ...[
@@ -439,7 +439,7 @@ class _BigCard extends StatelessWidget {
                       if (extra > 0) ...[
                         const SizedBox(height: MuudSpacing.xs),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.sm, vertical: MuudSpacing.xxs),
+                          padding: const EdgeInsets.symmetric(horizontal: MuudSpacing.sm, vertical: MuudSpacing.xs),
                           decoration: BoxDecoration(
                             color: MuudColors.lightPurple.withValues(alpha: 0.3),
                             borderRadius: MuudRadius.pillAll,
@@ -501,7 +501,7 @@ class _SmallCard extends StatelessWidget {
                       style: MuudTypography.caption.copyWith(color: MuudColors.purple, fontWeight: FontWeight.w900),
                     ),
                     if (item.authorLocation.isNotEmpty) ...[
-                      const SizedBox(height: MuudSpacing.xxs),
+                      const SizedBox(height: MuudSpacing.xs),
                       Text(item.authorLocation, maxLines: 1, overflow: TextOverflow.ellipsis, style: MuudTypography.caption.copyWith(color: MuudColors.greyText)),
                     ],
                     const Spacer(),
