@@ -143,7 +143,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
     if (posts.isEmpty) {
       return RefreshIndicator(
         color: MuudColors.purple,
-        onRefresh: _load,
+        onRefresh: () => ref.read(journalProvider.notifier).loadPosts(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(MuudSpacing.lg, 50, MuudSpacing.lg, MuudSpacing.xl),
@@ -162,7 +162,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
 
     return RefreshIndicator(
       color: MuudColors.purple,
-      onRefresh: _load,
+      onRefresh: () => ref.read(journalProvider.notifier).loadPosts(),
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(MuudSpacing.base, MuudSpacing.md, MuudSpacing.base, MuudSpacing.xl),
